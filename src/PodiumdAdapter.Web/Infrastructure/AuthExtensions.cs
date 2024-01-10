@@ -15,7 +15,7 @@ namespace PodiumdAdapter.Web.Auth
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKeyResolver = (_, token, _, _) => GetKey(configuration, token),
                         ValidateIssuer = true,
-                        ValidIssuers = configuration.GetSection("CLIENTS").Get<ClientCredential[]>()!.Select(x => x.ID),
+                        ValidIssuers = GetCredentials(configuration).Select(x => x.ID),
                         ValidateAudience = false,
                         ValidateLifetime = true,
                         ClockSkew = TimeSpan.FromMinutes(1),
@@ -26,9 +26,7 @@ namespace PodiumdAdapter.Web.Auth
 
         private static IEnumerable<SecurityKey> GetKey(IConfiguration configuration, SecurityToken token)
         {
-            var result = configuration
-                .GetSection("CLIENTS")
-                .Get<IEnumerable<ClientCredential>>()?
+            var result = GetCredentials(configuration)
                 .Where(x => x.ID == token.Issuer)
                 .Select(x => x.SECRET)
                 .Select(Encoding.UTF8.GetBytes)
@@ -36,6 +34,21 @@ namespace PodiumdAdapter.Web.Auth
                 .FirstOrDefault();
 
             yield return result ?? throw new Exception();
+        }
+
+        private static IEnumerable<ClientCredential> GetCredentials(IConfiguration configuration)
+        {
+            try
+            {
+                return configuration?
+                    .GetSection("CLIENTS")?
+                    .Get<IEnumerable<ClientCredential>>() 
+                    ?? Enumerable.Empty<ClientCredential>();
+            }
+            catch (Exception)
+            {
+                return Enumerable.Empty<ClientCredential>();
+            }
         }
 
         private record ClientCredential(string ID, string SECRET);
