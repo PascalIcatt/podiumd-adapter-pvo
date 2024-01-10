@@ -11,7 +11,7 @@ variable "TAG_LATEST_BRANCH" {
 }
 
 target "test" {
-  dockerfile = "src/Podiumd.Adapter/Dockerfile"
+  dockerfile = "src/PodiumdAdapter.Web/Dockerfile"
   tags       = ["test"]
   cache-from = ["type=gha,scope=cache"]
   cache-to   = ["type=gha,mode=max,scope=cache"]
@@ -19,7 +19,7 @@ target "test" {
 }
 
 target "web" {
-  dockerfile = "src/Podiumd.Adapter/Dockerfile"
+  dockerfile = "src/Podiumd.Adapter.Web/Dockerfile"
   target     = "web"
   tags       = ["${TAG_RELEASE}", "${TAG_LATEST}", "${TAG_LATEST_BRANCH}"]
   cache-from = ["type=gha,scope=cache"]
