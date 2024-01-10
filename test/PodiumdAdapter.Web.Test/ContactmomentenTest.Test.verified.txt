@@ -1,0 +1,20 @@
+﻿{
+  count: 1,
+  next: null,
+  previous: null,
+  results: [
+    {
+      antwoord: null,
+      bronorganisatie: null,
+      identificatie: null,
+      kanaal: null,
+      medewerkerIdentificatie: null,
+      onderwerp: null,
+      registratiedatum: null,
+      status: null,
+      tekst: null,
+      type: null,
+      url: null
+    }
+  ]
+}

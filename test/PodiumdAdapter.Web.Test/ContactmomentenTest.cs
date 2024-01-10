@@ -4,6 +4,7 @@ using PodiumdAdapter.Web.Test.Infrastructure;
 
 namespace PodiumdAdapter.Web.Test;
 
+[UsesVerify]
 public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFactory) : IClassFixture<CustomWebApplicationFactory>
 {
     [Fact]
@@ -23,8 +24,8 @@ public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFacto
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        var result = await client.GetFromJsonAsync<ContactmomentResults>("/contactmomenten");
-        Assert.Equal(clientResponse.Results.Count, result?.Results?.Count);
+        using var result = await client.GetStreamAsync("/contactmomenten");
+        await VerifyJson(result);
     }
 
 }
