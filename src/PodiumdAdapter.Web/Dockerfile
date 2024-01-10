@@ -22,7 +22,7 @@ RUN dotnet restore "./PodiumdAdapter.Web.Test/PodiumdAdapter.Web.Test.csproj"
 COPY ["test/PodiumdAdapter.Web.Test/*", "PodiumdAdapter.Web.Test/"]
 WORKDIR "/test/PodiumdAdapter.Web.Test"
 RUN dotnet build "./PodiumdAdapter.Web.Test.csproj" -c $BUILD_CONFIGURATION --no-restore
-RUN dotnet test -c Release --no-build --logger:xunit --results-directory /testresults -v n; exit 0
+RUN dotnet test -c Release --no-build --logger trx --results-directory /testresults -v n; exit 0
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
@@ -35,6 +35,5 @@ ENTRYPOINT ["dotnet", "PodiumdAdapter.Web.dll"]
 
 FROM scratch as final
 COPY --from=test /testresults/*.trx .
-COPY --from=test /testresults/*.xml .
 # this line only exists so we can build and cache all stages in one go
 COPY --from=web dummy?.txt . 
