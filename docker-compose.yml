@@ -1,0 +1,11 @@
+version: '3.4'
+
+services:
+  podiumd-adapter:
+    env_file:
+      - .env
+      - .env.local
+    image: ${DOCKER_REGISTRY-}podiumdadapterweb
+    build:
+      context: .
+      dockerfile: src/PodiumdAdapter.Web/Dockerfile

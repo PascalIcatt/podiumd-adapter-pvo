@@ -1,0 +1,103 @@
+name: Docker CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-node:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get date
+        if: github.event_name != 'pull_request'
+        id: date
+        run: |
+          echo "DATE=$(date +'%Y%m%d%H%M%S')-$(echo $GITHUB_SHA | head -c 7)" >> $GITHUB_ENV
+
+      - name: Get branch name
+        if: github.event_name != 'pull_request'
+        id: branch
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          if [[ -z "$BRANCH_NAME" ]]; then
+            BRANCH_NAME="${{ github.ref }}"
+            BRANCH_NAME="${BRANCH_NAME#refs/heads/}"
+          fi
+          BRANCH_NAME=$(echo $BRANCH_NAME | tr / -)
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Set release code
+        if: github.event_name != 'pull_request'
+        id: releasecode
+        run: |
+          VERSION=$(grep APP_VERSION= .env | cut -d '=' -f2)
+          RELEASE=$BRANCH_NAME-$DATE
+          echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+          echo "APP_ENV=prod">> $GITHUB_ENV
+          echo "APP_BUILD=latest">> $GITHUB_ENV
+          echo "set APP_ENV to $APP_ENV"
+
+      - name: Setting CONTAINER_PROJECT_NAME
+        if: github.event_name != 'pull_request'
+        run: |
+          NAME=$(grep CONTAINER_PROJECT_NAME= .env | cut -d '=' -f2)
+          echo "CONTAINER_PROJECT_NAME=$NAME" >> $GITHUB_ENV
+
+      - name: Setting CONTAINER_REGISTRY_BASE
+        if: github.event_name != 'pull_request'
+        run: |
+          NAME=$(grep CONTAINER_REGISTRY_BASE= .env | cut -d '=' -f2)
+          echo "CONTAINER_REGISTRY_BASE=$NAME" >> $GITHUB_ENV
+
+      - name: Set full container name
+        if: github.event_name != 'pull_request'
+        run: echo "CONTAINER_NAME=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}" >> $GITHUB_ENV
+
+      - name: Setting tags
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "TAG_RELEASE=${{ env.CONTAINER_NAME }}:${{ env.RELEASE}}" >> $GITHUB_ENV
+          echo "TAG_LATEST=${{ env.CONTAINER_NAME }}:latest" >> $GITHUB_ENV
+          echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_NAME }}:${{ env.BRANCH_NAME }}-latest" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v2
+
+      - name: build all stages
+        run: docker buildx bake --file docker-bake.hcl --progress plain test
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            testresults/*.trx
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: push web
+        if: github.event_name != 'pull_request'
+        uses: docker/bake-action@v3
+        with:
+          push: true
+          load: false
+          targets: web
+          files: docker-bake.hcl

@@ -7,7 +7,7 @@ namespace PodiumdAdapter.Web.Infrastructure
     {
         public ESuiteHttpClientRequestAdapter(HttpClient httpClient, IConfiguration conf) : base(new ESuiteAuthProvider(conf), httpClient: httpClient)
         {
-            BaseUrl = conf["BaseUrl"];
+            BaseUrl = conf["ESUITE_BASE_URL"];
         }
 
         private class ESuiteAuthProvider(IConfiguration conf) : BaseBearerTokenAuthenticationProvider(new ESuiteAccessTokenProvider(conf))
@@ -20,7 +20,7 @@ namespace PodiumdAdapter.Web.Infrastructure
 
             public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
             {
-                return Task.FromResult(conf["Token"] ?? throw new Exception());
+                return Task.FromResult(conf["ESUITE_TOKEN"] ?? throw new Exception());
             }
         }
     }

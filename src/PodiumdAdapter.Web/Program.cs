@@ -1,7 +1,5 @@
-﻿using System.Text;
-using Generated.Esuite.ContactmomentenClient;
+﻿using Generated.Esuite.ContactmomentenClient;
 using Generated.Esuite.KlantenClient;
-using Microsoft.IdentityModel.Tokens;
 using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Endpoints;
 using PodiumdAdapter.Web.Infrastructure;
@@ -26,11 +24,7 @@ try
     builder.Services.AddHttpClient<ESuiteHttpClientRequestAdapter>();
     builder.Services.AddTransient(s => new ContactmomentenClient(s.GetRequiredService<ESuiteHttpClientRequestAdapter>()));
     builder.Services.AddTransient(s => new KlantenClient(s.GetRequiredService<ESuiteHttpClientRequestAdapter>()));
-
-    if (!builder.Environment.IsDevelopment())
-    {
-        builder.Services.AddAuth(builder.Configuration);
-    }
+    builder.Services.AddAuth(builder.Configuration);
 
     var app = builder.Build();
     // Configure the HTTP request pipeline.
@@ -44,7 +38,7 @@ try
     app.Map(Contactmomenten.Api);
     app.Map(Klanten.Api);
 
-    app.MapHealthChecks("/healthz");
+    app.MapHealthChecks("/healthz").AllowAnonymous();
 
     app.Run();
 }
