@@ -91,6 +91,7 @@ jobs:
           action_fail: true
           files: |
             testresults/*.trx
+            testresults/*.xml
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
