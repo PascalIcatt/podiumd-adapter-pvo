@@ -1,5 +1,6 @@
 ﻿using Generated.Esuite.ContactmomentenClient;
 using Generated.Esuite.KlantenClient;
+using Microsoft.Kiota.Abstractions;
 using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Endpoints;
 using PodiumdAdapter.Web.Infrastructure;
@@ -7,49 +8,27 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .CreateBootstrapLogger();
+// Add services to the container.
+builder.Host.UseSerilog((ctx, lc) => lc
+    .ReadFrom.Configuration(ctx.Configuration)
+    .Enrich.FromLogContext());
 
-Log.Information("Starting up");
+builder.Services.AddHealthChecks();
+builder.Services.AddHttpClient<IRequestAdapter, ESuiteHttpClientRequestAdapter>();
+builder.Services.AddTransient<ContactmomentenClient>();
+builder.Services.AddTransient<KlantenClient>();
+builder.Services.AddAuth(builder.Configuration);
 
-try
-{
-    // Add services to the container.
-    builder.Host.UseSerilog((ctx, services, lc) => lc
-        .ReadFrom.Configuration(builder.Configuration)
-        .Enrich.FromLogContext());
+var app = builder.Build();
+// Configure the HTTP request pipeline.
 
-    builder.Services.AddHealthChecks();
-    builder.Services.AddHttpClient<ESuiteHttpClientRequestAdapter>();
-    builder.Services.AddTransient(s => new ContactmomentenClient(s.GetRequiredService<ESuiteHttpClientRequestAdapter>()));
-    builder.Services.AddTransient(s => new KlantenClient(s.GetRequiredService<ESuiteHttpClientRequestAdapter>()));
-    builder.Services.AddAuth(builder.Configuration);
+app.UseSerilogRequestLogging();
 
-    var app = builder.Build();
-    // Configure the HTTP request pipeline.
+app.Map(Contactmomenten.Api);
+app.Map(Klanten.Api);
 
-    app.UseSerilogRequestLogging();
-    app.Use(next => request =>
-    {
-        return next(request);
-    });
+app.MapHealthChecks("/healthz").AllowAnonymous();
 
-    app.Map(Contactmomenten.Api);
-    app.Map(Klanten.Api);
-
-    app.MapHealthChecks("/healthz").AllowAnonymous();
-
-    app.Run();
-}
-catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
-{
-    Log.Fatal(ex, "Unhandled exception");
-}
-finally
-{
-    Log.Information("Shut down complete");
-    Log.CloseAndFlush();
-}
+app.Run();
 
 public partial class Program { }
