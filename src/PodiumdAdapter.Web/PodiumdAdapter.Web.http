@@ -1,0 +1,34 @@
+@PodiumdAdapter.Web_HostAddress = http://localhost:5115
+@PodiumD2AtosAdapter.Web_HostAddress = http://localhost:5115
+
+GET {{PodiumD2AtosAdapter.Web_HostAddress}}/contactmomenten?klant=https://dmidoffice2.esuite-development.net/klanten-api-provider/api/v1/klanten/83047d24-a213-4fc3-9878-367ffe06988e
+Accept: application/json
+
+###
+
+
+POST {{PodiumD2AtosAdapter.Web_HostAddress}}/contactmomenten
+Accept: application/json
+Content-Type: application/json
+
+{
+    "bronorganisatie": "123",
+    "url": "123",
+    "tekst": "ik heb een vraag",
+    "type": "Melding",
+    "kanaal": "Internet"
+}
+
+###
+
+GET {{PodiumdAdapter.Web_HostAddress}}/contactmomenten/1415127b-e969-42f4-9abd-fd1a22fc48bc
+
+###
+
+GET {{PodiumdAdapter.Web_HostAddress}}/klantcontactmomenten?klant=https://dmidoffice2.esuite-development.net/klanten-api-provider/api/v1/klanten/83047d24-a213-4fc3-9878-367ffe06988e
+
+###
+
+GET {{PodiumdAdapter.Web_HostAddress}}/objectcontactmomenten?contactmoment=https://dmidoffice2.esuite-development.net/contactmomenten-api-provider/api/v1/contactmomenten/1415127b-e969-42f4-9abd-fd1a22fc48bc
+
+###

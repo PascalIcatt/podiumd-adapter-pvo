@@ -1,0 +1,2177 @@
+openapi: 3.0.1
+info:
+  title: E-Suite implementatie van een deel van de ZGW Catalogi API
+  description: Deze implementatie is niet 'compliant' maar streeft er naar 'compatible'
+    te zijn met de ZGW API's specificatie.
+  version: 1.0.0
+servers:
+- url: /api/v1
+security:
+- JWT-Claims: []
+paths:
+  /besluittypen:
+    get:
+      tags:
+      - besluittypen
+      summary: Alle besluittypen opvragen.
+      operationId: besluittype_list
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BesluittypeResults'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /besluittypen/{uuid}:
+    get:
+      tags:
+      - besluittypen
+      summary: Een specifiek besluittype opvragen.
+      operationId: besluittype_read
+      parameters:
+      - name: uuid
+        in: path
+        description: Unieke resource identifier (UUID4)
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Besluittype'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+        "404":
+          description: Not found
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /catalogussen:
+    get:
+      tags:
+      - catalogussen
+      summary: het concept CATALOGUS bestaat niet in e-Suite. Deze methode retourneert
+        een lijst met 1 fictieve catalogus
+      operationId: catalogus_list
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogussenResults'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /eigenschappen:
+    get:
+      tags:
+      - eigenschappen
+      summary: Alle eigenschappen opvragen.
+      description: De lijst moet gefiltered worden met een zaaktype.
+      operationId: eigenschap_list
+      parameters:
+      - name: zaaktype
+        in: query
+        description: URI van een zaaktype.
+        required: true
+        schema:
+          type: string
+          format: uri
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EigenschappenResults'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /eigenschappen/{uuid}:
+    get:
+      tags:
+      - eigenschappen
+      summary: Een specifieke eigenschap opvragen.
+      operationId: eigenschap_read
+      parameters:
+      - name: uuid
+        in: path
+        description: Unieke resource identifier (UUID4)
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Eigenschap'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+        "404":
+          description: Not found
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /informatieobjecttypen:
+    get:
+      tags:
+      - informatieobjecttype
+      summary: Een informatieobjecttype opvragen
+      description: Deze lijst moet gefilterd wordt met query-string parameters.
+      operationId: informatieobjecttype_list
+      parameters:
+      - name: omschrijving
+        in: query
+        description: Naam van het documenttype.
+        schema:
+          maxLength: 80
+          type: string
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InformatieobjecttypeResults'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+        "404":
+          description: Not found
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /informatieobjecttypen/{uuid}:
+    get:
+      tags:
+      - informatieobjecttype
+      summary: Een specifiek informatieobjecttype opvragen.
+      operationId: informatieobjecttype_read
+      parameters:
+      - name: uuid
+        in: path
+        description: Unieke resource identifier (UUID4)
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Informatieobjecttype'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+        "404":
+          description: Not found
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /resultaattypen:
+    get:
+      tags:
+      - resultaattypen
+      summary: Resultaattypen van een zaaktype opvragen.
+      description: De lijst moet gefiltered worden met een zaaktype.
+      operationId: resultaattype_list
+      parameters:
+      - name: zaaktype
+        in: query
+        description: URI van een zaaktype.
+        required: true
+        schema:
+          type: string
+          format: uri
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultaattypeResults'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /resultaattypen/{uuid}:
+    get:
+      tags:
+      - resultaattypen
+      summary: Een specifiek resultaattype opvragen.
+      operationId: resultaattype_read
+      parameters:
+      - name: uuid
+        in: path
+        description: Unieke resource identifier (UUID4)
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resultaattype'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+        "404":
+          description: Not found
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /roltypen:
+    get:
+      tags:
+      - roltypen
+      summary: Alle roltypen opvragen.
+      operationId: roltype_list
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoltypeResults'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /roltypen/{uuid}:
+    get:
+      tags:
+      - roltypen
+      summary: Een specifiek roltype opvragen.
+      operationId: roltype_read
+      parameters:
+      - name: uuid
+        in: path
+        description: Unieke resource identifier (UUID4)
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roltype'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+        "404":
+          description: Not found
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /statustypen:
+    get:
+      tags:
+      - statustypen
+      summary: Statustypen opvragen.
+      description: De lijst kan gefiltered worden met een zaaktype.
+      operationId: statustype_list
+      parameters:
+      - name: zaaktype
+        in: query
+        description: URI van een zaaktype.
+        schema:
+          type: string
+          format: uri
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatustypeResults'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /statustypen/{uuid}:
+    get:
+      tags:
+      - statustypen
+      summary: Een specifiek statustype opvragen.
+      operationId: statustype_read
+      parameters:
+      - name: uuid
+        in: path
+        description: Unieke resource identifier (UUID4)
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statustype'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+        "404":
+          description: Not found
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /zaaktypen:
+    get:
+      tags:
+      - zaaktypen
+      summary: Alle zaaktypen opvragen.
+      description: Deze lijst kan gefiltered worden met een e-Suite zaaktype identificatie.
+      operationId: zaaktype_list
+      parameters:
+      - name: identificatie
+        in: query
+        description: Functionele identificatie van het zaaktyp.
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Een pagina binnen de gepagineerde set resultaten.
+        schema:
+          minimum: 1
+          type: integer
+          format: int64
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZaaktypeResults'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+  /zaaktypen/{uuid}:
+    get:
+      tags:
+      - zaaktypen
+      summary: Een specifiek zaaktype opvragen.
+      operationId: zaaktype_read
+      parameters:
+      - name: uuid
+        in: path
+        description: Unieke resource identifier (UUID4)
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Zaaktype'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+        "404":
+          description: Not found
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+      security:
+      - JWT-Claims:
+        - catalogi.lezen
+components:
+  schemas:
+    Fout:
+      required:
+      - code
+      - instance
+      - status
+      - title
+      type: object
+      properties:
+        type:
+          title: Type
+          type: string
+          description: "URI referentie naar het type fout, bedoeld voor developers"
+        code:
+          title: Code
+          type: string
+          description: Systeemcode die het type fout aangeeft
+          enum:
+          - INTERNAL
+          - VALIDATION
+          - ERROR
+          - NOT_FOUND
+          - NOT_AUTHORISED
+          - DUPLICATE
+          - CLIENT
+        title:
+          title: Title
+          minLength: 1
+          type: string
+          description: Generieke titel voor het type fout
+        status:
+          title: Status
+          type: integer
+          description: De HTTP status code
+          format: int32
+        detail:
+          title: Detail
+          minLength: 1
+          type: string
+          description: "Extra informatie bij de fout, indien beschikbaar"
+        instance:
+          title: Instance
+          minLength: 1
+          type: string
+          description: "URI met referentie naar dit specifiek voorkomen van de fout.\
+            \ Deze kan gebruikt worden in combinatie met server logs, bijvoorbeeld."
+    Besluittype:
+      required:
+      - beginGeldigheid
+      - besluitcategorie
+      - catalogus
+      - informatieobjecttypen
+      - omschrijving
+      - publicatieIndicatie
+      - reactietermijn
+      - url
+      - zaaktypen
+      type: object
+      properties:
+        url:
+          title: Url
+          type: string
+          description: URL-referentie naar dit object.
+          format: uri
+          readOnly: true
+        catalogus:
+          title: Catalogus
+          type: string
+          description: In e-Suite is het concept Catalogus niet aanwezig. Waarde verwijst
+            daarom naar een fictieve Catalogus.
+          format: uri
+        zaaktypen:
+          uniqueItems: true
+          type: array
+          description: In e-Suite is een besluittype niet gekoppeld aan zaaktypen.
+            Waarde is daarom altijd 'null'.
+          nullable: true
+          items:
+            type: string
+            format: uri
+        omschrijving:
+          title: Omschrijving
+          maxLength: 80
+          type: string
+          description: Naam van het besluit type.
+        omschrijvingGeneriek:
+          title: Omschrijving generiek
+          maxLength: 80
+          type: string
+          description: Omschrijving van het besluit type.
+        besluitcategorie:
+          title: Besluitcategorie
+          maxLength: 40
+          type: string
+          description: Besluit categorie van het besluit type.
+        reactietermijn:
+          title: Reactietermijn
+          type: string
+          description: Reactie termijn in dagen van het besluit type.
+          format: duration
+          nullable: true
+        publicatieIndicatie:
+          title: Publicatie indicatie
+          type: boolean
+          description: Publicatie indicatie van het besluit type.
+        publicatietekst:
+          title: Publicatietekst
+          type: string
+          description: Publicatietekst van het besluit type.
+        publicatietermijn:
+          title: Publicatietermijn
+          type: string
+          description: Publicatietermijn in dagen van het besluit type.
+          format: duration
+          nullable: true
+        informatieobjecttypen:
+          uniqueItems: true
+          type: array
+          description: In e-Suite is een besluittype niet gekoppeld aan informatieobjecttypen.
+            Waarde is daarom altijd 'null'.
+          nullable: true
+          items:
+            type: string
+            format: uri
+        beginGeldigheid:
+          title: Begin geldigheid
+          type: string
+          description: In e-Suite is deze waarde niet aanwezig. Waarde is daarom altijd
+            gelijk aan de datum van vandaag.
+          format: date
+    BesluittypeResults:
+      required:
+      - count
+      - results
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Besluittype'
+    ValidatieFout:
+      required:
+      - code
+      - instance
+      - status
+      - title
+      type: object
+      properties:
+        type:
+          title: Type
+          type: string
+          description: "URI referentie naar het type fout, bedoeld voor developers"
+        code:
+          title: Code
+          type: string
+          description: Systeemcode die het type fout aangeeft
+          enum:
+          - INTERNAL
+          - VALIDATION
+          - ERROR
+          - NOT_FOUND
+          - NOT_AUTHORISED
+          - DUPLICATE
+          - CLIENT
+        title:
+          title: Title
+          minLength: 1
+          type: string
+          description: Generieke titel voor het type fout
+        status:
+          title: Status
+          type: integer
+          description: De HTTP status code
+          format: int32
+        detail:
+          title: Detail
+          minLength: 1
+          type: string
+          description: "Extra informatie bij de fout, indien beschikbaar"
+        instance:
+          title: Instance
+          minLength: 1
+          type: string
+          description: "URI met referentie naar dit specifiek voorkomen van de fout.\
+            \ Deze kan gebruikt worden in combinatie met server logs, bijvoorbeeld."
+    Catalogus:
+      required:
+      - contactpersoonBeheerNaam
+      - domein
+      - rsin
+      - url
+      type: object
+      properties:
+        url:
+          title: Url
+          type: string
+          description: URL-referentie naar dit object.
+          format: uri
+          readOnly: true
+        domein:
+          title: Domein
+          maxLength: 5
+          type: string
+          description: Naam van het besluit type.
+          default: ALLE
+        rsin:
+          title: Rsin
+          maxLength: 9
+          type: string
+          description: Naam van het besluit type.
+          nullable: true
+        contactpersoonBeheerNaam:
+          title: Naam
+          maxLength: 40
+          type: string
+          description: Naam van het besluit type.
+          nullable: true
+    CatalogussenResults:
+      required:
+      - count
+      - results
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Catalogus'
+    Eigenschap:
+      required:
+      - definitie
+      - naam
+      - url
+      - zaaktype
+      type: object
+      properties:
+        url:
+          title: Url
+          type: string
+          description: URL-referentie naar dit object.
+          format: uri
+          readOnly: true
+        naam:
+          title: Naam
+          maxLength: 255
+          type: string
+          description: Id van het input veld in e-Suite.
+        definitie:
+          title: Definitie
+          maxLength: 255
+          type: string
+          description: Label van het input veld in e-Suite.
+        specificatie:
+          $ref: '#/components/schemas/EigenschapSpecificatie'
+        toelichting:
+          title: Toelichting
+          maxLength: 1000
+          type: string
+          description: Helptekst van het input veld in e-Suite.
+        zaaktype:
+          title: Zaaktype
+          type: string
+          description: Referentie naar het zaaktype waarvoor deze eigenschap van belang
+            is.
+          format: uri
+    EigenschapSpecificatie:
+      required:
+      - formaat
+      - kardinaliteit
+      - lengte
+      type: object
+      properties:
+        formaat:
+          title: Formaat
+          type: string
+          description: Soort tekens waarmee waarden van de EIGENSCHAP kunnen worden
+            vastgelegd.
+          enum:
+          - tekst
+          - getal
+          - datum
+          - datum_tijd
+        lengte:
+          title: Lengte
+          type: integer
+          description: Maximaal aantal karakters (lengte) waarmee waarden van de eigenschap
+            worden vastgelegd.
+          format: int32
+        kardinaliteit:
+          title: Kardinaliteit
+          minimum: 1
+          type: integer
+          description: Aantal mogelijke voorkomens van waarden van deze eigenschap
+            bij een zaak van het zaaktype.
+          format: int32
+        waardenverzameling:
+          title: Waardenverzameling
+          type: array
+          description: Waarden die deze eigenschap kan hebben.
+          items:
+            maxLength: 100
+            type: string
+    EigenschappenResults:
+      required:
+      - count
+      - results
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Eigenschap'
+    Informatieobjecttype:
+      required:
+      - beginGeldigheid
+      - catalogus
+      - omschrijving
+      - vertrouwelijkheidaanduiding
+      type: object
+      properties:
+        url:
+          title: Url
+          type: string
+          description: URL-referentie naar dit object.
+          format: uri
+          readOnly: true
+        catalogus:
+          title: Catalogus
+          type: string
+          description: In e-Suite is het concept Catalogus niet aanwezig. Waarde verwijst
+            daarom naar een fictieve Catalogus.
+          format: uri
+        omschrijving:
+          title: Omschrijving
+          maxLength: 80
+          type: string
+          description: Naam van het documenttype.
+        vertrouwelijkheidaanduiding:
+          title: Vertrouwelijkheidaanduiding
+          type: string
+          description: Publicatieniveau van het documenttype.
+          enum:
+          - openbaar
+          - intern
+          - vertrouwelijk
+        beginGeldigheid:
+          title: Begin geldigheid
+          type: string
+          description: In e-Suite is deze waarde niet aanwezig. Waarde is daarom altijd
+            gelijk aan de datum van vandaag.
+          format: date
+    InformatieobjecttypeResults:
+      required:
+      - count
+      - results
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Informatieobjecttype'
+    Resultaattype:
+      required:
+      - omschrijving
+      - resultaattypeomschrijving
+      - selectielijstklasse
+      - url
+      - zaaktype
+      type: object
+      properties:
+        url:
+          title: Url
+          type: string
+          description: URL-referentie naar dit object.
+          format: uri
+          readOnly: true
+        zaaktype:
+          title: Is van
+          type: string
+          description: In e-Suite is een resultaattype gekoppeld aan meerdere zaaktypes.
+            Deze waarde is daarom altijd 'null'.
+          format: uri
+          nullable: true
+        omschrijving:
+          title: Omschrijving
+          maxLength: 20
+          type: string
+          description: Naam van het zaak resultaat.
+        resultaattypeomschrijving:
+          title: Resultaattypeomschrijving
+          type: string
+          description: In e-Suite is het concept Resultaattypeomschrijving niet aanwezig.
+            Deze waarde is daarom altijd 'null'.
+          format: uri
+          nullable: true
+        omschrijvingGeneriek:
+          title: Omschrijving generiek
+          type: string
+          description: Omschrijving van het zaak resultaat.
+        selectielijstklasse:
+          title: Selectielijstklasse
+          type: string
+          description: In e-Suite is het concept Selectielijstklasse niet aanwezig.
+            Deze waarde is daarom altijd 'null'.
+          format: uri
+          nullable: true
+    ResultaattypeResults:
+      required:
+      - count
+      - results
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resultaattype'
+    Roltype:
+      required:
+      - omschrijving
+      - omschrijvingGeneriek
+      - url
+      - zaaktype
+      type: object
+      properties:
+        url:
+          title: Url
+          type: string
+          description: URL-referentie naar dit object.
+          format: uri
+          readOnly: true
+        zaaktype:
+          title: Is van
+          type: string
+          description: In e-Suite is een roltype niet gekoppeld aan een zaaktype.
+            Waarde is daarom altijd 'null'.
+          format: uri
+          nullable: true
+        omschrijving:
+          title: Omschrijving
+          type: string
+          description: "behandelaar, initiator of zaak betrokkene type uit e-Suite"
+          enum:
+          - behandelaar
+          - initiator
+          - belanghebbende
+          - gemachtigde
+          - medeaanvrager
+          - melder
+          - plaatsvervanger
+          - overig
+        omschrijvingGeneriek:
+          title: Omschrijving generiek
+          type: string
+          enum:
+          - behandelaar
+          - belanghebbende
+          - initiator
+    RoltypeResults:
+      required:
+      - count
+      - results
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Roltype'
+    Statustype:
+      required:
+      - omschrijving
+      - statustekst
+      - url
+      - volgnummer
+      - zaaktype
+      type: object
+      properties:
+        url:
+          title: Url
+          type: string
+          description: URL-referentie naar dit object.
+          format: uri
+          readOnly: true
+        omschrijving:
+          title: Omschrijving
+          maxLength: 80
+          type: string
+          description: Naam van de zaak status.
+        omschrijvingGeneriek:
+          title: Omschrijving generiek
+          maxLength: 80
+          type: string
+          description: Omschrijving van de zaak status.
+        statustekst:
+          title: Statustekst
+          maxLength: 1000
+          type: string
+          description: "Externe naam, naam van de status zoals deze getoond wordt\
+            \ in het publieke deel (burger en bedrijven loket), van de zaak status."
+        zaaktype:
+          title: Is van
+          type: string
+          description: In e-Suite is een statustype gekoppeld aan meerdere zaaktypes.
+            Deze waarde is daarom altijd 'null'.
+          format: uri
+          nullable: true
+        volgnummer:
+          title: Volgnummer
+          type: integer
+          description: In e-Suite heeft een statustype geen volgnummer. Deze waarde
+            is daarom altijd 'null'.
+          format: int32
+          nullable: true
+        isEindstatus:
+          title: Is eindstatus
+          type: boolean
+          description: Is de zaak status een einds status.
+          readOnly: true
+    StatustypeResults:
+      required:
+      - count
+      - results
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Statustype'
+    Zaaktype:
+      required:
+      - aanleiding
+      - beginGeldigheid
+      - besluittypen
+      - catalogus
+      - doel
+      - doorlooptijd
+      - gerelateerdeZaaktypen
+      - handelingBehandelaar
+      - handelingInitiator
+      - identificatie
+      - indicatieInternOfExtern
+      - informatieobjecttypen
+      - omschrijving
+      - onderwerp
+      - opschortingEnAanhoudingMogelijk
+      - productenOfDiensten
+      - publicatieIndicatie
+      - referentieproces
+      - resultaattypen
+      - roltypen
+      - servicenorm
+      - statustypen
+      - url
+      - verlengingMogelijk
+      - verlengingstermijn
+      - versiedatum
+      - vertrouwelijkheidaanduiding
+      type: object
+      properties:
+        url:
+          title: Url
+          type: string
+          description: URL-referentie naar dit object.
+          format: uri
+          readOnly: true
+        identificatie:
+          title: Identificatie
+          maxLength: 50
+          type: string
+          description: Functionele identificatie van het zaaktyp.
+        omschrijving:
+          title: Omschrijving
+          maxLength: 80
+          type: string
+          description: Omschrijving van het zaaktype.
+          nullable: true
+        vertrouwelijkheidaanduiding:
+          title: Vertrouwelijkheidaanduiding
+          type: string
+          description: Indicatie vertrouwelijk van het zaaktype.
+          enum:
+          - openbaar
+          - vertrouwelijk
+        doel:
+          title: Doel
+          type: string
+          description: Zaak categorie van het zaaktype.
+        aanleiding:
+          title: Aanleiding
+          type: string
+          description: IV3 categorie van het zaaktype.
+        indicatieInternOfExtern:
+          title: Indicatie intern of extern
+          type: string
+          description: Indicatie intern of extern van het zaaktype.
+          enum:
+          - intern
+          - extern
+        handelingInitiator:
+          title: Handeling initiator
+          maxLength: 20
+          type: string
+          description: Handeling initiator van het zaaktype.
+        onderwerp:
+          title: Onderwerp
+          maxLength: 80
+          type: string
+          description: Naam van het zaaktype.
+        handelingBehandelaar:
+          title: Handeling behandelaar
+          type: string
+          description: In e-Suite is concept Handeling behandelaar niet aanwezig.
+            Deze waarde is daarom altijd 'null'.
+          nullable: true
+        doorlooptijd:
+          title: Doorlooptijd
+          type: string
+          description: Vereiste doorlooptijd van het zaaktype.
+          format: duration
+        servicenorm:
+          title: Servicenorm
+          type: string
+          description: Gewenste doorlooptijd van van hetzaaktype.
+          format: duration
+        opschortingEnAanhoudingMogelijk:
+          title: Opschorting/aanhouding mogelijk
+          type: boolean
+          description: Indicatie doorlooptijd aanpasbaar toegestaan.
+        verlengingMogelijk:
+          title: Verlenging mogelijk
+          type: boolean
+          description: Indicatie doorlooptijd aanpasbaar toegestaan.
+        verlengingstermijn:
+          title: Verlengingstermijn
+          type: string
+          description: Review periode in dagen.
+          format: duration
+        publicatieIndicatie:
+          title: Publicatie indicatie
+          type: boolean
+          description: In e-Suite is concept Publicatie indicatie niet aanwezig. Deze
+            waarde is daarom altijd 'null'.
+          nullable: true
+        productenOfDiensten:
+          type: array
+          description: In e-Suite heeft een zaaktype geen producten of diensten. Waarde
+            is daarom altijd 'null'.
+          nullable: true
+          items:
+            type: string
+            format: uri
+        referentieproces:
+          title: Referentieproces
+          type: object
+          description: e-Suite kent geen referentieproces. Deze waarde is dus altijd
+            'null'.
+          nullable: true
+        catalogus:
+          title: Catalogus
+          type: string
+          description: In e-Suite is het concept Catalogus niet aanwezig. Waarde verwijst
+            daarom naar een fictieve Catalogus.
+          format: uri
+        statustypen:
+          minItems: 2
+          uniqueItems: true
+          type: array
+          description: URL-referenties naar de status typen die mogelijk zijn binnen
+            dit zaaktype
+          items:
+            type: string
+            format: uri
+        resultaattypen:
+          uniqueItems: true
+          type: array
+          description: URL-referenties naar de resultaat typen die mogelijk zijn binnen
+            dit zaaktype
+          items:
+            type: string
+            format: uri
+        informatieobjecttypen:
+          uniqueItems: true
+          type: array
+          description: URL-referenties naar de document typen binnen e-Suite die mogelijk
+            zijn binnen dit zaaktype
+          items:
+            type: string
+            format: uri
+        roltypen:
+          uniqueItems: true
+          type: array
+          description: URL-referenties naar de rol typen binnen e-Suite die mogelijk
+            zijn binnen dit zaaktype
+          items:
+            type: string
+            format: uri
+        besluittypen:
+          uniqueItems: true
+          type: array
+          description: "URL-referenties naar de besluit typen die mogelijk zijn binnen\
+            \ dit zaaktype, Kan 'null' zijn."
+          nullable: true
+          items:
+            type: string
+            format: uri
+        gerelateerdeZaaktypen:
+          type: array
+          description: Zaaktypen gerelateerd aan dit zaaktype. Kan 'null' zijn.
+          nullable: true
+          items:
+            $ref: '#/components/schemas/ZaaktypenRelatie'
+        beginGeldigheid:
+          title: Begin geldigheid
+          type: string
+          format: date
+        eindeGeldigheid:
+          title: Einde geldigheid
+          type: string
+          format: date
+        versiedatum:
+          title: Versiedatum
+          type: string
+          description: In e-Suite is versiedatum niet aanwezig. Deze waarde is daarom
+            altijd 'null'.
+          format: date
+          nullable: true
+    ZaaktypeResults:
+      required:
+      - count
+      - results
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Zaaktype'
+    ZaaktypenRelatie:
+      required:
+      - aardRelatie
+      - zaaktype
+      type: object
+      properties:
+        zaaktype:
+          title: Zaaktype
+          type: string
+          description: URL referentie naar het gerelateerde zaaktype
+          format: uri
+        aardRelatie:
+          title: Aard relatie
+          type: string
+          description: In e-Suite is Aard relatie niet bekend. Deze waarde is dus
+            altijd 'null'.
+          nullable: true
+  securitySchemes:
+    JWT-Claims:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

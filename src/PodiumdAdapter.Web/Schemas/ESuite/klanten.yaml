@@ -1,0 +1,339 @@
+openapi: 3.0.1
+info:
+  title: E-Suite implementatie van een deel van de Klanten API
+  description: Deze implementatie is niet 'compliant' maar streeft er naar 'compatible'
+    te zijn met de Klanten API specificatie.
+  version: 1.0.0
+servers:
+- url: /api/v1
+security:
+- JWT-Claims: []
+paths:
+  /klanten:
+    get:
+      tags:
+      - klanten
+      summary: Klant (persoon in e-Suite) opvragen op basis van BSN. Indien de persoon
+        niet aanwezig is in de e-Suite dan wordt deze opgehaald uit een externe bron.
+      operationId: klant_list
+      parameters:
+      - name: subjectNatuurlijkPersoon__inpBsn
+        in: query
+        description: BSN van een persoon in e-Suite
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KlantResults'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+      security:
+      - JWT-Claims:
+        - klanten.lezen
+  /klanten/{uuid}:
+    patch:
+      tags:
+      - klanten
+      summary: Bijwerken van het telefoonnummer of emailadres van een Klant (persoon
+        in e-Suite).
+      operationId: klant_partial_update
+      parameters:
+      - name: uuid
+        in: path
+        description: Unieke resource identifier (UUID4)
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Klant'
+        required: true
+      responses:
+        "500":
+          description: Internal server error
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "401":
+          description: Unauthorized
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "403":
+          description: Forbidden
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Fout'
+        "200":
+          description: OK
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Klant'
+        "400":
+          description: Bad request
+          headers:
+            API-version:
+              description: Geeft een specifieke API-versie aan in de context van een
+                specifieke aanroep. Voorbeeld 1.2.1.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidatieFout'
+      security:
+      - JWT-Claims:
+        - klanten.bijwerken
+components:
+  schemas:
+    Fout:
+      required:
+      - code
+      - instance
+      - status
+      - title
+      type: object
+      properties:
+        type:
+          title: Type
+          type: string
+          description: "URI referentie naar het type fout, bedoeld voor developers"
+        code:
+          title: Code
+          type: string
+          description: Systeemcode die het type fout aangeeft
+          enum:
+          - INTERNAL
+          - VALIDATION
+          - NOT_FOUND
+          - NOT_AUTHORISED
+        title:
+          title: Title
+          minLength: 1
+          type: string
+          description: Generieke titel voor het type fout
+        status:
+          title: Status
+          type: integer
+          description: De HTTP status code
+          format: int32
+        detail:
+          title: Detail
+          minLength: 1
+          type: string
+          description: "Extra informatie bij de fout, indien beschikbaar"
+        instance:
+          title: Instance
+          minLength: 1
+          type: string
+          description: "URI met referentie naar dit specifiek voorkomen van de fout.\
+            \ Deze kan gebruikt worden in combinatie met server logs, bijvoorbeeld."
+    Klant:
+      required:
+      - bronorganisatie
+      - klantnummer
+      - url
+      type: object
+      properties:
+        url:
+          title: Url
+          type: string
+          description: URL-referentie naar dit object.
+          format: uri
+          readOnly: true
+        bronorganisatie:
+          title: Bronorganisatie
+          maxLength: 9
+          type: string
+          description: Het RSIN van de gemeeente.
+          readOnly: true
+        klantnummer:
+          title: Klantnummer
+          maxLength: 8
+          type: string
+          description: De unieke identificatie van de klant binnen e-Suite.
+          readOnly: true
+        voornaam:
+          title: Voornaam
+          maxLength: 200
+          type: string
+          description: "De voornaam, voorletters of roepnaam van de klant."
+          readOnly: true
+        voorvoegselAchternaam:
+          title: Voorvoegsel achternaam
+          maxLength: 10
+          type: string
+          description: Het voorvoegsel van de achternaam van de klant.
+          readOnly: true
+        achternaam:
+          title: Achternaam
+          maxLength: 200
+          type: string
+          description: De achternaam van de klant.
+          readOnly: true
+        telefoonnummer:
+          title: Telefoonnummer
+          maxLength: 20
+          type: string
+          description: Het mobiele of vaste telefoonnummer van de klant.
+          nullable: true
+        emailadres:
+          title: Emailadres
+          maxLength: 254
+          type: string
+          description: Het e-mail adres van de klant.
+          format: email
+          nullable: true
+    KlantResults:
+      required:
+      - count
+      - results
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Klant'
+    ValidatieFout:
+      required:
+      - code
+      - instance
+      - status
+      - title
+      type: object
+      properties:
+        type:
+          title: Type
+          type: string
+          description: "URI referentie naar het type fout, bedoeld voor developers"
+        code:
+          title: Code
+          type: string
+          description: Systeemcode die het type fout aangeeft
+          enum:
+          - INTERNAL
+          - VALIDATION
+          - NOT_FOUND
+          - NOT_AUTHORISED
+        title:
+          title: Title
+          minLength: 1
+          type: string
+          description: Generieke titel voor het type fout
+        status:
+          title: Status
+          type: integer
+          description: De HTTP status code
+          format: int32
+        detail:
+          title: Detail
+          minLength: 1
+          type: string
+          description: "Extra informatie bij de fout, indien beschikbaar"
+        instance:
+          title: Instance
+          minLength: 1
+          type: string
+          description: "URI met referentie naar dit specifiek voorkomen van de fout.\
+            \ Deze kan gebruikt worden in combinatie met server logs, bijvoorbeeld."
