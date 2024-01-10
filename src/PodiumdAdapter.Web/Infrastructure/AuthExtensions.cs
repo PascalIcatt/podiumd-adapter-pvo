@@ -42,7 +42,7 @@ namespace PodiumdAdapter.Web.Auth
             {
                 return configuration?
                     .GetSection("CLIENTS")?
-                    .Get<IEnumerable<ClientCredential>>() 
+                    .Get<IEnumerable<ClientCredential>>()
                     ?? Enumerable.Empty<ClientCredential>();
             }
             catch (Exception)

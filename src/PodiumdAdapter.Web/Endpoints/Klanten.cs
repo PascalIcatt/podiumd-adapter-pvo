@@ -24,13 +24,13 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public static Task<IResult> Patch(
             ILogger<Klanten> logger,
-            KlantenClient client, 
-            [FromRoute] Guid id, 
+            KlantenClient client,
+            [FromRoute] Guid id,
             [FromBody] Klant klant
             ) =>
             client.Klanten[id].PatchAsync(klant).WrapResult(logger);
 
-       
+
     }
 
     file static class Extensions

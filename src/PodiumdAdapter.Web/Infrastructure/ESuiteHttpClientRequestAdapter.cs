@@ -18,10 +18,10 @@ namespace PodiumdAdapter.Web.Infrastructure
         {
             public AllowedHostsValidator AllowedHostsValidator { get; } = new() { AllowedHosts = new[] { "*" } };
 
-            public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
-            {
-                return Task.FromResult(conf["ESUITE_TOKEN"] ?? throw new Exception());
-            }
+        public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(conf["ESUITE_TOKEN"] ?? throw new Exception());
         }
     }
+}
 }

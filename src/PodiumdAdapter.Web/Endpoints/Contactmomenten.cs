@@ -56,7 +56,7 @@ namespace PodiumdAdapter.Web.Endpoints
             ) =>
             client.Objectcontactmomenten.GetAsync(x => x.QueryParameters = query).WrapResult(logger);
 
-        
+
     }
 
     static file class Extensions
