@@ -10,9 +10,9 @@ namespace PodiumdAdapter.Web.Endpoints
     {
         public static void Api(IEndpointRouteBuilder endpointRouteBuilder)
         {
-            var contactmomenten = endpointRouteBuilder.MapGroup("/klanten");
-            contactmomenten.MapGet("/", Get);
-            contactmomenten.MapPatch("/{id:guid}", Patch);
+            var klanten = endpointRouteBuilder.MapGroup("/klanten");
+            klanten.MapGet("/", Get);
+            klanten.MapPatch("/{id:guid}", Patch);
         }
 
         public static Task<IResult> Get(
