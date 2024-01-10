@@ -19,7 +19,7 @@ target "test" {
 }
 
 target "web" {
-  dockerfile = "src/Podiumd.Adapter.Web/Dockerfile"
+  dockerfile = "src/PodiumdAdapter.Web/Dockerfile"
   target     = "web"
   tags       = ["${TAG_RELEASE}", "${TAG_LATEST}", "${TAG_LATEST_BRANCH}"]
   cache-from = ["type=gha,scope=cache"]
