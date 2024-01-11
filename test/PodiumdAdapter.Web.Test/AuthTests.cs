@@ -2,7 +2,7 @@
 
 namespace PodiumdAdapter.Web.Test
 {
-    public class AuthTests(WebApplicationFactory<Program> webApplicationFactory) : IClassFixture<WebApplicationFactory<Program>>
+    public class AuthTests(CustomWebApplicationFactory webApplicationFactory) : IClassFixture<CustomWebApplicationFactory>
     {
         [Theory]
         [InlineData("/healthz", HttpStatusCode.OK)]

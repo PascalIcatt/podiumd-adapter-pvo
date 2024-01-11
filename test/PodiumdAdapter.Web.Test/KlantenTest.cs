@@ -1,8 +1,4 @@
-﻿using System.Net.Http.Json;
-using Argon;
-using Generated.Esuite.KlantenClient.Models;
-using Microsoft.Kiota.Abstractions;
-using PodiumdAdapter.Web.Test.Infrastructure;
+﻿using Generated.Esuite.KlantenClient.Models;
 
 namespace PodiumdAdapter.Web.Test;
 
@@ -45,14 +41,7 @@ public class KlantenTest(CustomWebApplicationFactory webApplicationFactory) : IC
 
         using var response = await client.PatchAsJsonAsync("/klanten/" + id, klant);
         using var result = await response.Content.ReadAsStreamAsync();
-        try
-        {
-            await VerifyJson(result);
-        }
-        catch (JsonReaderException e)
-        {
-            throw;
-        }
+        await VerifyJson(result);
     }
 
     [Fact]

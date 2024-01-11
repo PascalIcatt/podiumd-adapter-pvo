@@ -1,7 +1,4 @@
-﻿using System.Net.Http.Json;
-using Generated.Esuite.ContactmomentenClient.Models;
-using Microsoft.Kiota.Abstractions;
-using PodiumdAdapter.Web.Test.Infrastructure;
+﻿using Generated.Esuite.ContactmomentenClient.Models;
 
 namespace PodiumdAdapter.Web.Test;
 

@@ -22,7 +22,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
-
+            builder.UseEnvironment("Production");
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton(_requestAdapter.Object);

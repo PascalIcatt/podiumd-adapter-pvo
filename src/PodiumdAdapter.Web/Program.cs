@@ -17,7 +17,10 @@ builder.Services.AddHealthChecks();
 builder.Services.AddHttpClient<IRequestAdapter, ESuiteHttpClientRequestAdapter>();
 builder.Services.AddTransient<ContactmomentenClient>();
 builder.Services.AddTransient<KlantenClient>();
-builder.Services.AddAuth(builder.Configuration);
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.AddAuth(builder.Configuration);
+}
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
