@@ -50,6 +50,16 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
                 .ReturnsAsync(value);
         }
 
+        public void SetEsuiteError<TModel>(Exception exception) where TModel : IParsable
+        {
+            _requestAdapter.Setup(x => x.SendAsync(
+                It.IsAny<RequestInformation>(),
+                It.IsAny<ParsableFactory<TModel>>(),
+                It.IsAny<Dictionary<string, ParsableFactory<IParsable>>>(),
+                It.IsAny<CancellationToken>()))
+                .Throws(exception);
+        }
+
         private static string GetToken(string id, string secret)
         {
             var secretKey = secret; // "een sleutel van minimaal 16 karakters";
@@ -91,7 +101,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             var factoryMock = new Mock<ISerializationWriterFactory>();
             factoryMock.Setup(x => x.GetSerializationWriter(It.IsAny<string>())).Returns(() => new JsonSerializationWriter());
             var requestAdapter = new Mock<IRequestAdapter>();
-            requestAdapter.Setup(x=> x.SerializationWriterFactory).Returns(factoryMock.Object);
+            requestAdapter.Setup(x => x.SerializationWriterFactory).Returns(factoryMock.Object);
             return requestAdapter;
         }
     }

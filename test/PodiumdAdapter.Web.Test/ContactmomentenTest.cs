@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using Generated.Esuite.ContactmomentenClient.Models;
+using Microsoft.Kiota.Abstractions;
 using PodiumdAdapter.Web.Test.Infrastructure;
 
 namespace PodiumdAdapter.Web.Test;
@@ -95,6 +96,77 @@ public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFacto
         webApplicationFactory.Login(client);
 
         using var result = await client.GetStreamAsync("/objectcontactmomenten");
+        await VerifyJson(result);
+    }
+
+    [Fact]
+    public async Task ValidatieFout_case()
+    {
+        var validatieError = new ValidatieFout {
+            Code = ValidatieFout_code.NOT_FOUND,
+            Detail = "Detail",
+            Title = "Title",
+            Instance = "Instance",
+            Status = 404,
+            Type = "Type",
+            AdditionalData = new Dictionary<string, object>
+            {
+                ["extra"] = "data"
+            }
+        };
+
+        webApplicationFactory.SetEsuiteError<ObjectcontactmomentResults>(validatieError);
+
+        using var client = webApplicationFactory.CreateClient();
+        webApplicationFactory.Login(client);
+
+        using var response = await client.GetAsync("/objectcontactmomenten");
+        using var result = await response.Content.ReadAsStreamAsync();
+        await VerifyJson(result);
+    }
+
+    [Fact]
+    public async Task Fout_case()
+    {
+        var error = new Fout
+        {
+            Code = Fout_code.NOT_FOUND,
+            Detail = "Detail",
+            Title = "Title",
+            Instance = "Instance",
+            Status = 404,
+            Type = "Type",
+            AdditionalData = new Dictionary<string, object>
+            {
+                ["extra"] = "data"
+            }
+        };
+
+        webApplicationFactory.SetEsuiteError<ObjectcontactmomentResults>(error);
+
+        using var client = webApplicationFactory.CreateClient();
+        webApplicationFactory.Login(client);
+
+        using var response = await client.GetAsync("/objectcontactmomenten");
+        using var result = await response.Content.ReadAsStreamAsync();
+        await VerifyJson(result);
+    }
+
+    [Fact]
+    public async Task ApiException_case()
+    {
+        var error = new ApiException("Message")
+        {
+            ResponseStatusCode = 404,
+        };
+
+        webApplicationFactory.SetEsuiteError<ObjectcontactmomentResults>(error);
+
+        using var client = webApplicationFactory.CreateClient();
+        webApplicationFactory.Login(client);
+
+        using var response = await client.GetAsync("/objectcontactmomenten");
+        using var result = await response.Content.ReadAsStreamAsync();
         await VerifyJson(result);
     }
 }

@@ -1,0 +1,8 @@
+﻿{
+  type: Type,
+  title: Title,
+  status: 404,
+  detail: Detail,
+  instance: Instance,
+  extra: data
+}
