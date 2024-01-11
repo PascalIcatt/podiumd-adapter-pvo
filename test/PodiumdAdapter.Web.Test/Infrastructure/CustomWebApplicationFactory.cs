@@ -1,6 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Generated.Esuite.ContactmomentenClient;
+using Generated.Esuite.KlantenClient;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +28,8 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton(_requestAdapter.Object);
+                services.AddSingleton<ContactmomentenClient>();
+                services.AddSingleton<KlantenClient>();
             });
 
             builder.ConfigureAppConfiguration((context, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>

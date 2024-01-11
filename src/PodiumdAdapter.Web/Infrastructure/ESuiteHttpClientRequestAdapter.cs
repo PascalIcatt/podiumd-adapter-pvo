@@ -5,9 +5,9 @@ namespace PodiumdAdapter.Web.Infrastructure
 {
     public class ESuiteHttpClientRequestAdapter : HttpClientRequestAdapter
     {
-        public ESuiteHttpClientRequestAdapter(HttpClient httpClient, IConfiguration conf) : base(new ESuiteAuthProvider(conf), httpClient: httpClient)
+        public ESuiteHttpClientRequestAdapter(IHttpClientFactory factory, IConfiguration conf, string baseUrlConfigKey) : base(new ESuiteAuthProvider(conf), httpClient: factory.CreateClient())
         {
-            BaseUrl = conf["ESUITE_BASE_URL"];
+            BaseUrl = conf[baseUrlConfigKey];
         }
 
         private class ESuiteAuthProvider(IConfiguration conf) : BaseBearerTokenAuthenticationProvider(new ESuiteAccessTokenProvider(conf))

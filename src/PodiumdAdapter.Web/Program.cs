@@ -1,6 +1,5 @@
 ﻿using Generated.Esuite.ContactmomentenClient;
 using Generated.Esuite.KlantenClient;
-using Microsoft.Kiota.Abstractions;
 using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Endpoints;
 using PodiumdAdapter.Web.Infrastructure;
@@ -14,9 +13,11 @@ builder.Host.UseSerilog((ctx, lc) => lc
     .Enrich.FromLogContext());
 
 builder.Services.AddHealthChecks();
-builder.Services.AddHttpClient<IRequestAdapter, ESuiteHttpClientRequestAdapter>();
-builder.Services.AddTransient<ContactmomentenClient>();
-builder.Services.AddTransient<KlantenClient>();
+builder.Services.AddKeyedTransient(nameof(ContactmomentenClient), (s, _) => new ESuiteHttpClientRequestAdapter(s.GetRequiredService<IHttpClientFactory>(), builder.Configuration, "ESUITE_CONTACTMOMENTEN_BASE_URL"));
+builder.Services.AddKeyedTransient(nameof(KlantenClient), (s, _) => new ESuiteHttpClientRequestAdapter(s.GetRequiredService<IHttpClientFactory>(), builder.Configuration, "ESUITE_KLANTEN_BASE_URL"));
+builder.Services.AddTransient(s => new ContactmomentenClient(s.GetKeyedService<ESuiteHttpClientRequestAdapter>(nameof(ContactmomentenClient))));
+builder.Services.AddTransient(s => new KlantenClient(s.GetKeyedService<ESuiteHttpClientRequestAdapter>(nameof(KlantenClient))));
+
 if (!builder.Environment.IsDevelopment())
 {
     builder.Services.AddAuth(builder.Configuration);
