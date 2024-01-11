@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Json;
-using Generated.Esuite.ContactmomentenClient.Models;
+﻿using Generated.Esuite.ContactmomentenClient.Models;
 using PodiumdAdapter.Web.Test.Infrastructure;
 
 namespace PodiumdAdapter.Web.Test;
@@ -8,7 +7,7 @@ namespace PodiumdAdapter.Web.Test;
 public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFactory) : IClassFixture<CustomWebApplicationFactory>
 {
     [Fact]
-    public async Task Test()
+    public async Task GetAll()
     {
         var clientResponse = new ContactmomentResults
         {
