@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Serialization;
+using Microsoft.Kiota.Serialization.Json;
 using Moq;
 
 namespace PodiumdAdapter.Web.Test.Infrastructure
@@ -17,10 +18,13 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
         private readonly string _clientId = Guid.NewGuid().ToString();
         private readonly string _clientSecret = Guid.NewGuid().ToString();
         private readonly Mock<IRequestAdapter> _requestAdapter = new();
+        private static readonly JsonSerializationWriter s_writer = new();
+        private static readonly ISerializationWriterFactory s_serializationWriter = Mock.Of<ISerializationWriterFactory>(x => x.GetSerializationWriter("application/json") == s_writer);
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
+            _requestAdapter.Setup(x => x.SerializationWriterFactory).Returns(s_serializationWriter);
 
             builder.ConfigureTestServices(services =>
             {
