@@ -17,14 +17,11 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
     {
         private readonly string _clientId = Guid.NewGuid().ToString();
         private readonly string _clientSecret = Guid.NewGuid().ToString();
-        private readonly Mock<IRequestAdapter> _requestAdapter = new();
-        private static readonly JsonSerializationWriter s_writer = new();
-        private static readonly ISerializationWriterFactory s_serializationWriter = Mock.Of<ISerializationWriterFactory>(x => x.GetSerializationWriter("application/json") == s_writer);
+        private readonly Mock<IRequestAdapter> _requestAdapter = GetRequestAdapter();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
-            _requestAdapter.Setup(x => x.SerializationWriterFactory).Returns(s_serializationWriter);
 
             builder.ConfigureTestServices(services =>
             {
@@ -87,6 +84,15 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        private static Mock<IRequestAdapter> GetRequestAdapter()
+        {
+            var factoryMock = new Mock<ISerializationWriterFactory>();
+            factoryMock.Setup(x => x.GetSerializationWriter(It.IsAny<string>())).Returns(() => new JsonSerializationWriter());
+            var requestAdapter = new Mock<IRequestAdapter>();
+            requestAdapter.Setup(x=> x.SerializationWriterFactory).Returns(factoryMock.Object);
+            return requestAdapter;
         }
     }
 }

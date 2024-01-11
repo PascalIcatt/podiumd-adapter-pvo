@@ -1,0 +1,10 @@
+﻿{
+  achternaam: null,
+  bronorganisatie: null,
+  emailadres: null,
+  klantnummer: null,
+  telefoonnummer: null,
+  url: null,
+  voornaam: null,
+  voorvoegselAchternaam: null
+}
