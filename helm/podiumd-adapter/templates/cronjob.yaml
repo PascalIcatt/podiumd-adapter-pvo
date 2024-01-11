@@ -1,0 +1,22 @@
+{{- range .Values.cronjobs }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .name }}-{{ .type }}
+spec:
+  schedule: {{ .schedule }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: {{ .name }}
+            image: {{ .image.repository }}:{{ .image.tag }}
+            imagePullPolicy: {{ .image.pullPolicy }}
+            args:
+            - {{ .type }}
+            envFrom:
+            - secretRef:
+                name: {{ .secretName }}
+          restartPolicy: {{ .restartPolicy }}
+{{- end }}

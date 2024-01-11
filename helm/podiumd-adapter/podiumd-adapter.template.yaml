@@ -1,0 +1,19 @@
+image:
+  pullPolicy: Always
+config:
+  organizationIds: ["999990639"]
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: podiumd-adapter.dev.kiss-demo.nl
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+          serviceName: podiumd-adapter
+          servicePort: 8080
+  tls:
+    - hosts:
+        - podiumd-adapter.dev.kiss-demo.nl
+      secretName: wildcard-kiss-tls
+cronjobs: []

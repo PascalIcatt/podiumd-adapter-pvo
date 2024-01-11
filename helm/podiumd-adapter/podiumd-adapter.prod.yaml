@@ -1,0 +1,19 @@
+image:
+  pullPolicy: Always
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 32k #ivm azure open id connect > nginx default buffer 8k te laag
+  hosts:
+    - host: podiumd-adapter.prod.kiss-demo.nl
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+          serviceName: podiumd-adapter
+          servicePort: 8080
+  tls:
+    - hosts:
+        - podiumd-adapter.prod.kiss-demo.nl
+      secretName: wildcard-kiss-tls
+cronjobs: []
