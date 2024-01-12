@@ -39,7 +39,7 @@ spec:
             backend:
               service:
                 {{- if and .serviceName .servicePort }}
-                name: {{ printf "%s-%s" $releaseName .serviceName }}
+                name: {{ $releaseName }}
                 port:
                   number: {{ .servicePort }}
                 {{- else }}

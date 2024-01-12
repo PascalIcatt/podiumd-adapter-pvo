@@ -1,0 +1,1 @@
+helm upgrade --namespace podiumd-adapter-namespace --install --values podiumd-adapter\podiumd-adapter.template.yaml --set image.tag=main-latest --wait podiumd-adapter-ci-release ./podiumd-adapter --version 1.0.0

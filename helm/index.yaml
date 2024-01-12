@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  podiumd-adapter:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-01-11T22:21:55.8613224+01:00"
+    description: A Helm chart for Kubernetes
+    digest: 164a2429b21a7251ec73187fbfbdd144a94b3211ca9d4cbcfb858f1166c71cfd
+    name: podiumd-adapter
+    type: application
+    urls:
+    - podiumd-adapter-1.0.0.tgz
+    version: 1.0.0
+generated: "2024-01-11T22:21:55.8606139+01:00"

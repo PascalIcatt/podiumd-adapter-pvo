@@ -104,7 +104,8 @@ affinity:
 
 env:
   config:
-    ESUITE_BASE_URL: ""
+    ESUITE_CONTACTMOMENTEN_BASE_URL: ""
+    ESUITE_KLANTEN_BASE_URL: ""
   secrets:
     ESUITE_TOKEN: ""
     CLIENTS__0__ID: ""
