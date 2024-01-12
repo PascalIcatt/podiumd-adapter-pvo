@@ -5,7 +5,7 @@ namespace PodiumdAdapter.Web.Infrastructure
 {
     public class ESuiteRequestAdapter : HttpClientRequestAdapter
     {
-        public ESuiteRequestAdapter(IHttpClientFactory factory, IConfiguration conf) : base(new ESuiteAuthProvider(conf), httpClient: factory.CreateClient())
+        public ESuiteRequestAdapter(HttpClient client, IConfiguration conf) : base(new ESuiteAuthProvider(conf), httpClient: client)
         {
         }
 
