@@ -13,10 +13,10 @@ builder.Host.UseSerilog((ctx, lc) => lc
     .Enrich.FromLogContext());
 
 builder.Services.AddHealthChecks();
-builder.Services.AddKeyedTransient(nameof(ContactmomentenClient), (s, _) => new ESuiteHttpClientRequestAdapter(s.GetRequiredService<IHttpClientFactory>(), builder.Configuration, "ESUITE_CONTACTMOMENTEN_BASE_URL"));
-builder.Services.AddKeyedTransient(nameof(KlantenClient), (s, _) => new ESuiteHttpClientRequestAdapter(s.GetRequiredService<IHttpClientFactory>(), builder.Configuration, "ESUITE_KLANTEN_BASE_URL"));
-builder.Services.AddTransient(s => new ContactmomentenClient(s.GetKeyedService<ESuiteHttpClientRequestAdapter>(nameof(ContactmomentenClient))));
-builder.Services.AddTransient(s => new KlantenClient(s.GetKeyedService<ESuiteHttpClientRequestAdapter>(nameof(KlantenClient))));
+builder.Services.AddHttpClient();
+builder.Services.AddTransient<ESuiteRequestAdapter>();
+builder.Services.AddTransient(s => new ContactmomentenClient(s.GetEsuiteRequestAdapter("ESUITE_CONTACTMOMENTEN_BASE_URL")));
+builder.Services.AddTransient(s => new KlantenClient(s.GetEsuiteRequestAdapter("ESUITE_KLANTEN_BASE_URL")));
 
 if (!builder.Environment.IsDevelopment())
 {
