@@ -7,7 +7,7 @@
       antwoord: null,
       bronorganisatie: null,
       identificatie: null,
-      kanaal: null,
+      kanaal: Kanaal,
       medewerkerIdentificatie: null,
       onderwerp: null,
       registratiedatum: null,

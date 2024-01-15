@@ -1,44 +1,55 @@
-﻿
-using Microsoft.Kiota.Abstractions;
+﻿using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Serialization;
 using Microsoft.Kiota.Serialization.Json;
 
 namespace PodiumdAdapter.Web
 {
-    public static class Ext
+    public static class EsuiteResult
     {
-        public static async Task<IResult> ToResult<T>(this Task<T?> task, ILogger logger) where T : IParsable
+        public static IResult Map<T, TOut>(this Task<T?> task, Func<T, TOut> mapper) where T : IParsable
+            => new MappedParsableResult<T, TOut>(task, mapper);
+
+        private class MappedParsableResult<T, TOut>(Task<T?> task, Func<T, TOut> mapper) : IResult where T : IParsable
         {
-            try
+            public async Task ExecuteAsync(HttpContext httpContext)
             {
-                var result = await task;
-                return result == null
-                    ? Results.NoContent()
-                    // hier gebruiken we niet IParsable, want kiota negeert read-only properties bij het serializeren
-                    : Results.Ok(result);
+                var logger = httpContext.RequestServices.GetRequiredService<ILogger<MappedParsableResult<T, TOut>>>();
+                var result = await GetResult(task, mapper, logger);
+                await result.ExecuteAsync(httpContext);
             }
-            catch (ApiException a)
+
+            private static async Task<IResult> GetResult(Task<T?> task, Func<T, TOut> mapper, ILogger logger)
             {
-                logger.LogError(a, "Api Exception");
-                var status = a.ResponseStatusCode == default ? 500 : a.ResponseStatusCode;
-                return a is IParsable p
-                    ? new EsuiteResultInternal<IParsable>(p, status)
-                    : Results.Problem(a.Message, statusCode: status);
+                try
+                {
+                    var t = await task;
+                    return t == null
+                        ? Results.NoContent()
+                        : Results.Ok(mapper(t));
+                }
+                catch (ApiException a)
+                {
+                    logger.LogError(a, "Api Exception");
+                    var status = a.ResponseStatusCode == default ? 500 : a.ResponseStatusCode;
+                    return a is IParsable parsable
+                        ? new ParsableResult(parsable, status)
+                        : Results.Problem(a.Message, statusCode: status);
+                }
             }
         }
 
-
-        private class EsuiteResultInternal<T>(T parsable, int status = 200) : IResult where T : IParsable
+        private class ParsableResult(IParsable parsable, int status) : IResult
         {
             public Task ExecuteAsync(HttpContext httpContext)
             {
-                httpContext.Response.StatusCode = status;
-                httpContext.Response.ContentType = "application/json";
+                var response = httpContext.Response;
+                response.StatusCode = status;
+                response.ContentType = "application/json";
                 var writer = new JsonSerializationWriter();
                 writer.writer.WriteStartObject();
                 parsable.Serialize(writer);
                 writer.writer.WriteEndObject();
-                return writer.GetSerializedContent().CopyToAsync(httpContext.Response.Body);
+                return writer.GetSerializedContent().CopyToAsync(response.Body);
             }
         }
     }

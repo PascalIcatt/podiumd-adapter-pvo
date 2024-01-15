@@ -1,6 +1,4 @@
-﻿using Generated.Esuite.ContactmomentenClient;
-using Generated.Esuite.KlantenClient;
-using PodiumdAdapter.Web.Auth;
+﻿using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Endpoints;
 using PodiumdAdapter.Web.Infrastructure;
 using Serilog;
@@ -23,10 +21,11 @@ try
     builder.Host.UseSerilog(logger);
 
     builder.Services.AddHealthChecks();
-    builder.Services.AddHttpClient();
-    builder.Services.AddTransient<ESuiteRequestAdapter>();
-    builder.Services.AddTransient(s => new ContactmomentenClient(s.GetEsuiteRequestAdapter("ESUITE_CONTACTMOMENTEN_BASE_URL")));
-    builder.Services.AddTransient(s => new KlantenClient(s.GetEsuiteRequestAdapter("ESUITE_KLANTEN_BASE_URL")));
+    builder.Services.AddReverseProxy();
+    builder.Services.AddEsuiteClient(new ContactmomentenClientConfig());
+    builder.Services.AddEsuiteClient(new KlantenClientConfig());
+    builder.Services.AddEsuiteClient(new ZrcClientConfig());
+    builder.Services.AddEsuiteClient(new ZtcClientConfig());
 
     if (!builder.Environment.IsDevelopment())
     {
@@ -38,10 +37,8 @@ try
 
     app.UseSerilogRequestLogging();
 
-    app.Map(Contactmomenten.Api);
-    app.Map(Klanten.Api);
-
     app.MapHealthChecks("/healthz").AllowAnonymous();
+    app.MapReverseProxy();
 
     app.Run();
 }

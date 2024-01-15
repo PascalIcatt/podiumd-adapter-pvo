@@ -4,8 +4,8 @@
   previous: null,
   results: [
     {
-      contactmoment: null,
-      klant: null,
+      contactmoment: Contactmoment,
+      klant: Klant,
       rol: 1,
       url: null
     }

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Serialization;
 using Microsoft.Kiota.Serialization.Json;
 using Moq;
@@ -54,7 +53,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
                 .ReturnsAsync(value);
         }
 
-        public void SetEsuiteError<TModel>(Exception exception) where TModel : IParsable
+        public void SetEsuiteError<TModel>(ApiException exception) where TModel : IParsable
         {
             _requestAdapter.Setup(x => x.SendAsync(
                 It.IsAny<RequestInformation>(),

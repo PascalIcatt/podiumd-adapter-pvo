@@ -61,6 +61,7 @@ public class KlantenTest(CustomWebApplicationFactory webApplicationFactory) : IC
             Instance = "Instance",
             Status = 404,
             Type = "Type",
+            ResponseStatusCode = 404,
             AdditionalData = new Dictionary<string, object>
             {
                 ["extra"] = "data"
