@@ -8,9 +8,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Kiota.Abstractions.Serialization;
-using Microsoft.Kiota.Serialization.Json;
-using Moq;
+using RichardSzalay.MockHttp;
+using Yarp.ReverseProxy.Forwarder;
 
 namespace PodiumdAdapter.Web.Test.Infrastructure
 {
@@ -18,7 +17,13 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
     {
         private readonly string _clientId = Guid.NewGuid().ToString();
         private readonly string _clientSecret = Guid.NewGuid().ToString();
-        private readonly Mock<IRequestAdapter> _requestAdapter = GetRequestAdapter();
+
+        public readonly MockHttpMessageHandler MockHttpMessageHandler = new();
+
+        public readonly string ESUITE_CONTACTMOMENTEN_BASE_URL = "https://localhost:12345/contactmomenten";
+        public readonly string ESUITE_KLANTEN_BASE_URL = "https://localhost:12345/klanten";
+        public readonly string ESUITE_ZTC_BASE_URL = "https://localhost:12345/ztc";
+        public readonly string ESUITE_ZRC_BASE_URL = "https://localhost:12345/zrc";
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -26,7 +31,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             builder.UseEnvironment("Production");
             builder.ConfigureTestServices(services =>
             {
-                services.AddSingleton(_requestAdapter.Object);
+                services.AddSingleton<IForwarderHttpClientFactory>(new CustomForwarderHttpClientFactory(MockHttpMessageHandler));
                 services.AddSingleton<ContactmomentenClient>();
                 services.AddSingleton<KlantenClient>();
             });
@@ -35,32 +40,17 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             {
                 ["CLIENTS:0:ID"] = _clientId,
                 ["CLIENTS:0:SECRET"] = _clientSecret,
+                ["ESUITE_CONTACTMOMENTEN_BASE_URL"] = ESUITE_CONTACTMOMENTEN_BASE_URL,
+                ["ESUITE_KLANTEN_BASE_URL"] = ESUITE_KLANTEN_BASE_URL,
+                ["ESUITE_ZTC_BASE_URL"] = ESUITE_ZTC_BASE_URL,
+                ["ESUITE_ZRC_BASE_URL"] = ESUITE_ZRC_BASE_URL,
+                ["ESUITE_TOKEN"] = "FAKE_TOKEN",
             }));
         }
 
         public void Login(HttpClient httpClient)
         {
             httpClient.DefaultRequestHeaders.Authorization = new("Bearer", GetToken(_clientId, _clientSecret));
-        }
-
-        public void SetEsuiteResponse<T>(T value) where T : IParsable
-        {
-            _requestAdapter.Setup(x => x.SendAsync(
-                It.IsAny<RequestInformation>(),
-                It.IsAny<ParsableFactory<T>>(),
-                It.IsAny<Dictionary<string, ParsableFactory<IParsable>>>(),
-                It.IsAny<CancellationToken>()))
-                .ReturnsAsync(value);
-        }
-
-        public void SetEsuiteError<TModel>(ApiException exception) where TModel : IParsable
-        {
-            _requestAdapter.Setup(x => x.SendAsync(
-                It.IsAny<RequestInformation>(),
-                It.IsAny<ParsableFactory<TModel>>(),
-                It.IsAny<Dictionary<string, ParsableFactory<IParsable>>>(),
-                It.IsAny<CancellationToken>()))
-                .Throws(exception);
         }
 
         private static string GetToken(string id, string secret)
@@ -99,13 +89,9 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             return tokenHandler.WriteToken(token);
         }
 
-        private static Mock<IRequestAdapter> GetRequestAdapter()
+        private class CustomForwarderHttpClientFactory(MockHttpMessageHandler handler) : IForwarderHttpClientFactory
         {
-            var factoryMock = new Mock<ISerializationWriterFactory>();
-            factoryMock.Setup(x => x.GetSerializationWriter(It.IsAny<string>())).Returns(() => new JsonSerializationWriter());
-            var requestAdapter = new Mock<IRequestAdapter>();
-            requestAdapter.Setup(x => x.SerializationWriterFactory).Returns(factoryMock.Object);
-            return requestAdapter;
+            public HttpMessageInvoker CreateClient(ForwarderHttpClientContext context) => new(handler);
         }
     }
 }

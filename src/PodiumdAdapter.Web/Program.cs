@@ -38,6 +38,7 @@ try
     app.UseSerilogRequestLogging();
 
     app.MapHealthChecks("/healthz").AllowAnonymous();
+    app.MapEsuiteEndpoints();
     app.MapReverseProxy();
 
     app.Run();

@@ -48,7 +48,6 @@ namespace PodiumdAdapter.Web.Infrastructure
             {
                 var config = s.GetRequiredService<IConfiguration>();
                 var baseUrl = config[clientConfig.ProxyBaseUrlConfigKey] ?? throw new Exception("No base uri found for key " + clientConfig.ProxyBaseUrlConfigKey);
-                var token = config["ESUITE_TOKEN"];
                 return new ClusterConfig
                 {
                     ClusterId = clientName,
