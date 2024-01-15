@@ -12,13 +12,14 @@ namespace PodiumdAdapter.Web.Endpoints
     {
         public static void Api(IEndpointRouteBuilder endpointRouteBuilder)
         {
-            var contactmomenten = endpointRouteBuilder.MapGroup("/contactmomenten");
+            var root = endpointRouteBuilder.MapGroup("/contactmomenten/api/v1");
+            var contactmomenten = root.MapGroup("/contactmomenten");
             contactmomenten.MapGet("/", Get);
             contactmomenten.MapGet("/{id:guid}", GetById);
             contactmomenten.MapPost("/", Post);
 
-            endpointRouteBuilder.MapGet("/klantcontactmomenten", KlantContactmomenten);
-            endpointRouteBuilder.MapGet("/objectcontactmomenten", ObjectContactmomenten);
+            root.MapGet("/klantcontactmomenten", KlantContactmomenten);
+            root.MapGet("/objectcontactmomenten", ObjectContactmomenten);
         }
 
         public static Task<IResult> Get(

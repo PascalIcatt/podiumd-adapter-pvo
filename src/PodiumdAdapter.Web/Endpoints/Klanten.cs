@@ -2,7 +2,6 @@
 using Generated.Esuite.KlantenClient.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Kiota.Abstractions;
-using static Generated.Esuite.KlantenClient.Klanten.KlantenRequestBuilder;
 
 namespace PodiumdAdapter.Web.Endpoints
 {
@@ -10,7 +9,8 @@ namespace PodiumdAdapter.Web.Endpoints
     {
         public static void Api(IEndpointRouteBuilder endpointRouteBuilder)
         {
-            var klanten = endpointRouteBuilder.MapGroup("/klanten");
+            var root = endpointRouteBuilder.MapGroup("/klanten/api/v1");
+            var klanten = root.MapGroup("/klanten");
             klanten.MapGet("/", Get);
             klanten.MapPatch("/{id:guid}", Patch);
         }
@@ -18,9 +18,9 @@ namespace PodiumdAdapter.Web.Endpoints
         public static Task<IResult> Get(
             ILogger<Klanten> logger,
             KlantenClient client,
-            [AsParameters] KlantenRequestBuilderGetQueryParameters query
+            [FromQuery(Name = "subjectNatuurlijkPersoon__inpBsn")] string? bsn
             ) =>
-            client.Klanten.GetAsync(x => x.QueryParameters = query).WrapResult(logger);
+            client.Klanten.GetAsync(x => x.QueryParameters = new() { SubjectNatuurlijkPersoonInpBsn = bsn }).WrapResult(logger);
 
         public static Task<IResult> Patch(
             ILogger<Klanten> logger,
