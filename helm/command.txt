@@ -1,1 +1,6 @@
+kubectl create namespace podiumd-adapter-namespace
+kubectl config set-context --current --namespace=podiumd-adapter-namespace
+kubectl create configmap podiumd-adapter-config --from-literal=MY_KEY=MY_VALUE --from-literal=MY_KEY=MY_VALUE 
+kubectl create secret generic podiumd-adapter-secrets --from-literal=MY_KEY=MY_VALUE --from-literal=MY_KEY=MY_VALUE 
+kubectl create secret docker-registry regcred --docker-server=ghcr.io --docker-username=MY-USERNAME --docker-password MY-PAT
 helm upgrade --namespace podiumd-adapter-namespace --install --values podiumd-adapter\podiumd-adapter.template.yaml --set image.tag=main-latest --wait podiumd-adapter-ci-release ./podiumd-adapter --version 1.0.0
