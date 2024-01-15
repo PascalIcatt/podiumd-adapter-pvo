@@ -5,6 +5,8 @@ namespace PodiumdAdapter.Web.Test;
 [UsesVerify]
 public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFactory) : IClassFixture<CustomWebApplicationFactory>
 {
+    const string BaseUri = "/contactmomenten/api/v1";
+
     [Fact]
     public async Task GetAll()
     {
@@ -22,7 +24,7 @@ public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFacto
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var result = await client.GetStreamAsync("/contactmomenten");
+        using var result = await client.GetStreamAsync(BaseUri + "/contactmomenten");
         await VerifyJson(result);
     }
 
@@ -36,7 +38,7 @@ public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFacto
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var result = await client.GetStreamAsync("/contactmomenten/" + id);
+        using var result = await client.GetStreamAsync(BaseUri + "/contactmomenten/" + id);
         await VerifyJson(result);
     }
 
@@ -49,7 +51,7 @@ public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFacto
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var response = await client.PostAsJsonAsync("/contactmomenten", contactmoment);
+        using var response = await client.PostAsJsonAsync(BaseUri + "/contactmomenten", contactmoment);
         using var result = await response.Content.ReadAsStreamAsync();
         await VerifyJson(result);
     }
@@ -71,7 +73,7 @@ public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFacto
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var result = await client.GetStreamAsync("/klantcontactmomenten");
+        using var result = await client.GetStreamAsync(BaseUri + "/klantcontactmomenten");
         await VerifyJson(result);
     }
 
@@ -92,7 +94,7 @@ public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFacto
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var result = await client.GetStreamAsync("/objectcontactmomenten");
+        using var result = await client.GetStreamAsync(BaseUri + "/objectcontactmomenten");
         await VerifyJson(result);
     }
 
@@ -117,7 +119,7 @@ public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFacto
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var response = await client.GetAsync("/objectcontactmomenten");
+        using var response = await client.GetAsync(BaseUri + "/objectcontactmomenten");
         using var result = await response.Content.ReadAsStreamAsync();
         await VerifyJson(result);
     }
@@ -144,7 +146,7 @@ public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFacto
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var response = await client.GetAsync("/objectcontactmomenten");
+        using var response = await client.GetAsync(BaseUri + "/objectcontactmomenten");
         using var result = await response.Content.ReadAsStreamAsync();
         await VerifyJson(result);
     }
@@ -162,7 +164,7 @@ public class ContactmomentenTest(CustomWebApplicationFactory webApplicationFacto
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var response = await client.GetAsync("/objectcontactmomenten");
+        using var response = await client.GetAsync(BaseUri + "/objectcontactmomenten");
         using var result = await response.Content.ReadAsStreamAsync();
         await VerifyJson(result);
     }

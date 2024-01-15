@@ -36,6 +36,6 @@ GET {{ContactmomentenRoot}}/objectcontactmomenten?contactmoment=https://dmidoffi
 ###
 
 
-GET {{KlantenRoot}}/klanten?subjectNatuurlijkPersoon__inpBsn=12345678
+GET {{KlantenRoot}}/klanten?subjectNatuurlijkPersoon__inpBsn=999994864
 
 ###

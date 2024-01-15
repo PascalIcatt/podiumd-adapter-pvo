@@ -1,7 +1,6 @@
 ﻿using Generated.Esuite.KlantenClient;
 using Generated.Esuite.KlantenClient.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Kiota.Abstractions;
 
 namespace PodiumdAdapter.Web.Endpoints
 {
@@ -20,7 +19,9 @@ namespace PodiumdAdapter.Web.Endpoints
             KlantenClient client,
             [FromQuery(Name = "subjectNatuurlijkPersoon__inpBsn")] string? bsn
             ) =>
-            client.Klanten.GetAsync(x => x.QueryParameters = new() { SubjectNatuurlijkPersoonInpBsn = bsn }).WrapResult(logger);
+            client.Klanten
+                .GetAsync(x => x.QueryParameters = new() { SubjectNatuurlijkPersoonInpBsn = bsn })
+                .ToResult(logger);
 
         public static Task<IResult> Patch(
             ILogger<Klanten> logger,
@@ -28,33 +29,10 @@ namespace PodiumdAdapter.Web.Endpoints
             [FromRoute] Guid id,
             [FromBody] Klant klant
             ) =>
-            client.Klanten[id].PatchAsync(klant).WrapResult(logger);
+            client.Klanten[id]
+                .PatchAsync(klant)
+                .ToResult(logger);
 
 
-    }
-
-    file static class Extensions
-    {
-        public static async Task<IResult> WrapResult<T>(this Task<T> task, ILogger logger)
-        {
-            try
-            {
-                var result = await task;
-                return Results.Ok(result);
-            }
-            catch (Fout a)
-            {
-                return Results.Problem(a.Detail, a.Instance, a.Status, a.Title, a.Type, a.AdditionalData);
-            }
-            catch (ValidatieFout a)
-            {
-                return Results.Problem(a.Detail, a.Instance, a.Status, a.Title, a.Type, a.AdditionalData);
-            }
-            catch (ApiException a)
-            {
-                logger.LogError(a, "Api Exception");
-                return Results.Problem(a.Message, statusCode: a.ResponseStatusCode);
-            }
-        }
     }
 }

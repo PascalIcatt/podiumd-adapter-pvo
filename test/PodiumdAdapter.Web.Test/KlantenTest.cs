@@ -5,6 +5,8 @@ namespace PodiumdAdapter.Web.Test;
 [UsesVerify]
 public class KlantenTest(CustomWebApplicationFactory webApplicationFactory) : IClassFixture<CustomWebApplicationFactory>
 {
+    const string BaseUri = "/klanten/api/v1";
+
     [Fact]
     public async Task GetAll()
     {
@@ -14,6 +16,10 @@ public class KlantenTest(CustomWebApplicationFactory webApplicationFactory) : IC
             Results =
             [
                 new()
+                {
+                    Emailadres = "email",
+                    Telefoonnummer = "telefoon",
+                }
             ]
         };
 
@@ -22,7 +28,7 @@ public class KlantenTest(CustomWebApplicationFactory webApplicationFactory) : IC
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var result = await client.GetStreamAsync("/klanten");
+        using var result = await client.GetStreamAsync(BaseUri + "/klanten");
         await VerifyJson(result);
     }
 
@@ -36,10 +42,10 @@ public class KlantenTest(CustomWebApplicationFactory webApplicationFactory) : IC
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var r1 = await client.PatchAsJsonAsync("/klanten/" + id, klant);
+        using var r1 = await client.PatchAsJsonAsync(BaseUri + "/klanten/" + id, klant);
         var r2 = await r1.Content.ReadAsStringAsync();
 
-        using var response = await client.PatchAsJsonAsync("/klanten/" + id, klant);
+        using var response = await client.PatchAsJsonAsync(BaseUri + "/klanten/" + id, klant);
         using var result = await response.Content.ReadAsStreamAsync();
         await VerifyJson(result);
     }
@@ -66,7 +72,7 @@ public class KlantenTest(CustomWebApplicationFactory webApplicationFactory) : IC
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var response = await client.GetAsync("/klanten");
+        using var response = await client.GetAsync(BaseUri + "/klanten");
         using var result = await response.Content.ReadAsStreamAsync();
         await VerifyJson(result);
     }
@@ -93,7 +99,7 @@ public class KlantenTest(CustomWebApplicationFactory webApplicationFactory) : IC
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var response = await client.GetAsync("/klanten");
+        using var response = await client.GetAsync(BaseUri + "/klanten");
         using var result = await response.Content.ReadAsStreamAsync();
         await VerifyJson(result);
     }
@@ -111,7 +117,7 @@ public class KlantenTest(CustomWebApplicationFactory webApplicationFactory) : IC
         using var client = webApplicationFactory.CreateClient();
         webApplicationFactory.Login(client);
 
-        using var response = await client.GetAsync("/klanten");
+        using var response = await client.GetAsync(BaseUri + "/klanten");
         using var result = await response.Content.ReadAsStreamAsync();
         await VerifyJson(result);
     }

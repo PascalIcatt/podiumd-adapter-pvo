@@ -4,9 +4,9 @@
     {
       achternaam: null,
       bronorganisatie: null,
-      emailadres: null,
+      emailadres: email,
       klantnummer: null,
-      telefoonnummer: null,
+      telefoonnummer: telefoon,
       url: null,
       voornaam: null,
       voorvoegselAchternaam: null
