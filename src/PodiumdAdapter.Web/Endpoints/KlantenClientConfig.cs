@@ -1,4 +1,5 @@
 ﻿using Generated.Esuite.KlantenClient;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Kiota.Abstractions;
 using PodiumdAdapter.Web.Infrastructure;
 
@@ -14,6 +15,11 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public void MapCustomEndpoints(IEndpointRouteBuilder clientRoot)
         {
+            clientRoot.MapGet("/klanten/{id:guid}", FakeGet);
         }
+
+        public static IResult FakeGet(KlantenClient client, [FromRoute] Guid id) =>
+            client.Klanten[id].PatchAsync(new())
+                .ToResult();
     }
 }
