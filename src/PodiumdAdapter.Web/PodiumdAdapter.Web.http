@@ -11,6 +11,13 @@ Accept: application/json
 ###
 
 
+GET {{ContactmomentenRoot}}/contactmomenten?object=https://dmidoffice2.esuite-development.net/zgw-apis-provider/ztc/api/v1/zaken/f54736d7-dafb-4e15-8650-3ebf870f3cba
+Accept: application/json
+
+###
+
+
+
 POST {{ContactmomentenRoot}}/contactmomenten
 Accept: application/json
 Content-Type: application/json
@@ -43,6 +50,10 @@ GET {{ContactmomentenRoot}}/objectcontactmomenten?contactmoment={{Contactmomente
 
 ###
 
+GET {{ContactmomentenRoot}}/objectcontactmomenten?object=http://localhost:56090/zaken/api/v1/zaken/f54736d7-dafb-4e15-8650-3ebf870f3cba
+
+###
+
 
 GET {{KlantenRoot}}/klanten?subjectNatuurlijkPersoon__inpBsn=999994864
 
@@ -64,6 +75,10 @@ Content-Type: application/json
 
 
 GET {{ZrcRoot}}/zaken?rol__betrokkeneIdentificatie__natuurlijkPersoon__inpBsn=103226564
+
+###
+
+GET {{ZrcRoot}}/zaken/f54736d7-dafb-4e15-8650-3ebf870f3cba
 
 ###
 

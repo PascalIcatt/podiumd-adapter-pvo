@@ -1,13 +1,10 @@
-﻿using System.IO.Pipelines;
-using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Nodes;
 
 namespace PodiumdAdapter.Web
 {
     public static class ProxyResultExtensions
     {
-        private static readonly JsonSerializerOptions s_options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-
         public static IResult ProxyResult(this HttpClient client, Func<HttpRequestMessage> message, Func<JsonNode, Task>? modify = null)
             => new ProxyResult(client, message, modify);
 
@@ -21,16 +18,26 @@ namespace PodiumdAdapter.Web
             return node;
         }
 
-        public static bool TryParsePagination(this JsonNode? node, out JsonArray result)
+        public static bool TryParsePagination(this JsonNode? node, [NotNullWhen(true)] out JsonArray result, out string? next)
         {
             if (node is not JsonObject obj || !obj.TryGetPropertyValue("results", out var r) || r is not JsonArray arr)
             {
                 result = null!;
+                next = default;
                 return false;
             }
+
             result = arr;
-            return true;
+
+            next = !obj.TryGetPropertyValue("next", out var nextProp) || nextProp is not JsonValue nextValue
+                ? null
+                : nextValue.ToString();
+
+            return result != null;
         }
+
+        public static bool TryParsePagination(this JsonNode? node, out JsonArray result)
+            => node.TryParsePagination(out result, out _);
     }
 
     public class ProxyResult(HttpClient client, Func<HttpRequestMessage> messageFactory, Func<JsonNode, Task>? modify = null) : IResult
