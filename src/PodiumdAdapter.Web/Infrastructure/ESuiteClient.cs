@@ -39,6 +39,10 @@ namespace PodiumdAdapter.Web.Infrastructure
                         },
                         new()
                         {
+                            ["X-Forwarded"] = "Off"
+                        },
+                        new()
+                        {
                             ["RequestHeader"] = "Authorization",
                             ["Set"] = "Bearer " + token
                         }

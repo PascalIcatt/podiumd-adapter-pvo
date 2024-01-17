@@ -33,13 +33,13 @@ namespace PodiumdAdapter.Web.Endpoints
                 {
                     if (item is not JsonObject o
                         || o.ContainsKey(ObjectcontactmomentenKey)
-                        || !o.TryGetPropertyValue("url", out var u)
-                        || u is not JsonValue v)
+                        || !o.TryGetPropertyValue("url", out var urlProperty)
+                        || urlProperty is not JsonValue urlValue)
                     {
                         return;
                     }
 
-                    var objectUrl = "objectcontactmomenten?contactmoment=" + v.ToString();
+                    var objectUrl = "objectcontactmomenten?contactmoment=" + urlValue.ToString();
                     var node = await client.JsonAsync(() => new HttpRequestMessage(HttpMethod.Get, objectUrl));
                     if (node.TryParsePagination(out var arr))
                     {
