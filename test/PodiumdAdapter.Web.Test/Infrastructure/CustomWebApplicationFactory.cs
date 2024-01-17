@@ -1,14 +1,11 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Generated.Esuite.ContactmomentenClient;
-using Generated.Esuite.KlantenClient;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using RichardSzalay.MockHttp;
 using Yarp.ReverseProxy.Forwarder;
 
 namespace PodiumdAdapter.Web.Test.Infrastructure
@@ -32,8 +29,6 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton<IForwarderHttpClientFactory>(new CustomForwarderHttpClientFactory(MockHttpMessageHandler));
-                services.AddSingleton<ContactmomentenClient>();
-                services.AddSingleton<KlantenClient>();
             });
 
             builder.ConfigureAppConfiguration((context, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>

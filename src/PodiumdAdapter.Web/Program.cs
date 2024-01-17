@@ -20,6 +20,7 @@ try
     // Add services to the container.
     builder.Host.UseSerilog(logger);
 
+    builder.Services.AddHttpContextAccessor();
     builder.Services.AddHealthChecks();
     builder.Services.AddReverseProxy();
     builder.Services.AddEsuiteClient(new ContactmomentenClientConfig());
@@ -36,6 +37,13 @@ try
     // Configure the HTTP request pipeline.
 
     app.UseSerilogRequestLogging();
+    app.Use((context, next) =>
+    {
+        var logger = context.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("hoi");
+        logger.LogInformation("headers: {Headers}", context.Request.Headers);
+        return next(context);
+    });
+    app.UseUrlRewriter();
 
     app.MapHealthChecks("/healthz").AllowAnonymous();
     app.MapEsuiteEndpoints();
