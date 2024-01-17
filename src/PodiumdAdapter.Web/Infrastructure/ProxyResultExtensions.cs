@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.IO.Pipelines;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace PodiumdAdapter.Web
@@ -49,12 +50,12 @@ namespace PodiumdAdapter.Web
                 if (item.Key.Equals("content-length", StringComparison.OrdinalIgnoreCase)) continue;
                 httpContext.Response.Headers[item.Key] = new(item.Value.ToArray());
             }
-            await using var str = await response.Content.ReadAsStreamAsync(token);
             if (!response.IsSuccessStatusCode || modify == null)
             {
-                await str.CopyToAsync(httpContext.Response.Body, token);
+                await response.Content.CopyToAsync(httpContext.Response.Body, token);
                 return;
             }
+            await using var str = await response.Content.ReadAsStreamAsync(token);
             var node = await JsonNode.ParseAsync(str, cancellationToken: token);
             if (node == null) return;
             try
