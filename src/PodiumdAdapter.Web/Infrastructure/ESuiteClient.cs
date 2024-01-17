@@ -39,7 +39,7 @@ namespace PodiumdAdapter.Web.Infrastructure
                         },
                         new()
                         {
-                            ["X-Forwarded"] = "Off"
+                            ["X-Forwarded"] = "Remove"
                         },
                         new()
                         {

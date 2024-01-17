@@ -37,12 +37,6 @@ try
     // Configure the HTTP request pipeline.
 
     app.UseSerilogRequestLogging();
-    app.Use((context, next) =>
-    {
-        var logger = context.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("hoi");
-        logger.LogInformation("headers: {Headers}", context.Request.Headers);
-        return next(context);
-    });
     app.UseUrlRewriter();
 
     app.MapHealthChecks("/healthz").AllowAnonymous();
