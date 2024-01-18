@@ -47,25 +47,11 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          env:
-            - name: ASPNETCORE_ENVIRONMENT
-              value: {{ .Values.env.ASPNETCORE_ENVIRONMENT | quote }}
-            # Referencing ConfigMap
-            {{- range $key, $value := .Values.env.config }}
-            - name: {{ $key }}
-              valueFrom:
-                configMapKeyRef:
-                  name: podiumd-adapter-config
-                  key: {{ $key }}
-            {{- end }}
-            # Referencing Secret
-            {{- range $key, $_ := .Values.env.secrets }}
-            - name: {{ $key }}
-              valueFrom:
-                secretKeyRef:
-                  name: podiumd-adapter-secrets
-                  key: {{ $key }}
-            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: podiumd-adapter-config
+            - secretRef:
+                name: podiumd-adapter-secrets
       imagePullSecrets:
       - name: regcred
       {{- with .Values.nodeSelector }}

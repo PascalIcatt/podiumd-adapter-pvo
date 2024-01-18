@@ -101,16 +101,6 @@ affinity:
               values:
                 - podiumd-adapter
         topologyKey: "kubernetes.io/hostname"
-
-env:
-  config:
-    ESUITE_CONTACTMOMENTEN_BASE_URL: ""
-    ESUITE_KLANTEN_BASE_URL: ""
-  secrets:
-    ESUITE_TOKEN: ""
-    CLIENTS__0__ID: ""
-    CLIENTS__0__SECRET: ""
-
 strategy:
   type: RollingUpdate
   rollingUpdate:
