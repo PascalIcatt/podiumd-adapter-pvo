@@ -8,6 +8,18 @@ namespace PodiumdAdapter.Web
         public static IResult ProxyResult(this HttpClient client, Func<HttpRequestMessage> message, Func<JsonNode, Task>? modify = null)
             => new ProxyResult(client, message, modify);
 
+        public static IResult ProxyResult(this HttpClient client, string url, Func<JsonNode, Task>? modify = null)
+            => client.ProxyResult(HttpMethod.Get, url, modify);
+
+        public static IResult ProxyResult(this HttpClient client, HttpMethod method, string url, Func<JsonNode, Task>? modify = null)
+            => client.ProxyResult(() => new(method, url), modify);
+
+        public static Task<JsonNode?> JsonAsync(this HttpClient client, string url)
+            => client.JsonAsync(HttpMethod.Get, url);
+
+        public static Task<JsonNode?> JsonAsync(this HttpClient client, HttpMethod method, string url)
+            => client.JsonAsync(() => new(method, url));
+
         public static async Task<JsonNode?> JsonAsync(this HttpClient client, Func<HttpRequestMessage> message)
         {
             using var request = message();
