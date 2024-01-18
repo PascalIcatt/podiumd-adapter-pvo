@@ -14,7 +14,7 @@ namespace PodiumdAdapter.Web.Endpoints
         {
             var client = getClient();
 
-            if (TryGetUbjectUrl(request, out var objectUrl))
+            if (TryGetObjectUrl(request, out var objectUrl))
             {
                 return await GetFilteredByObject(client, "objectcontactmomenten?object=" + objectUrl);
             }
@@ -29,7 +29,7 @@ namespace PodiumdAdapter.Web.Endpoints
             return client.ProxyResult(url);
         });
 
-        private static bool TryGetUbjectUrl(HttpRequest request, out string result)
+        private static bool TryGetObjectUrl(HttpRequest request, out string result)
         {
             if (request.Query.TryGetValue("object", out var objectQuery)
                 && objectQuery.FirstOrDefault() is string objectUrl
