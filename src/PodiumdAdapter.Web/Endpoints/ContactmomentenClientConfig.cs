@@ -99,13 +99,13 @@ namespace PodiumdAdapter.Web.Endpoints
                 if (item is not JsonObject o
                     || o.ContainsKey(ObjectcontactmomentenKey)
                     || !o.TryGetPropertyValue("url", out var urlProperty)
-                    || urlProperty is not JsonValue urlValue)
+                    || urlProperty is not JsonValue urlValue
+                    || urlValue.ToString() is not string u)
                 {
                     return;
                 }
 
-                var objectUrl = "objectcontactmomenten?contactmoment=" + urlValue.ToString();
-                var node = await client.JsonAsync(() => new HttpRequestMessage(Get, objectUrl));
+                var node = await client.JsonAsync("objectcontactmomenten?contactmoment=" + u);
                 if (node.TryParsePagination(out var arr))
                 {
                     item[ObjectcontactmomentenKey] = arr.DeepClone();

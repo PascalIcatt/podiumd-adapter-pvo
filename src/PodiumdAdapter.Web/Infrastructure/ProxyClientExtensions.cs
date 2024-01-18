@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 
 namespace PodiumdAdapter.Web
 {
-    public static class ProxyResultExtensions
+    public static class ProxyClientExtensions
     {
         public static IResult ProxyResult(this HttpClient client, Func<HttpRequestMessage> message, Func<JsonNode, Task>? modify = null)
             => new ProxyResult(client, message, modify);
