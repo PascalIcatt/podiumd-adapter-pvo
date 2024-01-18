@@ -4,7 +4,7 @@ ingress:
   enabled: true
   className: "nginx"
   hosts:
-    - host: podiumd-adapter.accept.kiss-demo.nl
+    - host: www.my-website.nl
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -12,6 +12,6 @@ ingress:
           servicePort: 8080
   tls:
     - hosts:
-        - podiumd-adapter.accept.kiss-demo.nl
+        - www.my-website.nl
       secretName: wildcard-kiss-tls
 cronjobs: []
