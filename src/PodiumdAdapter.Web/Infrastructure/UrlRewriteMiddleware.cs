@@ -37,7 +37,7 @@ namespace PodiumdAdapter.Web.Infrastructure
             if (context?.Request == null) return [];
 
             var config = context.RequestServices.GetRequiredService<IConfiguration>();
-            var clients = context.RequestServices.GetServices<IEsuiteClientConfig>();
+            var clients = context.RequestServices.GetServices<IESuiteClientConfig>();
 
             return s_cache.GetOrAdd(context.Request.Host.Host, (host, tup) =>
             {
