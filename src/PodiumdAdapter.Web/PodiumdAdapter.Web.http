@@ -5,7 +5,7 @@
 @ZtcRoot = {{PodiumdAdapter.Web_HostAddress}}/catalogi/api/v1
 
 
-GET {{ContactmomentenRoot}}/contactmomenten?expand=objectcontactmomenten&expand=klantcontactmomenten&klant={{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
+GET {{ContactmomentenRoot}}/contactmomenten?expand=objectcontactmomenten&klant={{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
 Accept: application/json
 
 ###
