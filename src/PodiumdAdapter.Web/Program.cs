@@ -1,6 +1,7 @@
 ﻿using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Endpoints;
 using PodiumdAdapter.Web.Infrastructure;
+using PodiumdAdapter.Web.Infrastructure.UrlRewriter;
 using Serilog;
 using Serilog.Events;
 
@@ -41,7 +42,7 @@ try
 
     app.MapHealthChecks("/healthz").AllowAnonymous();
     app.MapEsuiteEndpoints();
-    app.MapReverseProxy();
+    app.MapReverseProxy(x => x.UseUrlRewriter());
 
     app.Run();
 }

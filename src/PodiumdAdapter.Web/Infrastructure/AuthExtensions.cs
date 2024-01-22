@@ -35,7 +35,7 @@ namespace PodiumdAdapter.Web.Auth
                 .Select(x => new SymmetricSecurityKey(x))
                 .FirstOrDefault();
 
-            yield return result ?? throw new Exception();
+            yield return result ?? throw new Exception("Geen security key gevonden");
         }
 
         private static IEnumerable<ClientCredential> GetCredentials(IConfiguration configuration)
