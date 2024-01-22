@@ -3,30 +3,32 @@ using System.Text.Json.Nodes;
 
 namespace PodiumdAdapter.Web
 {
+    public delegate Task Modify(JsonNode node, CancellationToken token = default);
+
     public static class ProxyClientExtensions
     {
-        public static IResult ProxyResult(this HttpClient client, Func<HttpRequestMessage> message, Func<JsonNode, Task>? modify = null)
+        public static IResult ProxyResult(this HttpClient client, Func<HttpRequestMessage> message, Modify? modify = null)
             => new ProxyResult(client, message, modify);
 
-        public static IResult ProxyResult(this HttpClient client, string url, Func<JsonNode, Task>? modify = null)
+        public static IResult ProxyResult(this HttpClient client, string url, Modify? modify = null)
             => client.ProxyResult(HttpMethod.Get, url, modify);
 
-        public static IResult ProxyResult(this HttpClient client, HttpMethod method, string url, Func<JsonNode, Task>? modify = null)
+        public static IResult ProxyResult(this HttpClient client, HttpMethod method, string url, Modify? modify = null)
             => client.ProxyResult(() => new(method, url), modify);
 
-        public static Task<JsonNode?> JsonAsync(this HttpClient client, string url)
-            => client.JsonAsync(HttpMethod.Get, url);
+        public static Task<JsonNode?> JsonAsync(this HttpClient client, string url, CancellationToken token)
+            => client.JsonAsync(HttpMethod.Get, url, token);
 
-        public static Task<JsonNode?> JsonAsync(this HttpClient client, HttpMethod method, string url)
-            => client.JsonAsync(() => new(method, url));
+        public static Task<JsonNode?> JsonAsync(this HttpClient client, HttpMethod method, string url, CancellationToken token)
+            => client.JsonAsync(() => new(method, url), token);
 
-        public static async Task<JsonNode?> JsonAsync(this HttpClient client, Func<HttpRequestMessage> message)
+        public static async Task<JsonNode?> JsonAsync(this HttpClient client, Func<HttpRequestMessage> message, CancellationToken token)
         {
             using var request = message();
-            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
             if (!response.IsSuccessStatusCode) return null;
-            await using var stream = await response.Content.ReadAsStreamAsync();
-            var node = await JsonNode.ParseAsync(stream);
+            await using var stream = await response.Content.ReadAsStreamAsync(token);
+            var node = await JsonNode.ParseAsync(stream, cancellationToken: token);
             return node;
         }
 
@@ -52,7 +54,7 @@ namespace PodiumdAdapter.Web
             => node.TryParsePagination(out result, out _);
     }
 
-    public class ProxyResult(HttpClient client, Func<HttpRequestMessage> messageFactory, Func<JsonNode, Task>? modify = null) : IResult
+    public class ProxyResult(HttpClient client, Func<HttpRequestMessage> messageFactory, Modify? modify = null) : IResult
     {
         public async Task ExecuteAsync(HttpContext httpContext)
         {
@@ -79,7 +81,7 @@ namespace PodiumdAdapter.Web
             if (node == null) return;
             try
             {
-                await modify(node);
+                await modify(node, token);
             }
             catch (Exception)
             {

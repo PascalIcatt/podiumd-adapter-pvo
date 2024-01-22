@@ -2,7 +2,7 @@
 
 namespace PodiumdAdapter.Web.Endpoints
 {
-    public class ZrcClientConfig : IEsuiteClientConfig
+    public class ZaakZrcClientConfig : IESuiteClientConfig
     {
         public string ProxyBaseUrlConfigKey => "ESUITE_ZRC_BASE_URL";
 

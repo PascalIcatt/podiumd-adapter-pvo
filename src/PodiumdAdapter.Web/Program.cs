@@ -23,10 +23,10 @@ try
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddHealthChecks();
     builder.Services.AddReverseProxy();
-    builder.Services.AddEsuiteClient(new ContactmomentenClientConfig());
-    builder.Services.AddEsuiteClient(new KlantenClientConfig());
-    builder.Services.AddEsuiteClient(new ZrcClientConfig());
-    builder.Services.AddEsuiteClient(new ZtcClientConfig());
+    builder.Services.AddESuiteClient(new ContactmomentenClientConfig());
+    builder.Services.AddESuiteClient(new KlantenClientConfig());
+    builder.Services.AddESuiteClient(new ZaakZrcClientConfig());
+    builder.Services.AddESuiteClient(new CatalogusZtcClientConfig());
 
     if (!builder.Environment.IsDevelopment())
     {

@@ -2,7 +2,7 @@
 
 namespace PodiumdAdapter.Web.Endpoints
 {
-    public class KlantenClientConfig : IEsuiteClientConfig
+    public class KlantenClientConfig : IESuiteClientConfig
     {
         public string ProxyBaseUrlConfigKey => "ESUITE_KLANTEN_BASE_URL";
 

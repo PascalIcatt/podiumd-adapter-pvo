@@ -7,7 +7,7 @@ namespace PodiumdAdapter.Web.Infrastructure
 {
     public static class ESuiteClientExtensions
     {
-        public static void AddEsuiteClient<T>(this IServiceCollection services, T clientConfig) where T : IEsuiteClientConfig
+        public static void AddESuiteClient<T>(this IServiceCollection services, T clientConfig) where T : IESuiteClientConfig
         {
             var clientName = typeof(T).Name;
             var trimmed = clientConfig.RootUrl.Trim('/');
@@ -15,7 +15,7 @@ namespace PodiumdAdapter.Web.Infrastructure
             services.TryAddSingleton<IProxyConfigProvider, SimpleProxyProvider>();
             services.TryAddSingleton<IProxyConfig, SimpleProxyConfig>();
 
-            services.AddSingleton<IEsuiteClientConfig>(clientConfig);
+            services.AddSingleton<IESuiteClientConfig>(clientConfig);
 
             services.AddSingleton(s =>
             {
@@ -78,7 +78,7 @@ namespace PodiumdAdapter.Web.Infrastructure
 
         public static void MapEsuiteEndpoints(this IEndpointRouteBuilder builder)
         {
-            foreach (var item in builder.ServiceProvider.GetServices<IEsuiteClientConfig>())
+            foreach (var item in builder.ServiceProvider.GetServices<IESuiteClientConfig>())
             {
                 var clientName = item.GetType().Name;
                 var getClient = () => builder.ServiceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(clientName);
@@ -111,7 +111,7 @@ namespace PodiumdAdapter.Web.Infrastructure
         }
     }
 
-    public interface IEsuiteClientConfig
+    public interface IESuiteClientConfig
     {
         string ProxyBaseUrlConfigKey { get; }
         string RootUrl { get; }

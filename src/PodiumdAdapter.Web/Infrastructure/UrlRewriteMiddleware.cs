@@ -14,7 +14,7 @@ namespace PodiumdAdapter.Web.Infrastructure
             {
                 var accessor = context.RequestServices.GetRequiredService<IHttpContextAccessor>();
                 var config = context.RequestServices.GetRequiredService<IConfiguration>();
-                var clients = context.RequestServices.GetServices<IEsuiteClientConfig>();
+                var clients = context.RequestServices.GetServices<IESuiteClientConfig>();
                 var wrapped = new UrlRewriteFeature(inner, accessor, config, clients);
                 context.Features.Set<IHttpResponseBodyFeature>(wrapped);
             }
@@ -37,7 +37,7 @@ namespace PodiumdAdapter.Web.Infrastructure
         public override Span<byte> GetSpan(int sizeHint = 0) => inner.GetSpan(sizeHint);
     }
 
-    public class UrlPipeRewriter(PipeWriter inner, IHttpContextAccessor httpContextAccessor, IConfiguration config, IEnumerable<IEsuiteClientConfig> clients) : DelegatingPipewriter(inner)
+    public class UrlPipeRewriter(PipeWriter inner, IHttpContextAccessor httpContextAccessor, IConfiguration config, IEnumerable<IESuiteClientConfig> clients) : DelegatingPipewriter(inner)
     {
         private static readonly ConcurrentDictionary<string, IReadOnlyCollection<(byte[], byte[])>> s_cache = new();
 
@@ -111,7 +111,7 @@ namespace PodiumdAdapter.Web.Infrastructure
     {
         private readonly IHttpResponseBodyFeature _inner;
 
-        public UrlRewriteFeature(IHttpResponseBodyFeature inner, IHttpContextAccessor httpContextAccessor, IConfiguration config, IEnumerable<IEsuiteClientConfig> clients)
+        public UrlRewriteFeature(IHttpResponseBodyFeature inner, IHttpContextAccessor httpContextAccessor, IConfiguration config, IEnumerable<IESuiteClientConfig> clients)
         {
             _inner = inner;
             Writer = new UrlPipeRewriter(inner.Writer, httpContextAccessor, config, clients);
