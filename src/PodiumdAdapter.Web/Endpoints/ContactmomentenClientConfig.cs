@@ -6,6 +6,8 @@ namespace PodiumdAdapter.Web.Endpoints
 {
     public class ContactmomentenClientConfig : IESuiteClientConfig
     {
+        const string ObjectcontactmomentenKey = "objectcontactmomenten";
+
         public string ProxyBaseUrlConfigKey => "ESUITE_CONTACTMOMENTEN_BASE_URL";
 
         public string RootUrl => "/contactmomenten/api/v1";
@@ -93,7 +95,7 @@ namespace PodiumdAdapter.Web.Endpoints
         }
         private static bool ShouldIncludeObjectContactmomenten(HttpRequest request) =>
             request.Query.TryGetValue("expand", out var expand)
-            && expand.Contains("objectcontactmomenten");
+            && expand.Contains(ObjectcontactmomentenKey);
 
         private static IResult GetContactmomentenWithObjectContactmomenten(HttpClient client, string url) => client.ProxyResult(url, async (json, token) =>
         {
@@ -102,7 +104,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 return;
             }
 
-            const string ObjectcontactmomentenKey = "objectcontactmomenten";
+            
 
             var tasks = arr.Select(async (item) =>
             {
