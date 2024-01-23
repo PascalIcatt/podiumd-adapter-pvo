@@ -1,8 +1,5 @@
-﻿using System.Buffers;
-using System.IO.Pipelines;
-using System.Reflection.PortableExecutable;
+﻿using System.IO.Pipelines;
 using System.Text;
-using System.Threading;
 using PodiumdAdapter.Web.Infrastructure.UrlRewriter;
 
 namespace PodiumdAdapter.Web.Test
@@ -13,14 +10,14 @@ namespace PodiumdAdapter.Web.Test
         public async Task BasicTest()
         {
             var (read, write) = CreatePipe("local", "local", "remote", "remote");
-            
+
             await write("blalocallocalbla");
-            
+
             var output = await read();
             Assert.Equal("blaremoteremotebla", output);
         }
 
-        private static (Func<Task<string>> Read, Func<string,Task> Write) CreatePipe(string localRoot, string localPath, string remoteRoot, string remotePath)
+        private static (Func<Task<string>> Read, Func<string, Task> Write) CreatePipe(string localRoot, string localPath, string remoteRoot, string remotePath)
         {
             var pipe = new Pipe();
             var writer = pipe.Writer;

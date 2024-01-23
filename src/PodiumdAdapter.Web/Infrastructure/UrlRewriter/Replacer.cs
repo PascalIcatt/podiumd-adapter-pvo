@@ -3,7 +3,7 @@ using System.Text;
 
 namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 {
-    public class ReplacerList: IReadOnlyCollection<Replacer>
+    public class ReplacerList : IReadOnlyCollection<Replacer>
     {
         private readonly IReadOnlyCollection<Replacer> _replacers;
 
@@ -35,7 +35,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
     }
 
     public record Replacer
-    { 
+    {
         public Replacer(string localUrl, string remoteUrl)
         {
             RemoteFullString = remoteUrl;

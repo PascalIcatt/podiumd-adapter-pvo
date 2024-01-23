@@ -10,9 +10,9 @@ namespace PodiumdAdapter.Web.Test
         public async Task BasicTest()
         {
             var (read, write) = CreatePipe("local", "local", "remote", "remote");
-            
+
             await write("blaremoteremotebla");
-            
+
             var output = await read();
             Assert.Equal("blalocallocalbla", output);
         }
