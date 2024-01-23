@@ -18,7 +18,7 @@ namespace PodiumdAdapter.Web.Auth
                         ValidIssuers = GetCredentials(configuration).Select(x => x.ID),
                         ValidateAudience = false,
                         ValidateLifetime = true,
-                        LifetimeValidator = (notBefore, expires, securityToken, validationParameters) => 
+                        LifetimeValidator = (notBefore, expires, securityToken, validationParameters) =>
                             expires.HasValue && expires - DateTime.Now < TimeSpan.FromHours(1),
                         ClockSkew = TimeSpan.FromMinutes(1),
                     };

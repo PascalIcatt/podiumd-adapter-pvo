@@ -104,7 +104,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 return;
             }
 
-            
+
 
             var tasks = arr.Select(async (item) =>
             {

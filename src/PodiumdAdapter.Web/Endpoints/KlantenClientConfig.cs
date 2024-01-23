@@ -14,9 +14,9 @@ namespace PodiumdAdapter.Web.Endpoints
             clientRoot.MapGet("/klanten/{id:guid}", (Guid id) =>
             {
                 var client = getClient();
-                HttpRequestMessage CreateRequest() => new (HttpMethod.Patch, "klanten/" + id) 
-                { 
-                    Content = JsonContent.Create(new { }) 
+                HttpRequestMessage CreateRequest() => new(HttpMethod.Patch, "klanten/" + id)
+                {
+                    Content = JsonContent.Create(new { })
                 };
                 return client.ProxyResult(CreateRequest);
             });
