@@ -19,7 +19,7 @@ namespace PodiumdAdapter.Web.Endpoints
             // in OpenKlant zit een uitbreiding op de contacmomenten standaard.
             // Je kan contactmomenten daarin filteren op objectUrl (in de praktijk is dat de url van de zaak die erbij hoort).
             // dit zit niet in de standaard. Mogelijk wordt dit nog wel in de API van de eSuite geimplementeerd. Dan kan onderstaande code eruit.
-            if (TryGetObjectUrlFromQuery(request, out var objectUrl))
+            if (TryGetObjectUrlFromQuery(request.Query, out var objectUrl))
             {
                 return await GetContactmomentenFilteredByObjectUrl(client, objectUrl, token);
             }
@@ -38,9 +38,9 @@ namespace PodiumdAdapter.Web.Endpoints
             return client.ProxyResult(url);
         });
 
-        private static bool TryGetObjectUrlFromQuery(HttpRequest request, out string result)
+        private static bool TryGetObjectUrlFromQuery(IQueryCollection query, out string result)
         {
-            if (request.Query.TryGetValue("object", out var objectQuery)
+            if (query.TryGetValue("object", out var objectQuery)
                 && objectQuery.FirstOrDefault() is string objectUrl
                 && !string.IsNullOrWhiteSpace(objectUrl))
             {
