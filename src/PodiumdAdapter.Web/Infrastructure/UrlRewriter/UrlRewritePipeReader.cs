@@ -5,17 +5,17 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 {
     public class UrlRewritePipeReader(PipeReader reader, ReplacerList replacers) : DelegatingPipeReader(reader)
     {
-        private ReadOnlySequence<byte> _buffer = new();
         private ReadOnlySequence<byte> _previousResult = default;
-        private ReadOnlySequence<byte> _next = default;
+        private ReadOnlySequence<byte> _nextResult = new();
+        private ReadOnlySequence<byte> _secondResult = default;
 
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            if (!_buffer.IsEmpty)
+            if (!_nextResult.IsEmpty)
             {
-                var result = new ReadResult(_buffer, false, _next.IsEmpty);
-                _buffer = _next;
-                _next = new();
+                var result = new ReadResult(_nextResult, false, _secondResult.IsEmpty);
+                _nextResult = _secondResult;
+                _secondResult = new();
                 return new(result);
             }
 
@@ -36,38 +36,18 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            if (!_buffer.IsEmpty)
-            {
-                return;
-            }
-
-            if (_previousResult.IsEmpty)
+            if (!TryAdvancePrevious())
             {
                 base.AdvanceTo(consumed, examined);
-                return;
             }
-
-            base.AdvanceTo(_previousResult.Start, _previousResult.End);
-            _previousResult = new();
-            return;
         }
 
         public override void AdvanceTo(SequencePosition consumed)
         {
-            if (!_buffer.IsEmpty)
-            {
-                return;
-            }
-
-            if (_previousResult.IsEmpty)
+            if (!TryAdvancePrevious())
             {
                 base.AdvanceTo(consumed);
-                return;
             }
-
-            base.AdvanceTo(_previousResult.Start, _previousResult.End);
-            _previousResult = new();
-            return;
         }
 
         private bool TryRead(ReadResult readResult, out ReadOnlySequence<byte> sub, out bool isComplete)
@@ -89,14 +69,31 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
                 {
                     reader.Advance(slice.Length);
                     isComplete = false;
-                    _buffer = new(item.RemoteFullBytes);
+                    _nextResult = new(item.RemoteFullBytes);
                     _previousResult = readResult.Buffer;
-                    _next = reader.UnreadSequence;
+                    _secondResult = reader.UnreadSequence;
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private bool TryAdvancePrevious()
+        {
+            if (!_nextResult.IsEmpty)
+            {
+                return true;
+            }
+
+            if (_previousResult.IsEmpty)
+            {
+                return false;
+            }
+
+            base.AdvanceTo(_previousResult.Start, _previousResult.End);
+            _previousResult = new();
+            return true;
         }
     }
 }
