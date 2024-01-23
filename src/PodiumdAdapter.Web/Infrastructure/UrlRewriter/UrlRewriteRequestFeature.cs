@@ -1,7 +1,6 @@
 ﻿using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Primitives;
 
 namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 {
@@ -16,9 +15,15 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 
         public string QueryString { get; set; } = ReplaceString(inner.QueryString, replacers);
 
-        public IHeaderDictionary Headers { get; set; } = new HeaderDictionary(new Dictionary<string, StringValues>(inner.Headers.Where(x => !x.Key.Equals("content-length", StringComparison.OrdinalIgnoreCase)), StringComparer.OrdinalIgnoreCase));
+        public IHeaderDictionary Headers { get; set; } = Remove(inner.Headers, "content-length");
 
         public Stream Body { get; set; } = new UrlRewritePipeReader(PipeReader.Create(inner.Body), replacers).AsStream();
+
+        private static IHeaderDictionary Remove(IHeaderDictionary headers, string key)
+        {
+            headers.Remove(key);
+            return headers;
+        }
 
         private static string ReplaceString(string input, ReplacerList replacers)
         {
