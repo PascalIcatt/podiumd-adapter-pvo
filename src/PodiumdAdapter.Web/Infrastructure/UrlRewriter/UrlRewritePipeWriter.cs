@@ -1,42 +1,80 @@
-﻿using System.IO.Pipelines;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO.Pipelines;
 
 namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 {
-    public class UrlRewritePipeWriter(PipeWriter inner, IReadOnlyCollection<Replacer> replacers) : DelegatingPipeWriter(inner)
+    public sealed class UrlRewritePipeWriter(PipeWriter inner, IReadOnlyCollection<Replacer> replacers) : DelegatingPipeWriter(inner)
     {
-        public override async ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        public override ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
-            if (replacers.Count == 0)
+            var sourceSpan = source.Span;
+
+            if (replacers.Count == 0 || !TryGetTargetSize(replacers, sourceSpan, out var targetSize))
             {
-                return await base.WriteAsync(source, cancellationToken);
+                return base.WriteAsync(source, cancellationToken);
             }
 
-            IEnumerable<(int Index, Replacer Replacer)> GetIndices()
-            {
-                foreach (var replacer in replacers ?? [])
-                {
-                    var from = replacer.RemoteBytes.Span;
-                    var index = source.Span.IndexOf(from);
-                    if (index != -1) yield return (index, replacer);
-                }
-            }
+            var targetSpan = GetSpan(targetSize);
 
-            while (GetIndices().OrderBy(x => x.Index).FirstOrDefault() is { Replacer: var replacer, Index: var index }
-                && replacer != null && index != -1)
+            while (TryGetNext(replacers, sourceSpan, out var index, out var replacer))
             {
                 if (index > 0)
                 {
-                    var result = await base.WriteAsync(source[..index], cancellationToken);
-                    if (result.IsCanceled) return result;
+                    targetSpan = CopyAndAdvance(sourceSpan[..index], targetSpan);
                 }
                 var from = replacer.RemoteBytes;
                 var to = replacer.LocalBytes;
-                await base.WriteAsync(to, cancellationToken);
+                targetSpan = CopyAndAdvance(to.Span, targetSpan);
                 var next = index + from.Length;
-                source = source[next..];
+                sourceSpan = sourceSpan[next..];
             }
 
-            return await base.WriteAsync(source, cancellationToken);
+            sourceSpan.CopyTo(targetSpan);
+
+            Advance(targetSize);
+
+            return FlushAsync(cancellationToken);
+        }
+
+        static bool TryGetTargetSize(IReadOnlyCollection<Replacer> replacers, ReadOnlySpan<byte> source, out int size)
+        {
+            size = source.Length;
+            var result = false;
+            foreach (var replacer in replacers ?? [])
+            {
+                var from = replacer.RemoteBytes.Span;
+                var to = replacer.LocalBytes.Span;
+                var diff = to.Length - from.Length;
+                var count = source.Count(from);
+                result = result || count > 0;
+                size += (diff * count);
+            }
+            return result;
+        }
+
+        static bool TryGetNext(IReadOnlyCollection<Replacer> replacers, ReadOnlySpan<byte> source, out int index, [NotNullWhen(true)] out Replacer? replacer)
+        {
+            index = int.MaxValue;
+            replacer = null;
+
+            foreach (var r in replacers ?? [])
+            {
+                var from = r.RemoteBytes.Span;
+                var i = source.IndexOf(from);
+                if (i != -1 && i <= index)
+                {
+                    index = i;
+                    replacer = r;
+                }
+            }
+
+            return replacer != null;
+        }
+
+        static Span<byte> CopyAndAdvance(ReadOnlySpan<byte> from, Span<byte> to)
+        {
+            from.CopyTo(to);
+            return to.Slice(from.Length);
         }
     }
 }
