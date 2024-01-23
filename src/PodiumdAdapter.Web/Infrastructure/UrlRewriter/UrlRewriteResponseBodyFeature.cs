@@ -7,7 +7,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
     {
         private readonly IHttpResponseBodyFeature _inner;
 
-        public UrlRewriteResponseBodyFeature(IHttpResponseBodyFeature inner, IReadOnlyCollection<Replacer> replacers)
+        public UrlRewriteResponseBodyFeature(IHttpResponseBodyFeature inner, ReplacerList replacers)
         {
             _inner = inner;
             Writer = new UrlRewritePipeWriter(inner.Writer, replacers);

@@ -4,7 +4,7 @@ namespace PodiumdAdapter.Web.Endpoints
 {
     public class CatalogusZtcClientConfig : IESuiteClientConfig
     {
-        public string ProxyBaseUrlConfigKey => "ESUITE_ZTC_BASE_URL";
+        public string ProxyBasePath => "/zgw-apis-provider/ztc/api/v1";
 
         public string RootUrl => "/catalogi/api/v1";
 

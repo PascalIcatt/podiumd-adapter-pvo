@@ -17,10 +17,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
 
         public readonly MockHttpMessageHandler MockHttpMessageHandler = new();
 
-        public readonly string ESUITE_CONTACTMOMENTEN_BASE_URL = "https://localhost:12345/contactmomenten";
-        public readonly string ESUITE_KLANTEN_BASE_URL = "https://localhost:12345/klanten";
-        public readonly string ESUITE_ZTC_BASE_URL = "https://localhost:12345/ztc";
-        public readonly string ESUITE_ZRC_BASE_URL = "https://localhost:12345/zrc";
+        public readonly string ESUITE_BASE_URL = "https://localhost:12345";
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -35,10 +32,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             {
                 ["CLIENTS:0:ID"] = _clientId,
                 ["CLIENTS:0:SECRET"] = _clientSecret,
-                ["ESUITE_CONTACTMOMENTEN_BASE_URL"] = ESUITE_CONTACTMOMENTEN_BASE_URL,
-                ["ESUITE_KLANTEN_BASE_URL"] = ESUITE_KLANTEN_BASE_URL,
-                ["ESUITE_ZTC_BASE_URL"] = ESUITE_ZTC_BASE_URL,
-                ["ESUITE_ZRC_BASE_URL"] = ESUITE_ZRC_BASE_URL,
+                ["ESUITE_BASE_URL"] = ESUITE_BASE_URL,
                 ["ESUITE_TOKEN"] = "FAKE_TOKEN",
             }));
         }

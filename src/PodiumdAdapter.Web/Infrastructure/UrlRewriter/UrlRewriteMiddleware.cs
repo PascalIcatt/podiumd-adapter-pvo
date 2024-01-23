@@ -1,21 +1,20 @@
 ﻿using System.Collections.Concurrent;
-using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 {
     public static class UrlRewriteExtensions
     {
-        private static readonly ConcurrentDictionary<string, IReadOnlyCollection<Replacer>> s_cache = new();
+        private static readonly ConcurrentDictionary<string, ReplacerList> s_cache = new();
 
         public static void UseUrlRewriter(this IApplicationBuilder applicationBuilder) => applicationBuilder.Use((context, next) =>
         {
-            var replacers = GetReplacers(context);
+            var replacerList = GetReplacers(context);
 
-            if (replacers.Count != 0)
+            if (replacerList != null)
             {
-                context.WrapFeature<IHttpResponseBodyFeature>(x => new UrlRewriteResponseBodyFeature(x, replacers));
-                context.WrapFeature<IHttpRequestFeature>(x => new UrlRewriteRequestFeature(x, replacers));
+                context.WrapFeature<IHttpResponseBodyFeature>(x => new UrlRewriteResponseBodyFeature(x, replacerList));
+                context.WrapFeature<IHttpRequestFeature>(x => new UrlRewriteRequestFeature(x, replacerList));
             }
 
             return next(context);
@@ -31,11 +30,14 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             return true;
         }
 
-        private static IReadOnlyCollection<Replacer> GetReplacers(HttpContext context)
+        private static ReplacerList? GetReplacers(HttpContext context)
         {
-            if (context?.Request == null) return [];
+            if (context?.Request == null) return null;
 
             var config = context.RequestServices.GetRequiredService<IConfiguration>();
+            var proxyRootstring = config["ESUITE_BASE_URL"];
+            if (proxyRootstring == null) return null;
+
             var clients = context.RequestServices.GetServices<IESuiteClientConfig>();
 
             return s_cache.GetOrAdd(context.Request.Host.Host, (host, tup) =>
@@ -49,22 +51,21 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
                     Scheme = request.Scheme,
                 };
 
+                var proxyUrl = new UriBuilder(proxyRootstring);
+
+                var localRootString = request.ToString()!;
+
                 var replacers = new List<Replacer>();
 
                 foreach (var item in clients)
                 {
-                    var targetUrl = config[item.ProxyBaseUrlConfigKey];
-                    if (targetUrl == null) continue;
+                    proxyUrl!.Path = item.ProxyBasePath;
                     requestUrl.Path = item.RootUrl;
-                    var sourceUrl = requestUrl.ToString();
-                    var targetBytes = Encoding.UTF8.GetBytes(targetUrl);
-                    var sourceBytes = Encoding.UTF8.GetBytes(sourceUrl);
-                    replacers.Add(new(targetBytes, sourceBytes, targetUrl, sourceUrl));
+                    replacers.Add(new(requestUrl.ToString(), proxyUrl.ToString()));
                 }
 
-                return replacers;
+                return new(localRootString, proxyRootstring, replacers);
             }, (clients, config, context.Request));
         }
     }
-    public record Replacer(ReadOnlyMemory<byte> RemoteBytes, ReadOnlyMemory<byte> LocalBytes, string RemoteString, string LocalString);
 }

@@ -1,28 +1,31 @@
-﻿using System.IO.Pipelines;
+﻿using System.Buffers;
+using System.IO.Pipelines;
+using System.Reflection.PortableExecutable;
 using System.Text;
+using System.Threading;
 using PodiumdAdapter.Web.Infrastructure.UrlRewriter;
 
 namespace PodiumdAdapter.Web.Test
 {
-    public class UrlRewritePipeWriterTest
+    public class UrlRewritePipeReaderTest
     {
         [Fact]
         public async Task BasicTest()
         {
             var (read, write) = CreatePipe("local", "local", "remote", "remote");
             
-            await write("blaremoteremotebla");
+            await write("blalocallocalbla");
             
             var output = await read();
-            Assert.Equal("blalocallocalbla", output);
+            Assert.Equal("blaremoteremotebla", output);
         }
 
-        private static (Func<Task<string>> Read, Func<string, Task> Write) CreatePipe(string localRoot, string localPath, string remoteRoot, string remotePath)
+        private static (Func<Task<string>> Read, Func<string,Task> Write) CreatePipe(string localRoot, string localPath, string remoteRoot, string remotePath)
         {
             var pipe = new Pipe();
-            var reader = pipe.Reader;
+            var writer = pipe.Writer;
             var replacer = new Replacer(localRoot + localPath, remoteRoot + remotePath);
-            var writer = new UrlRewritePipeWriter(pipe.Writer, new(localRoot, remoteRoot, [replacer]));
+            var reader = new UrlRewritePipeReader(pipe.Reader, new(localRoot, remoteRoot, [replacer]));
             return (() => ReadToEnd(reader), (s) => WriteToEnd(writer, s));
         }
 

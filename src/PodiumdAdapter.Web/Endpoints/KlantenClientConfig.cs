@@ -4,7 +4,7 @@ namespace PodiumdAdapter.Web.Endpoints
 {
     public class KlantenClientConfig : IESuiteClientConfig
     {
-        public string ProxyBaseUrlConfigKey => "ESUITE_KLANTEN_BASE_URL";
+        public string ProxyBasePath => "/klanten-api-provider/api/v1";
 
         public string RootUrl => "/klanten/api/v1";
 

@@ -10,7 +10,8 @@ namespace PodiumdAdapter.Web.Infrastructure
         public static void AddESuiteClient<T>(this IServiceCollection services, T clientConfig) where T : IESuiteClientConfig
         {
             var clientName = typeof(T).Name;
-            var trimmed = clientConfig.RootUrl.Trim('/');
+            var trimmedRootUrl = clientConfig.RootUrl.Trim('/');
+            var remotePath = $"/{clientConfig.ProxyBasePath.AsSpan().Trim('/')}/";
 
             services.TryAddSingleton<IProxyConfigProvider, SimpleProxyProvider>();
             services.TryAddSingleton<IProxyConfig, SimpleProxyConfig>();
@@ -20,18 +21,19 @@ namespace PodiumdAdapter.Web.Infrastructure
             services.AddSingleton(s =>
             {
                 var config = s.GetRequiredService<IConfiguration>();
+
                 var token = config["ESUITE_TOKEN"];
 
                 return new RouteConfig
                 {
                     RouteId = clientName,
                     ClusterId = clientName,
-                    Match = new RouteMatch { Path = $"/{trimmed}/{{*any}}" },
+                    Match = new RouteMatch { Path = $"/{trimmedRootUrl}/{{*any}}" },
                     Transforms = new Dictionary<string, string>[]
                     {
                         new()
                         {
-                            ["PathRemovePrefix"] = $"/{trimmed}"
+                            ["PathRemovePrefix"] = $"/{trimmedRootUrl}"
                         },
                         new()
                         {
@@ -53,7 +55,9 @@ namespace PodiumdAdapter.Web.Infrastructure
             services.AddSingleton(s =>
             {
                 var config = s.GetRequiredService<IConfiguration>();
-                var baseUrl = config[clientConfig.ProxyBaseUrlConfigKey] ?? throw new Exception("No base uri found for key " + clientConfig.ProxyBaseUrlConfigKey);
+                var baseUrl = config["ESUITE_BASE_URL"];
+                var baseUri = baseUrl == null ? null : new UriBuilder(baseUrl) { Path = remotePath }.ToString();
+
                 return new ClusterConfig
                 {
                     ClusterId = clientName,
@@ -61,7 +65,7 @@ namespace PodiumdAdapter.Web.Infrastructure
                     {
                         [clientName] = new DestinationConfig
                         {
-                            Address = baseUrl
+                            Address = baseUri
                         }
                     },
                 };
@@ -70,8 +74,8 @@ namespace PodiumdAdapter.Web.Infrastructure
             services.AddHttpClient(clientName, (s, x) =>
             {
                 var config = s.GetRequiredService<IConfiguration>();
-                var baseUrl = config[clientConfig.ProxyBaseUrlConfigKey] ?? throw new Exception("No base uri found for key " + clientConfig.ProxyBaseUrlConfigKey);
-                x.BaseAddress = new Uri(baseUrl.TrimEnd('/') + '/');
+                var baseUrl = new UriBuilder(config["ESUITE_BASE_URL"]) { Path = remotePath };
+                x.BaseAddress = baseUrl.Uri;
                 x.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", config["ESUITE_TOKEN"] ?? throw new Exception("No token found for key ESUITE_TOKEN"));
             });
         }
@@ -113,7 +117,7 @@ namespace PodiumdAdapter.Web.Infrastructure
 
     public interface IESuiteClientConfig
     {
-        string ProxyBaseUrlConfigKey { get; }
+        string ProxyBasePath { get; }
         string RootUrl { get; }
         void MapCustomEndpoints(IEndpointRouteBuilder clientRoot, Func<HttpClient> getClient);
     }

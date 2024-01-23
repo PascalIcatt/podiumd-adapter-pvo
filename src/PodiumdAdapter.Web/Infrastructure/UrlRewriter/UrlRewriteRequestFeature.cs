@@ -1,10 +1,11 @@
-﻿using System.Text;
+﻿using System.IO.Pipelines;
+using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 
 namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 {
-    public class UrlRewriteRequestFeature(IHttpRequestFeature inner, IReadOnlyCollection<Replacer> replacers) : IHttpRequestFeature
+    public class UrlRewriteRequestFeature(IHttpRequestFeature inner, ReplacerList replacers) : IHttpRequestFeature
     {
         public string Protocol { get => inner.Protocol; set => inner.Protocol = value; }
         public string Scheme { get => inner.Scheme; set => inner.Scheme = value; }
@@ -17,15 +18,15 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 
         public IHeaderDictionary Headers { get; set; } = new HeaderDictionary(new Dictionary<string, StringValues>(inner.Headers.Where(x => !x.Key.Equals("content-length", StringComparison.OrdinalIgnoreCase)), StringComparer.OrdinalIgnoreCase));
 
-        public Stream Body { get; set; } = new UrlRewriteReadStream(inner.Body, replacers);
+        public Stream Body { get; set; } = new UrlRewritePipeReader(PipeReader.Create(inner.Body), replacers).AsStream();
 
-        private static string ReplaceString(string input, IReadOnlyCollection<Replacer> replacers)
+        private static string ReplaceString(string input, ReplacerList replacers)
         {
             if (replacers.Count == 0) return input;
             var builder = new StringBuilder(input);
             foreach (var replacer in replacers)
             {
-                builder.Replace(replacer.LocalString, replacer.RemoteString);
+                builder.Replace(replacer.LocalFullString, replacer.RemoteFullString);
             }
             return builder.ToString();
         }

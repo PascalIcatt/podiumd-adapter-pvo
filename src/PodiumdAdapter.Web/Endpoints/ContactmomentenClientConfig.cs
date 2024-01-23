@@ -8,7 +8,7 @@ namespace PodiumdAdapter.Web.Endpoints
     {
         const string ObjectcontactmomentenKey = "objectcontactmomenten";
 
-        public string ProxyBaseUrlConfigKey => "ESUITE_CONTACTMOMENTEN_BASE_URL";
+        public string ProxyBasePath => "/contactmomenten-api-provider/api/v1";
 
         public string RootUrl => "/contactmomenten/api/v1";
 

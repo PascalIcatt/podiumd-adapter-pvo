@@ -12,7 +12,7 @@ public class KlantenTests(CustomWebApplicationFactory factory) : IClassFixture<C
         using var client = factory.CreateClient();
         factory.Login(client);
         factory.MockHttpMessageHandler
-            .When(factory.ESUITE_KLANTEN_BASE_URL + Path)
+            .When(factory.ESUITE_BASE_URL + "/klanten-api-provider/api/v1" + Path)
             .Respond("application/json", Input);
 
         using var response = await client.GetAsync(KlantenBaseUrl + Path);

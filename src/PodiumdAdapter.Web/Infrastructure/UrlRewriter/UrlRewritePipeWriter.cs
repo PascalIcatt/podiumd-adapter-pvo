@@ -3,7 +3,7 @@ using System.IO.Pipelines;
 
 namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 {
-    public sealed class UrlRewritePipeWriter(PipeWriter inner, IReadOnlyCollection<Replacer> replacers) : DelegatingPipeWriter(inner)
+    public sealed class UrlRewritePipeWriter(PipeWriter inner, ReplacerList replacers) : DelegatingPipeWriter(inner)
     {
         public override ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
@@ -22,10 +22,8 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
                 {
                     targetSpan = CopyAndAdvance(sourceSpan[..index], targetSpan);
                 }
-                var from = replacer.RemoteBytes;
-                var to = replacer.LocalBytes;
-                targetSpan = CopyAndAdvance(to.Span, targetSpan);
-                var next = index + from.Length;
+                targetSpan = CopyAndAdvance(replacer.LocalFullBytes.Span, targetSpan);
+                var next = index + replacer.RemoteFullBytes.Length;
                 sourceSpan = sourceSpan[next..];
             }
 
@@ -36,39 +34,54 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             return FlushAsync(cancellationToken);
         }
 
-        static bool TryGetTargetSize(IReadOnlyCollection<Replacer> replacers, ReadOnlySpan<byte> source, out int size)
+        static bool TryGetTargetSize(ReplacerList replacers, ReadOnlySpan<byte> source, out int size)
         {
             size = source.Length;
             var result = false;
-            foreach (var replacer in replacers ?? [])
+            var found = true;
+            while (found && source.IndexOf(replacers.RemoteRootBytes.Span) is int index && index > -1)
             {
-                var from = replacer.RemoteBytes.Span;
-                var to = replacer.LocalBytes.Span;
-                var diff = to.Length - from.Length;
-                var count = source.Count(from);
-                result = result || count > 0;
-                size += (diff * count);
-            }
-            return result;
-        }
+                source = source.Slice(index);
+                found = false;
 
-        static bool TryGetNext(IReadOnlyCollection<Replacer> replacers, ReadOnlySpan<byte> source, out int index, [NotNullWhen(true)] out Replacer? replacer)
-        {
-            index = int.MaxValue;
-            replacer = null;
-
-            foreach (var r in replacers ?? [])
-            {
-                var from = r.RemoteBytes.Span;
-                var i = source.IndexOf(from);
-                if (i != -1 && i <= index)
+                foreach (var replacer in replacers)
                 {
-                    index = i;
-                    replacer = r;
+                    var from = replacer.RemoteFullBytes.Span;
+                    if (source.StartsWith(from))
+                    {
+                        var to = replacer.LocalFullBytes.Span;
+                        var diff = to.Length - from.Length;
+                        size += diff;
+                        result = true;
+                        found = true;
+                        source = source.Slice(from.Length);
+                        break;
+                    }
                 }
             }
 
-            return replacer != null;
+            return result;
+        }
+
+        static bool TryGetNext(ReplacerList replacers, ReadOnlySpan<byte> source, out int index, [NotNullWhen(true)] out Replacer? replacer)
+        {
+            index = source.IndexOf(replacers.RemoteRootBytes.Span);
+            replacer = null;
+
+            if (index < 0) return false;
+
+            source = source.Slice(index);
+
+            foreach (var r in replacers)
+            {
+                if (source.StartsWith(r.RemoteFullBytes.Span))
+                {
+                    replacer = r;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         static Span<byte> CopyAndAdvance(ReadOnlySpan<byte> from, Span<byte> to)
