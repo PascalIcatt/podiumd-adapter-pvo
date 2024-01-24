@@ -9,12 +9,12 @@ namespace PodiumdAdapter.Web.Test
         [Fact]
         public async Task BasicTest()
         {
-            var (read, write) = CreatePipe("local", "local", "remote", "remote");
+            var (read, write) = CreatePipe("with-", "this", "replace-", "me");
 
-            await write("blaremoteremotebla");
+            await write("start-replace-me-end");
 
             var output = await read();
-            Assert.Equal("blalocallocalbla", output);
+            Assert.Equal("start-with-this-end", output);
         }
 
         private static (Func<Task<string>> Read, Func<string, Task> Write) CreatePipe(string localRoot, string localPath, string remoteRoot, string remotePath)
