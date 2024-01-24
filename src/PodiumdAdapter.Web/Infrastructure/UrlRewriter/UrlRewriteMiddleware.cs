@@ -5,16 +5,21 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 {
     public static class UrlRewriteExtensions
     {
-        private static readonly ConcurrentDictionary<string, ReplacerList> s_cache = new();
+        private static readonly ConcurrentDictionary<string, UrlRewriterCollection> s_cache = new();
 
         public static void UseUrlRewriter(this IApplicationBuilder applicationBuilder) => applicationBuilder.Use((context, next) =>
         {
             var replacerList = GetReplacers(context);
+            var responseBody = context.Features.Get<IHttpResponseBodyFeature>();
+            var request = context.Features.Get<IHttpRequestFeature>();
+            var requestPipe = context.Features.Get<IRequestBodyPipeFeature>();
 
-            if (replacerList != null)
+            if (replacerList != null && responseBody != null && request != null && requestPipe != null)
             {
-                context.WrapFeature<IHttpResponseBodyFeature>(x => new UrlRewriteResponseBodyFeature(x, replacerList));
-                context.WrapFeature<IHttpRequestFeature>(x => new UrlRewriteRequestFeature(x, replacerList));
+                var feature = new UrlRewriteFeature(request, requestPipe, responseBody, replacerList);
+                context.Features.Set<IHttpResponseBodyFeature>(feature);
+                context.Features.Set<IHttpRequestFeature>(feature);
+                context.Features.Set<IRequestBodyPipeFeature>(feature);
             }
 
             return next(context);
@@ -30,7 +35,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             return true;
         }
 
-        private static ReplacerList? GetReplacers(HttpContext context)
+        private static UrlRewriterCollection? GetReplacers(HttpContext context)
         {
             if (context?.Request == null) return null;
 
@@ -55,7 +60,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 
                 var localRootString = request.ToString()!;
 
-                var replacers = new List<Replacer>();
+                var replacers = new List<UrlRewriter>();
 
                 foreach (var item in clients)
                 {

@@ -21,7 +21,7 @@ namespace PodiumdAdapter.Web.Test
         {
             var pipe = new Pipe();
             var reader = pipe.Reader;
-            var replacer = new Replacer(localRoot + localPath, remoteRoot + remotePath);
+            var replacer = new UrlRewriter(localRoot + localPath, remoteRoot + remotePath);
             var writer = new UrlRewritePipeWriter(pipe.Writer, new(localRoot, remoteRoot, [replacer]));
             return (() => ReadToEnd(reader), (s) => WriteToEnd(writer, s));
         }
