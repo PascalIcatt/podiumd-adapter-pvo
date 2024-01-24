@@ -14,7 +14,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             var request = context.Features.Get<IHttpRequestFeature>();
             var requestPipe = context.Features.Get<IRequestBodyPipeFeature>();
 
-            if (replacerList != null && responseBody != null && request != null && requestPipe != null)
+            if (replacerList != null && responseBody != null && request != null)
             {
                 var feature = new UrlRewriteFeature(request, requestPipe, responseBody, replacerList);
                 context.Features.Set<IHttpResponseBodyFeature>(feature);

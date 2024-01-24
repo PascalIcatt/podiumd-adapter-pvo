@@ -11,19 +11,35 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
     public class UrlRewritePipeReader(PipeReader reader, UrlRewriterCollection rewriterCollection) : DelegatingPipeReader(reader)
     {
         // Stores the previous, current, and next buffer sequences for processing
-        private ReadOnlySequence<byte> _previousResult = default;
-        private ReadOnlySequence<byte> _buffer1 = new();
-        private ReadOnlySequence<byte> _buffer2 = default;
+        private ReadOnlyMemory<byte> _replacedByMemory = new();
+        private ReadResult _originalResult = new();
+        private ReadOnlySequence<byte> _unreadSequence = new();
+        private bool _replacing;
 
         // Overridden ReadAsync method to process and rewrite URLs in the stream
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
             // Checks if there is a buffer available and returns it if so
-            if (!_buffer1.IsEmpty)
+            if (!_replacedByMemory.IsEmpty)
             {
-                var result = new ReadResult(_buffer1, false, _buffer2.IsEmpty);
-                _buffer1 = _buffer2;
-                _buffer2 = new();
+                var sequence = new ReadOnlySequence<byte>(_replacedByMemory);
+                _replacing = !_unreadSequence.IsEmpty;
+                var isComplete = !_replacing && _originalResult.IsCompleted;
+                var result = new ReadResult(sequence, false, isComplete);
+                _replacedByMemory = new();
+                return new(result);
+            }
+
+            if (!_unreadSequence.IsEmpty)
+            {
+                if (TryRead(_unreadSequence, out var sub))
+                {
+                    return new(new ReadResult(sub, false, false));
+                }
+                var result = new ReadResult(_unreadSequence, _originalResult.IsCanceled, _originalResult.IsCompleted);
+
+                _unreadSequence = new();
+                _replacing = false;
                 return new(result);
             }
 
@@ -32,23 +48,42 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             // Directly returns the processed result if already completed
             if (valueTask.IsCompleted)
             {
-                return new(Handle(valueTask.Result));
+                var result = Handle(valueTask.Result);
+                return new(result);
             }
 
             // Continues processing the result asynchronously if not completed
-            return new(valueTask.AsTask().ContinueWith(x => Handle(x.Result)));
+            return HandleAsync(valueTask);
+
+            async ValueTask<ReadResult> HandleAsync(ValueTask<ReadResult> task)
+            {
+                var result = await task;
+                return Handle(result);
+            }
 
             // Local function to handle the read result
             ReadResult Handle(ReadResult readResult)
             {
                 // Returns the original result if canceled or unable to read
-                if (readResult.IsCanceled || !TryRead(readResult, out var buffer, out var isComplete))
+                if (readResult.IsCanceled || !TryRead(readResult.Buffer, out var buffer))
                 {
                     return readResult;
                 }
 
+                _replacing = true;
+                _originalResult = readResult;
+
+                if (buffer.IsEmpty)
+                {
+                    _replacing = !_unreadSequence.IsEmpty;
+                    var isComplete = !_replacing && _originalResult.IsCompleted;
+                    var result = new ReadResult(new(_replacedByMemory), false, isComplete);
+                    _replacedByMemory = new();
+                    return result;
+                }
+
                 // Returns a new ReadResult with the processed buffer
-                return new ReadResult(buffer, false, isComplete);
+                return new ReadResult(buffer, false, false);
             }
         }
 
@@ -71,31 +106,26 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
         }
 
         // Tries to read and process the read result, replacing URLs as needed
-        private bool TryRead(ReadResult readResult, out ReadOnlySequence<byte> sub, out bool isComplete)
+        private bool TryRead(ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> readSequence)
         {
-            // Creates a SequenceReader for the buffer
-            var reader = new SequenceReader<byte>(readResult.Buffer);
-            isComplete = readResult.IsCompleted;
+            readSequence = default;
 
-            // Searches for the local base url bytes in the buffer
-            var rootSpan = rewriterCollection.LocalBaseUrlBytes.Span;
-
-            if (!reader.TryReadTo(out sub, rootSpan, true))
+            if (buffer.IsEmpty)
             {
                 return false;
             }
 
+            // Creates a SequenceReader for the buffer
+            var reader = new SequenceReader<byte>(buffer);
+
             // Iterates through the rewriters to find and replace matching sequences
             foreach (var rewriter in rewriterCollection)
             {
-                var slice = rewriter.LocalFullBytes.Span.Slice(rootSpan.Length);
-                if (reader.UnreadSpan.StartsWith(slice))
+                var spanToReplace = rewriter.LocalFullBytes.Span;
+                if (reader.TryReadTo(out readSequence, spanToReplace, true))
                 {
-                    reader.Advance(slice.Length);
-                    isComplete = false;
-                    _buffer1 = new(rewriter.RemoteFullBytes);
-                    _previousResult = readResult.Buffer;
-                    _buffer2 = reader.UnreadSequence;
+                    _replacedByMemory = rewriter.RemoteFullBytes;
+                    _unreadSequence = reader.UnreadSequence;
                     return true;
                 }
             }
@@ -106,24 +136,17 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
         // Tries to advance to the buffered sequence(s) if available
         private bool TryAdvanceBuffer()
         {
-            if (!_buffer1.IsEmpty)
+            if (_replacing)
             {
-                // don't advance anything yet, the buffer needs to be read first
                 return true;
             }
-
-            // there is nothing to buffer so we can handle Advancing normally
-            if (_previousResult.IsEmpty)
+            if (!_originalResult.Buffer.IsEmpty)
             {
-                return false;
+                base.AdvanceTo(_originalResult.Buffer.End, _originalResult.Buffer.End);
+                _originalResult = new();
+                return true;
             }
-
-            // Advances the inner reader to the start and end positions of the previous result
-            base.AdvanceTo(_previousResult.Start, _previousResult.End);
-
-            // reset the previous result
-            _previousResult = new();
-            return true;
+            return false;
         }
     }
 }

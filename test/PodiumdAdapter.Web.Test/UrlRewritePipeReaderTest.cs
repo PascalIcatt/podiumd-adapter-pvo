@@ -9,54 +9,40 @@ namespace PodiumdAdapter.Web.Test
         [Fact]
         public async Task BasicTest()
         {
-            var (read, write) = CreatePipe("local", "local", "remote", "remote");
+            var (reader, writer) = CreatePipe("replace-", "me", "with-", "this");
 
-            await write("blalocallocalbla");
+            await WriteAsync(writer, "start-");
+            await WriteAsync(writer, "before-replace-me-after");
 
-            var output = await read();
-            Assert.Equal("blaremoteremotebla", output);
+            var readTask = Read(reader);
+
+            await WriteAsync(writer, "-end");
+            await writer.CompleteAsync();
+
+            var output = await readTask;
+            await reader.CompleteAsync();
+
+            Assert.Equal("start-before-with-this-after-end", output);
         }
 
-        private static (Func<Task<string>> Read, Func<string, Task> Write) CreatePipe(string localRoot, string localPath, string remoteRoot, string remotePath)
+        private static (PipeReader Reader, PipeWriter Writer) CreatePipe(string localRoot, string localPath, string remoteRoot, string remotePath)
         {
             var pipe = new Pipe();
             var writer = pipe.Writer;
             var replacer = new UrlRewriter(localRoot + localPath, remoteRoot + remotePath);
             var reader = new UrlRewritePipeReader(pipe.Reader, new(localRoot, remoteRoot, [replacer]));
-            return (() => ReadToEnd(reader), (s) => WriteToEnd(writer, s));
+            return (reader, writer);
         }
 
-        private static async Task WriteToEnd(PipeWriter writer, string str)
+        private static async Task WriteAsync(PipeWriter writer, string str) => await writer.WriteAsync(Encoding.UTF8.GetBytes(str));
+
+        private static async Task<string> Read(PipeReader reader)
         {
-            await writer.WriteAsync(Encoding.UTF8.GetBytes(str));
-            await writer.CompleteAsync();
-        }
-
-        private static async Task<string> ReadToEnd(PipeReader reader)
-        {
-            var stringBuilder = new StringBuilder();
-            while (true)
-            {
-                var pipeReadResult = await reader.ReadAsync();
-                var buffer = pipeReadResult.Buffer;
-
-                try
-                {
-                    //process data in buffer
-                    stringBuilder.Append(Encoding.UTF8.GetString(buffer));
-
-                    if (pipeReadResult.IsCompleted)
-                    {
-                        break;
-                    }
-                }
-                finally
-                {
-                    reader.AdvanceTo(buffer.Start, buffer.End);
-                }
-            }
-
-            return stringBuilder.ToString();
+            using var memory = new MemoryStream();
+            await reader.CopyToAsync(memory);
+            memory.Seek(0, SeekOrigin.Begin);
+            using var strReader = new StreamReader(memory);
+            return await strReader.ReadToEndAsync();
         }
     }
 }

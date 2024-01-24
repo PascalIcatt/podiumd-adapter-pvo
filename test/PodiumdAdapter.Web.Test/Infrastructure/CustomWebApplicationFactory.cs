@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Yarp.ReverseProxy.Forwarder;
+using Microsoft.AspNetCore.Builder;
 
 namespace PodiumdAdapter.Web.Test.Infrastructure
 {
@@ -18,6 +19,8 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
         public readonly MockHttpMessageHandler MockHttpMessageHandler = new();
 
         public readonly string ESUITE_BASE_URL = "https://localhost:12345";
+
+        public string LastRequest { get; private set; } = "";
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -82,5 +85,6 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
         {
             public HttpMessageInvoker CreateClient(ForwarderHttpClientContext context) => new(handler);
         }
+
     }
 }

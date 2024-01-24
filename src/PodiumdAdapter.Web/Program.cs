@@ -36,13 +36,12 @@ try
 
     var app = builder.Build();
     // Configure the HTTP request pipeline.
-
     app.UseSerilogRequestLogging();
     app.UseUrlRewriter();
 
     app.MapHealthChecks("/healthz").AllowAnonymous();
     app.MapEsuiteEndpoints();
-    app.MapReverseProxy(x => x.UseUrlRewriter());
+    app.MapReverseProxy();
 
     app.Run();
 }
@@ -50,6 +49,5 @@ catch (Exception ex) when (ex is not HostAbortedException)
 {
     logger.Write(LogEventLevel.Fatal, ex, "Application terminated unexpectedly");
 }
-
 
 public partial class Program { }
