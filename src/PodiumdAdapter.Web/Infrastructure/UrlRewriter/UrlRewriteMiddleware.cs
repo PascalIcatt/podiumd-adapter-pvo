@@ -49,27 +49,27 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             {
                 var (clients, config, request) = tup;
 
-                var requestUrl = new UriBuilder
+                var requestUriBuilder = new UriBuilder
                 {
                     Host = host,
                     Port = request.Host.Port.GetValueOrDefault(),
                     Scheme = request.Scheme,
                 };
 
-                var proxyUrl = new UriBuilder(proxyRootstring);
-
-                var localRootString = request.ToString()!;
+                var proxyUriBuilder = new UriBuilder(proxyRootstring);
+                var proxyBaseUrl = proxyUriBuilder.Uri.ToString()!;
+                var localBaseUrl = requestUriBuilder.Uri.ToString()!;
 
                 var replacers = new List<UrlRewriter>();
 
                 foreach (var item in clients)
                 {
-                    proxyUrl!.Path = item.ProxyBasePath;
-                    requestUrl.Path = item.RootUrl;
-                    replacers.Add(new(requestUrl.ToString(), proxyUrl.ToString()));
+                    proxyUriBuilder.Path = item.ProxyBasePath;
+                    requestUriBuilder.Path = item.RootUrl;
+                    replacers.Add(new(requestUriBuilder.Uri.ToString(), proxyUriBuilder.Uri.ToString()));
                 }
 
-                return new(localRootString, proxyRootstring, replacers);
+                return new(localBaseUrl, proxyBaseUrl, replacers);
             }, (clients, config, context.Request));
         }
     }
