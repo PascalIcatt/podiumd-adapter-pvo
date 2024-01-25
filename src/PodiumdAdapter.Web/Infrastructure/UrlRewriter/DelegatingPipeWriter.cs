@@ -15,5 +15,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
         public override Memory<byte> GetMemory(int sizeHint = 0) => inner.GetMemory(sizeHint);
 
         public override Span<byte> GetSpan(int sizeHint = 0) => inner.GetSpan(sizeHint);
+
+        public override ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default) => base.WriteAsync(source, cancellationToken);
     }
 }
