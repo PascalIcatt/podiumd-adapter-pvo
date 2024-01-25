@@ -22,7 +22,7 @@ namespace PodiumdAdapter.Web.Infrastructure
             {
                 var config = s.GetRequiredService<IConfiguration>();
 
-                var token = config["ESUITE_TOKEN"];
+                var token = config["ESUITE_TOKEN"] ?? throw new Exception("No token found for key ESUITE_TOKEN");
 
                 return new RouteConfig
                 {
@@ -33,14 +33,22 @@ namespace PodiumdAdapter.Web.Infrastructure
                     {
                         new()
                         {
+                            // dit zorgt ervoor dat de gematchde string uit het pad niet in het verzoek van YARP terecht komt
+                            // deze komt namelijk niet overeen met het pad binnen de E-Suite.
                             ["PathRemovePrefix"] = $"/{trimmedRootUrl}"
                         },
                         new()
                         {
+                            // we rewriten urls tussen de adapter en de esuite.
+                            // dat betekent dat de lengte van de body regelmatig niet meer klopt met de Content-Length header
+                            // daarom verwijderen we deze header uit de geproxyde verzoeken
                             ["ResponseHeaderRemove"] = "Content-Length"
                         },
                         new()
                         {
+                            // YARP voegt standaard een aantal headers toe over waar het oorspronkelijke verzoek vandaan komt
+                            // de urls uit de response van de E-Suite worden daardoor verhaspelt.
+                            // daarom verwijderen we deze headers uit de geproxyde verzoeken
                             ["X-Forwarded"] = "Remove"
                         },
                         new()
@@ -55,8 +63,8 @@ namespace PodiumdAdapter.Web.Infrastructure
             services.AddSingleton(s =>
             {
                 var config = s.GetRequiredService<IConfiguration>();
-                var baseUrl = config["ESUITE_BASE_URL"];
-                var baseUri = baseUrl == null ? null : new UriBuilder(baseUrl) { Path = remotePath }.ToString();
+                var baseUrl = config["ESUITE_BASE_URL"] ?? throw new Exception("No value found for key ESUITE_BASE_URL");
+                var baseUri = new UriBuilder(baseUrl) { Path = remotePath }.Uri.ToString();
 
                 return new ClusterConfig
                 {
@@ -71,12 +79,17 @@ namespace PodiumdAdapter.Web.Infrastructure
                 };
             });
 
+            // Naast de configuratie voor YARP hebben we ook een eigen geconfigureerde HttpClient nodig
+            // Deze gebruiken we voor calls die niet een op een naar de E-Suite gaan,
+            // maar bijvoorbeeld worden gesplits in meerder custom calls
             services.AddHttpClient(clientName, (s, x) =>
             {
                 var config = s.GetRequiredService<IConfiguration>();
-                var baseUrl = new UriBuilder(config["ESUITE_BASE_URL"]) { Path = remotePath };
+                var urlFromConfig = config["ESUITE_BASE_URL"] ?? throw new Exception("No value found for key ESUITE_BASE_URL");
+                var token = config["ESUITE_TOKEN"] ?? throw new Exception("No token found for key ESUITE_TOKEN");
+                var baseUrl = new UriBuilder(urlFromConfig) { Path = remotePath };
                 x.BaseAddress = baseUrl.Uri;
-                x.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", config["ESUITE_TOKEN"] ?? throw new Exception("No token found for key ESUITE_TOKEN"));
+                x.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             });
         }
 
