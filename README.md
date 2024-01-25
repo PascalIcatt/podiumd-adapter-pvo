@@ -7,7 +7,7 @@
 # Specify the image tag to use. we will recommend one when we reach a stable version
 $IMAGE_TAG='main-latest'
 
-# If you specify a host and a secret name, we will set up an Ingress
+# OPTIONAL: If you specify a host and a secret name, we will set up an Ingress
 $INGRESS_HOST='www.my-website.nl'
 $INGRESS_SECRET_NAME='the-name-of-the-secret-in-kubernetes-to-use-for-tls'
 
@@ -22,6 +22,7 @@ $ESUITE_TOKEN='abc$%^&*defg1234567'
 # following the convention used in Open Zaak:
 # https://open-zaak.readthedocs.io/en/stable/client-development/authentication.html
 # Client IDs are set up using the CLIENTS__INDEX__ID naming convention
+# You will need to set up at least 1 Client
 $CLIENTS__0__ID='MY-CLIENT-ID-FOR-EXAMPLE-KISS'
 $CLIENTS__1__ID='ANOTHER-CLIENT-ID-IF-APPLICABLE'
 
@@ -44,9 +45,9 @@ kubectl -n podiumd-adapter-namespace create configmap podiumd-adapter-config `
 kubectl -n podiumd-adapter-namespace create secret generic podiumd-adapter-secrets `
 --from-literal=ESUITE_TOKEN=$ESUITE_TOKEN `
 --from-literal=CLIENTS__0__ID=$CLIENTS__0__ID `
---from-literal=CLIENTS__0__SECRET=$CLIENTS__0__SECRET
---from-literal=CLIENTS__0__ID=$CLIENTS__1__ID ` #optional
---from-literal=CLIENTS__0__SECRET=$CLIENTS__1__SECRET #optional
+--from-literal=CLIENTS__0__SECRET=$CLIENTS__0__SECRET `
+--from-literal=CLIENTS__1__ID=$CLIENTS__1__ID `
+--from-literal=CLIENTS__1__SECRET=$CLIENTS__1__SECRET
 ```
 ## 5. Use the `helm chart` to deploy the application
 ```powershell
