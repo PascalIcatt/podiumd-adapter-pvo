@@ -55,9 +55,10 @@ kubectl -n podiumd-adapter-namespace create secret generic podiumd-adapter-secre
 ```powershell
 helm repo add podiumd-adapter https://raw.githubusercontent.com/ICATT-Menselijk-Digitaal/podiumd-adapter/main/helm
 helm repo update
-helm upgrade --namespace podiumd-adapter-namespace --install --values --set `
-image.tag=$IMAGE_TAG,`
-ingress.host=$INGRESS_HOST` #optional
-ingress.secretName=$INGRESS_SECRET_Name` #optional
---wait podiumd-adapter-ci-release podiumd-adapter --version 0.1.0
+helm upgrade --install podiumd-adapter-ci-release podiumd-adapter `
+--namespace podiumd-adapter-namespace `
+--version 0.1.0 `
+--set image.tag=$IMAGE_TAG `
+--set ingress.host=$INGRESS_HOST `
+--set ingress.secretName=$INGRESS_SECRET_NAME
 ```
