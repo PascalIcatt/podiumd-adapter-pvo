@@ -11,8 +11,6 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 
         public UrlRewriteFeature(
             IHttpRequestFeature requestFeature,
-            // potentially null, in integration tests
-            IRequestBodyPipeFeature? requestBodyFeature,
             IHttpResponseBodyFeature responseBodyFeature,
             UrlRewriterCollection replacers)
         {
@@ -22,9 +20,8 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             QueryString = ReplaceString(requestFeature.QueryString, replacers);
             Headers = Remove(requestFeature.Headers, "content-length");
 
-            var innerReader = requestBodyFeature?.Reader ?? PipeReader.Create(requestFeature.Body);
-            Reader = new UrlRewritePipeReader(innerReader, replacers);
-            Body = Reader.AsStream();
+            Body = new UrlRewriteReadStream(requestFeature.Body, replacers);
+            Reader = PipeReader.Create(Body);
 
             Writer = new UrlRewritePipeWriter(responseBodyFeature.Writer, replacers);
             Stream = Writer.AsStream();

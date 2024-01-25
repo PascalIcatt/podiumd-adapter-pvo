@@ -20,26 +20,26 @@ namespace PodiumdAdapter.Web.Test
             await writer.CompleteAsync();
 
             var output = await readTask;
-            await reader.CompleteAsync();
+            await reader.DisposeAsync();
 
             Assert.Equal("start-before-with-this-after-end", output);
         }
 
-        private static (PipeReader Reader, PipeWriter Writer) CreatePipe(string localRoot, string localPath, string remoteRoot, string remotePath)
+        private static (Stream Reader, PipeWriter Writer) CreatePipe(string localRoot, string localPath, string remoteRoot, string remotePath)
         {
             var pipe = new Pipe();
             var writer = pipe.Writer;
             var replacer = new UrlRewriter(localRoot + localPath, remoteRoot + remotePath);
-            var reader = new UrlRewritePipeReader(pipe.Reader, new(localRoot, remoteRoot, [replacer]));
+            var reader = new UrlRewriteReadStream(pipe.Reader.AsStream(), new(localRoot, remoteRoot, [replacer]));
             return (reader, writer);
         }
 
         private static async Task WriteAsync(PipeWriter writer, string str) => await writer.WriteAsync(Encoding.UTF8.GetBytes(str));
 
-        private static async Task<string> Read(PipeReader reader)
+        private static async Task<string> Read(Stream stream)
         {
             using var memory = new MemoryStream();
-            await reader.CopyToAsync(memory);
+            await StreamCopier.CopyAsync(stream, memory, -1, default);
             memory.Seek(0, SeekOrigin.Begin);
             using var strReader = new StreamReader(memory);
             return await strReader.ReadToEndAsync();

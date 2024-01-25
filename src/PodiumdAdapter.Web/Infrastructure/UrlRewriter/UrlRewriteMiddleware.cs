@@ -12,11 +12,10 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             var replacerList = GetReplacers(context);
             var responseBody = context.Features.Get<IHttpResponseBodyFeature>();
             var request = context.Features.Get<IHttpRequestFeature>();
-            var requestPipe = context.Features.Get<IRequestBodyPipeFeature>();
 
             if (replacerList != null && responseBody != null && request != null)
             {
-                var feature = new UrlRewriteFeature(request, requestPipe, responseBody, replacerList);
+                var feature = new UrlRewriteFeature(request, responseBody, replacerList);
                 context.Features.Set<IHttpResponseBodyFeature>(feature);
                 context.Features.Set<IHttpRequestFeature>(feature);
                 context.Features.Set<IRequestBodyPipeFeature>(feature);

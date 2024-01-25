@@ -18,6 +18,7 @@ public class KlantenTests(CustomWebApplicationFactory factory) : IClassFixture<C
 
         factory.MockHttpMessageHandler
             .Expect(HttpMethod.Patch, factory.ESUITE_BASE_URL + "/klanten-api-provider/api/v1" + path)
+            .WithContent(Replaced)
             .Respond("application/json", Replaced);
 
         using var content = new StringContent(OriginalInput, new System.Net.Http.Headers.MediaTypeHeaderValue("application/json"));
