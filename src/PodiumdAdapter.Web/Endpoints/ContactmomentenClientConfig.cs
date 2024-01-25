@@ -47,6 +47,8 @@ namespace PodiumdAdapter.Web.Endpoints
                 {
                     // TODO properties met defaults vullen in json:
                     // 'tekst' en 'medewerkerIdentificatie.identificatie'
+                    // if(json["tekst"] == null)
+                    // json["tekst"] = "bla"
                 });
             });
         }
