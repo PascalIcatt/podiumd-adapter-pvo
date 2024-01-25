@@ -51,7 +51,7 @@ kubectl -n podiumd-adapter-namespace create secret generic podiumd-adapter-secre
 --from-literal=CLIENTS__0__ID=$CLIENTS__1__ID ` #optional
 --from-literal=CLIENTS__0__SECRET=$CLIENTS__1__SECRET #optional
 ```
-## 5. Use the `helm chart` found in `./helm` to deploy the application
+## 5. Use the `helm chart` to deploy the application
 ```powershell
 helm repo add podiumd-adapter https://raw.githubusercontent.com/ICATT-Menselijk-Digitaal/podiumd-adapter/main/helm
 helm repo update
