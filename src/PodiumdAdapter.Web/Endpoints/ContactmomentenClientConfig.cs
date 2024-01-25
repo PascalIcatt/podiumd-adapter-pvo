@@ -12,31 +12,44 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public string RootUrl => "/contactmomenten/api/v1";
 
-        public void MapCustomEndpoints(IEndpointRouteBuilder clientRoot, Func<HttpClient> getClient) => clientRoot.MapGet("/contactmomenten", async (HttpRequest request, CancellationToken token) =>
+        public void MapCustomEndpoints(IEndpointRouteBuilder clientRoot, Func<HttpClient> getClient)
         {
-            var client = getClient();
-
-            // in OpenKlant zit een uitbreiding op de contacmomenten standaard.
-            // Je kan contactmomenten daarin filteren op objectUrl (in de praktijk is dat de url van de zaak die erbij hoort).
-            // dit zit niet in de standaard. Mogelijk wordt dit nog wel in de API van de eSuite geimplementeerd. Dan kan onderstaande code eruit.
-            if (TryGetObjectUrlFromQuery(request.Query, out var objectUrl))
+            clientRoot.MapGet("/contactmomenten", async (HttpRequest request, CancellationToken token) =>
             {
-                return await GetContactmomentenFilteredByObjectUrl(client, objectUrl, token);
-            }
+                var client = getClient();
 
-            var url = "contactmomenten" + (request.QueryString.Value ?? "");
+                // in OpenKlant zit een uitbreiding op de contacmomenten standaard.
+                // Je kan contactmomenten daarin filteren op objectUrl (in de praktijk is dat de url van de zaak die erbij hoort).
+                // dit zit niet in de standaard. Mogelijk wordt dit nog wel in de API van de eSuite geimplementeerd. Dan kan onderstaande code eruit.
+                if (TryGetObjectUrlFromQuery(request.Query, out var objectUrl))
+                {
+                    return await GetContactmomentenFilteredByObjectUrl(client, objectUrl, token);
+                }
 
-            // in OpenKlant zit een uitbreiding op de contacmomenten standaard.
-            // Je kan daarin met een expand parameter aangeven dat je de objectcontactmomenten wil 'uitklappen' in de lijst met contactmomenten.
-            // dit zit niet in de standaard. Mogelijk wordt dit nog wel in de API van de eSuite geimplementeerd. Dan kan onderstaande code eruit.
-            if (ShouldIncludeObjectContactmomenten(request))
+                var url = "contactmomenten" + (request.QueryString.Value ?? "");
+
+                // in OpenKlant zit een uitbreiding op de contacmomenten standaard.
+                // Je kan daarin met een expand parameter aangeven dat je de objectcontactmomenten wil 'uitklappen' in de lijst met contactmomenten.
+                // dit zit niet in de standaard. Mogelijk wordt dit nog wel in de API van de eSuite geimplementeerd. Dan kan onderstaande code eruit.
+                if (ShouldIncludeObjectContactmomenten(request))
+                {
+                    return GetContactmomentenWithObjectContactmomenten(client, url);
+                }
+
+                // als je niet wil filteren op objectUrl, en ook de objectContactmomenten niet hoeft uit te klappen, kunnen we het request as-is proxyen
+                return client.ProxyResult(url);
+            });
+
+            clientRoot.MapPost("/contactmomenten", () =>
             {
-                return GetContactmomentenWithObjectContactmomenten(client, url);
-            }
-
-            // als je niet wil filteren op objectUrl, en ook de objectContactmomenten niet hoeft uit te klappen, kunnen we het request as-is proxyen
-            return client.ProxyResult(url);
-        });
+                var client = getClient();
+                return client.ProxyResult(() => new(HttpMethod.Post, "contactmomenten"), async (json,token) =>
+                {
+                    // TODO properties met defaults vullen in json:
+                    // 'tekst' en 'medewerkerIdentificatie.identificatie'
+                });
+            });
+        }
 
         private static bool TryGetObjectUrlFromQuery(IQueryCollection query, out string result)
         {
