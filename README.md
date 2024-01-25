@@ -1,9 +1,6 @@
 [![Build and Tests](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/docker-image.yaml/badge.svg)](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/docker-image.yaml)
 [![Code quality checks](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/linter.yml/badge.svg)](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/linter.yml)
 
-[![Build and Tests](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/docker-image.yaml/badge.svg)](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/docker-image.yaml)
-[![Code quality checks](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/linter.yml/badge.svg)](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/linter.yml)
-
 # Installation in Kubernetes
 ## 1. Come up with values for the environment variables
 ```powershell
@@ -18,8 +15,8 @@ $INGRESS_SECRET_NAME='the-name-of-the-secret-in-kubernetes-to-use-for-tls'
 # For example, the Klanten API is presumed to exist at /klanten-api-provider/api/v1
 $ESUITE_BASE_URL='https://www.my-e-suite.nl'
 
-#
-$ESUITE_TOKEN='abc$%^&*defg1234567' # You need to generate this in the E-Suite
+# You need to generate this in the E-Suite
+$ESUITE_TOKEN='abc$%^&*defg1234567'
 
 # Each client what will connect to the podiumd-adapter must do so using a Bearer token,
 # following the convention used in Open Zaak:
