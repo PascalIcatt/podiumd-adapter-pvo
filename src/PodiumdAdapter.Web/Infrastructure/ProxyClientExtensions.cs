@@ -1,23 +1,17 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Text.Json.Nodes;
 
 namespace PodiumdAdapter.Web
 {
-    public delegate Task Modify(JsonNode node, CancellationToken token = default);
 
     public static class ProxyClientExtensions
     {
-        public static IResult ProxyResult(this HttpClient client, Func<HttpRequestMessage> message, Modify? modify = null)
-            => new ProxyResult(client, message, modify);
-
-        public static IResult ProxyResult(this HttpClient client, string url, Modify? modify = null)
-            => client.ProxyResult(HttpMethod.Get, url, modify);
-
-        public static IResult ProxyResult(this HttpClient client, HttpMethod method, string url, Modify? modify = null)
-            => client.ProxyResult(() => new(method, url), modify);
+        public static IResult ProxyResult(this HttpClient client, ProxyRequest request)
+            =>new ProxyResult(client, request);
 
         public static Task<JsonNode?> JsonAsync(this HttpClient client, string url, CancellationToken token)
-            => client.JsonAsync(HttpMethod.Get, url, token);
+    => client.JsonAsync(HttpMethod.Get, url, token);
 
         public static Task<JsonNode?> JsonAsync(this HttpClient client, HttpMethod method, string url, CancellationToken token)
             => client.JsonAsync(() => new(method, url), token);
@@ -54,12 +48,34 @@ namespace PodiumdAdapter.Web
             => node.TryParsePagination(out result, out _);
     }
 
-    public class ProxyResult(HttpClient client, Func<HttpRequestMessage> messageFactory, Modify? modify = null) : IResult
+    public class ProxyResult(HttpClient client, ProxyRequest request) : IResult
     {
         public async Task ExecuteAsync(HttpContext httpContext)
         {
             var token = httpContext.RequestAborted;
-            using var message = messageFactory();
+            var method = request.Method ?? new HttpMethod(httpContext.Request.Method);
+            using var message = new HttpRequestMessage(method, request.Url);
+
+            if (request.ModifyRequestBody == null)
+            {
+                message.Content = new StreamContent(httpContext.Request.Body);
+            }
+            else
+            {
+                var json = await JsonNode.ParseAsync(httpContext.Request.Body, cancellationToken: token);
+                if (json != null)
+                {
+                    try
+                    {
+                        await request.ModifyRequestBody(json, token);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+                message.Content = JsonContent.Create(json);
+            }
+
             using var response = await client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, token);
             httpContext.Response.StatusCode = (int)response.StatusCode;
             foreach (var item in response.Headers)
@@ -71,7 +87,7 @@ namespace PodiumdAdapter.Web
                 if (item.Key.Equals("content-length", StringComparison.OrdinalIgnoreCase)) continue;
                 httpContext.Response.Headers[item.Key] = new(item.Value.ToArray());
             }
-            if (!response.IsSuccessStatusCode || modify == null)
+            if (!response.IsSuccessStatusCode || request.ModifyResponseBody == null)
             {
                 await response.Content.CopyToAsync(httpContext.Response.Body, token);
                 return;
@@ -81,7 +97,7 @@ namespace PodiumdAdapter.Web
             if (node == null) return;
             try
             {
-                await modify(node, token);
+                await request.ModifyResponseBody(node, token);
             }
             catch (Exception)
             {

@@ -37,18 +37,22 @@ namespace PodiumdAdapter.Web.Endpoints
                 }
 
                 // als je niet wil filteren op objectUrl, en ook de objectContactmomenten niet hoeft uit te klappen, kunnen we het request as-is proxyen
-                return client.ProxyResult(url);
+                return client.ProxyResult(new ProxyRequest { Url = url });
             });
 
             clientRoot.MapPost("/contactmomenten", () =>
             {
                 var client = getClient();
-                return client.ProxyResult(() => new(HttpMethod.Post, "contactmomenten"), async (json,token) =>
+                return client.ProxyResult(new ProxyRequest
                 {
-                    // TODO properties met defaults vullen in json:
-                    // 'tekst' en 'medewerkerIdentificatie.identificatie'
-                    // if(json["tekst"] == null)
-                    // json["tekst"] = "bla"
+                    Url = "contactmomenten",
+                    ModifyRequestBody = (json, token) =>
+                    {
+                        // TODO properties met defaults vullen in json:
+                        // 'tekst' en 'medewerkerIdentificatie.identificatie'
+                        // if(json["tekst"] == null)
+                        // json["tekst"] = "bla"
+                    }
                 });
             });
         }
@@ -112,34 +116,39 @@ namespace PodiumdAdapter.Web.Endpoints
             request.Query.TryGetValue("expand", out var expand)
             && expand.Contains(ObjectcontactmomentenKey);
 
-        private static IResult GetContactmomentenWithObjectContactmomenten(HttpClient client, string url) => client.ProxyResult(url, async (json, token) =>
+        private static IResult GetContactmomentenWithObjectContactmomenten(HttpClient client, string url) => client.ProxyResult(new ProxyRequest
         {
-            if (!json.TryParsePagination(out var arr))
+            Url = url,
+            Method = HttpMethod.Get,
+            ModifyResponseBody = async (json, token) =>
             {
-                return;
-            }
-
-
-
-            var tasks = arr.Select(async (item) =>
-            {
-                if (item is not JsonObject o
-                    || o.ContainsKey(ObjectcontactmomentenKey)
-                    || !o.TryGetPropertyValue("url", out var urlProperty)
-                    || urlProperty is not JsonValue urlValue
-                    || urlValue.ToString() is not string u)
+                if (!json.TryParsePagination(out var arr))
                 {
                     return;
                 }
 
-                var node = await client.JsonAsync("objectcontactmomenten?contactmoment=" + u, token);
-                if (node.TryParsePagination(out var arr))
-                {
-                    item[ObjectcontactmomentenKey] = arr.DeepClone();
-                }
-            });
 
-            await Task.WhenAll(tasks);
+
+                var tasks = arr.Select(async (item) =>
+                {
+                    if (item is not JsonObject o
+                        || o.ContainsKey(ObjectcontactmomentenKey)
+                        || !o.TryGetPropertyValue("url", out var urlProperty)
+                        || urlProperty is not JsonValue urlValue
+                        || urlValue.ToString() is not string u)
+                    {
+                        return;
+                    }
+
+                    var node = await client.JsonAsync("objectcontactmomenten?contactmoment=" + u, token);
+                    if (node.TryParsePagination(out var arr))
+                    {
+                        item[ObjectcontactmomentenKey] = arr.DeepClone();
+                    }
+                });
+
+                await Task.WhenAll(tasks);
+            }
         });
     }
 }
