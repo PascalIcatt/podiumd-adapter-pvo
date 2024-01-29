@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using System.Text.Json.Nodes;
 
 namespace PodiumdAdapter.Web
@@ -8,7 +7,7 @@ namespace PodiumdAdapter.Web
     public static class ProxyClientExtensions
     {
         public static IResult ProxyResult(this HttpClient client, ProxyRequest request)
-            =>new ProxyResult(client, request);
+            => new ProxyResult(client, request);
 
         public static Task<JsonNode?> JsonAsync(this HttpClient client, string url, CancellationToken token)
     => client.JsonAsync(HttpMethod.Get, url, token);
@@ -54,6 +53,8 @@ namespace PodiumdAdapter.Web
         {
             var token = httpContext.RequestAborted;
             var method = request.Method ?? new HttpMethod(httpContext.Request.Method);
+            var logger = httpContext.RequestServices.GetRequiredService<ILogger<ProxyResult>>();
+
             using var message = new HttpRequestMessage(method, request.Url);
 
             if (request.ModifyRequestBody == null)
@@ -69,8 +70,9 @@ namespace PodiumdAdapter.Web
                     {
                         await request.ModifyRequestBody(json, token);
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        logger.LogError(e, "Error while trying to modify request body. Ignoring and sending original request");
                     }
                 }
                 message.Content = JsonContent.Create(json);
@@ -99,8 +101,9 @@ namespace PodiumdAdapter.Web
             {
                 await request.ModifyResponseBody(node, token);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                logger.LogError(e, "Error while trying to modify response body. Ignoring and sending original response");
             }
             await httpContext.Response.WriteAsJsonAsync(node, token);
         }
