@@ -48,10 +48,16 @@ namespace PodiumdAdapter.Web.Endpoints
                     Url = "contactmomenten",
                     ModifyRequestBody = (json, token) =>
                     {
-                        // TODO properties met defaults vullen in json:
-                        // 'tekst' en 'medewerkerIdentificatie.identificatie'
-                        // if(json["tekst"] == null)
-                        // json["tekst"] = "bla"
+                        var tekst = json["tekst"]?.GetValue<string>();
+                        if (string.IsNullOrWhiteSpace(tekst))
+                        {
+                            json["tekst"] = "X";
+                        }
+                        if (json["medewerkerIdentificatie"] is JsonObject identificatie)
+                        {
+                            identificatie["identificatie"] = "Felix";
+                        }
+                        return new ValueTask();
                     }
                 });
             });
