@@ -82,6 +82,9 @@ namespace PodiumdAdapter.Web
             httpContext.Response.StatusCode = (int)response.StatusCode;
             foreach (var item in response.Headers)
             {
+                // deze header geeft aan of de content 'chunked' is. maar die waarde kunnen we niet overnemen,
+                // die is namelijk van hoe we zelf hieronder de response opbouwen.
+                if (item.Key.Equals("transfer-encoding", StringComparison.OrdinalIgnoreCase)) continue;
                 httpContext.Response.Headers[item.Key] = new(item.Value.ToArray());
             }
             foreach (var item in response.Content.Headers)
