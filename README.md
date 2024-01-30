@@ -9,5 +9,5 @@ Be sure to set-up environment variables first
 ## Run in combination with PodiumD Contact (KISS) from Visual Studio
 1. Run both from their own docker containers on Windows with Docker Desktop (see 'Run from Visual Studio')
 2. Update the podiumD Contact env.local with the Adapter url: http://host.docker.internal:56090. use this url for the Zaken, Contactmomenten and Klanten API's (don't remove sub paths)
-3. Change their API keys and id's to the id and key of an e-Suite instance. 
+3. In the development environment there is no authentication on calls to the Adapter. Any technically valid value for the API keys and id's in PodiumD Contact will do. 
 

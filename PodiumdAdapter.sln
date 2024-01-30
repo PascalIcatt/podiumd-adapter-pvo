@@ -11,9 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		LICENSE.md = LICENSE.md
+		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PodiumdAdapter.Web.Test", "test\PodiumdAdapter.Web.Test\PodiumdAdapter.Web.Test.csproj", "{ED4D046C-1725-4ADA-8DB2-69318D27897B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PodiumdAdapter.Web.Test", "test\PodiumdAdapter.Web.Test\PodiumdAdapter.Web.Test.csproj", "{ED4D046C-1725-4ADA-8DB2-69318D27897B}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{0DF0DFC8-4B09-4A77-941A-197A53A18A51}"
 EndProject
