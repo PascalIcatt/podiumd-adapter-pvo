@@ -57,6 +57,10 @@ namespace PodiumdAdapter.Web.Endpoints
                         {
                             identificatie["identificatie"] = "Felix";
                         }
+                 
+                        //tijdelijk het kanaal hardcoded meesturen                
+                        json["kanaal"] = "E-mail";
+                    
                         return new ValueTask();
                     }
                 });
