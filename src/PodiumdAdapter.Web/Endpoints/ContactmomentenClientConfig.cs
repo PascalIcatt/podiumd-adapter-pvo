@@ -37,7 +37,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 }
 
                 // als je niet wil filteren op objectUrl, en ook de objectContactmomenten niet hoeft uit te klappen, kunnen we het request as-is proxyen
-                return client.ProxyResult(new ProxyRequest { Url = url });
+                return GetContactmomentenDefault(client, url);
             });
 
             clientRoot.MapPost("/contactmomenten", () =>
@@ -93,6 +93,10 @@ namespace PodiumdAdapter.Web.Endpoints
             }
 
             var contactmomenten = await Task.WhenAll(contactmomentTasks);
+            foreach (var item in contactmomenten)
+            {
+                PlakAntwoordPropertyAchterTekstProperty(item);
+            }
 
             var paginated = new JsonObject
             {
@@ -103,6 +107,15 @@ namespace PodiumdAdapter.Web.Endpoints
             };
 
             return Results.Json(paginated);
+        }
+
+        private static void PlakAntwoordPropertyAchterTekstProperty(JsonNode? contactmoment)
+        {
+            if (contactmoment is JsonObject obj && obj["antwoord"]?.GetValue<string>() is string antwoord)
+            {
+                var tekst = obj["tekst"]?.GetValue<string>() ?? "";
+                obj["tekst"] = string.Join('\n', tekst, antwoord);
+            }
         }
 
         private static IAsyncEnumerable<JsonNode?> GetObjectContactmomenten(HttpClient client, string objectUrl, CancellationToken token)
@@ -137,6 +150,8 @@ namespace PodiumdAdapter.Web.Endpoints
 
                 var tasks = arr.Select(async (item) =>
                 {
+                    PlakAntwoordPropertyAchterTekstProperty(item);
+
                     if (item is not JsonObject o
                         || o.ContainsKey(ObjectcontactmomentenKey)
                         || !o.TryGetPropertyValue("url", out var urlProperty)
@@ -154,6 +169,22 @@ namespace PodiumdAdapter.Web.Endpoints
                 });
 
                 await Task.WhenAll(tasks);
+            }
+        });
+
+        private static IResult GetContactmomentenDefault(HttpClient client, string url) => client.ProxyResult(new ProxyRequest
+        {
+            Url = url,
+            ModifyResponseBody = (json, _) =>
+            {
+                if (json.TryParsePagination(out var page))
+                {
+                    foreach (var item in page)
+                    {
+                        PlakAntwoordPropertyAchterTekstProperty(item);
+                    }
+                }
+                return new ValueTask();
             }
         });
     }
