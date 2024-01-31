@@ -12,31 +12,60 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public string RootUrl => "/contactmomenten/api/v1";
 
-        public void MapCustomEndpoints(IEndpointRouteBuilder clientRoot, Func<HttpClient> getClient) => clientRoot.MapGet("/contactmomenten", async (HttpRequest request, CancellationToken token) =>
+        public void MapCustomEndpoints(IEndpointRouteBuilder clientRoot, Func<HttpClient> getClient)
         {
-            var client = getClient();
-
-            // in OpenKlant zit een uitbreiding op de contacmomenten standaard.
-            // Je kan contactmomenten daarin filteren op objectUrl (in de praktijk is dat de url van de zaak die erbij hoort).
-            // dit zit niet in de standaard. Mogelijk wordt dit nog wel in de API van de eSuite geimplementeerd. Dan kan onderstaande code eruit.
-            if (TryGetObjectUrlFromQuery(request.Query, out var objectUrl))
+            clientRoot.MapGet("/contactmomenten", async (HttpRequest request, CancellationToken token) =>
             {
-                return await GetContactmomentenFilteredByObjectUrl(client, objectUrl, token);
-            }
+                var client = getClient();
 
-            var url = "contactmomenten" + (request.QueryString.Value ?? "");
+                // in OpenKlant zit een uitbreiding op de contacmomenten standaard.
+                // Je kan contactmomenten daarin filteren op objectUrl (in de praktijk is dat de url van de zaak die erbij hoort).
+                // dit zit niet in de standaard. Mogelijk wordt dit nog wel in de API van de eSuite geimplementeerd. Dan kan onderstaande code eruit.
+                if (TryGetObjectUrlFromQuery(request.Query, out var objectUrl))
+                {
+                    return await GetContactmomentenFilteredByObjectUrl(client, objectUrl, token);
+                }
 
-            // in OpenKlant zit een uitbreiding op de contacmomenten standaard.
-            // Je kan daarin met een expand parameter aangeven dat je de objectcontactmomenten wil 'uitklappen' in de lijst met contactmomenten.
-            // dit zit niet in de standaard. Mogelijk wordt dit nog wel in de API van de eSuite geimplementeerd. Dan kan onderstaande code eruit.
-            if (ShouldIncludeObjectContactmomenten(request))
+                var url = "contactmomenten" + (request.QueryString.Value ?? "");
+
+                // in OpenKlant zit een uitbreiding op de contacmomenten standaard.
+                // Je kan daarin met een expand parameter aangeven dat je de objectcontactmomenten wil 'uitklappen' in de lijst met contactmomenten.
+                // dit zit niet in de standaard. Mogelijk wordt dit nog wel in de API van de eSuite geimplementeerd. Dan kan onderstaande code eruit.
+                if (ShouldIncludeObjectContactmomenten(request))
+                {
+                    return GetContactmomentenWithObjectContactmomenten(client, url);
+                }
+
+                // als je niet wil filteren op objectUrl, en ook de objectContactmomenten niet hoeft uit te klappen, kunnen we het request as-is proxyen
+                return client.ProxyResult(new ProxyRequest { Url = url });
+            });
+
+            clientRoot.MapPost("/contactmomenten", () =>
             {
-                return GetContactmomentenWithObjectContactmomenten(client, url);
-            }
-
-            // als je niet wil filteren op objectUrl, en ook de objectContactmomenten niet hoeft uit te klappen, kunnen we het request as-is proxyen
-            return client.ProxyResult(url);
-        });
+                var client = getClient();
+                return client.ProxyResult(new ProxyRequest
+                {
+                    Url = "contactmomenten",
+                    ModifyRequestBody = (json, token) =>
+                    {
+                        var tekst = json["tekst"]?.GetValue<string>();
+                        if (string.IsNullOrWhiteSpace(tekst))
+                        {
+                            json["tekst"] = "X";
+                        }
+                        if (json["medewerkerIdentificatie"] is JsonObject identificatie)
+                        {
+                            identificatie["identificatie"] = "Felix";
+                        }
+                 
+                        //tijdelijk het kanaal hardcoded meesturen                
+                        json["kanaal"] = "E-mail";
+                    
+                        return new ValueTask();
+                    }
+                });
+            });
+        }
 
         private static bool TryGetObjectUrlFromQuery(IQueryCollection query, out string result)
         {
@@ -97,34 +126,39 @@ namespace PodiumdAdapter.Web.Endpoints
             request.Query.TryGetValue("expand", out var expand)
             && expand.Contains(ObjectcontactmomentenKey);
 
-        private static IResult GetContactmomentenWithObjectContactmomenten(HttpClient client, string url) => client.ProxyResult(url, async (json, token) =>
+        private static IResult GetContactmomentenWithObjectContactmomenten(HttpClient client, string url) => client.ProxyResult(new ProxyRequest
         {
-            if (!json.TryParsePagination(out var arr))
+            Url = url,
+            Method = HttpMethod.Get,
+            ModifyResponseBody = async (json, token) =>
             {
-                return;
-            }
-
-
-
-            var tasks = arr.Select(async (item) =>
-            {
-                if (item is not JsonObject o
-                    || o.ContainsKey(ObjectcontactmomentenKey)
-                    || !o.TryGetPropertyValue("url", out var urlProperty)
-                    || urlProperty is not JsonValue urlValue
-                    || urlValue.ToString() is not string u)
+                if (!json.TryParsePagination(out var arr))
                 {
                     return;
                 }
 
-                var node = await client.JsonAsync("objectcontactmomenten?contactmoment=" + u, token);
-                if (node.TryParsePagination(out var arr))
-                {
-                    item[ObjectcontactmomentenKey] = arr.DeepClone();
-                }
-            });
 
-            await Task.WhenAll(tasks);
+
+                var tasks = arr.Select(async (item) =>
+                {
+                    if (item is not JsonObject o
+                        || o.ContainsKey(ObjectcontactmomentenKey)
+                        || !o.TryGetPropertyValue("url", out var urlProperty)
+                        || urlProperty is not JsonValue urlValue
+                        || urlValue.ToString() is not string u)
+                    {
+                        return;
+                    }
+
+                    var node = await client.JsonAsync("objectcontactmomenten?contactmoment=" + u, token);
+                    if (node.TryParsePagination(out var arr))
+                    {
+                        item[ObjectcontactmomentenKey] = arr.DeepClone();
+                    }
+                });
+
+                await Task.WhenAll(tasks);
+            }
         });
     }
 }
