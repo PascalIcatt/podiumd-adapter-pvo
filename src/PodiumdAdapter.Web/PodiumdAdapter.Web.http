@@ -4,6 +4,7 @@
 @ZrcRoot = {{PodiumdAdapter.Web_HostAddress}}/zaken/api/v1
 @ZtcRoot = {{PodiumdAdapter.Web_HostAddress}}/catalogi/api/v1
 @DrcRoot = {{PodiumdAdapter.Web_HostAddress}}/documenten/api/v1
+@InterneTaakRoot = {{PodiumdAdapter.Web_HostAddress}}/internetaak/api/v2
 
 
 GET {{ContactmomentenRoot}}/contactmomenten?expand=objectcontactmomenten&klant={{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
@@ -94,3 +95,18 @@ GET {{DrcRoot}}/enkelvoudiginformatieobjecten/4de76083-1fce-4852-876a-c833904d55
 
 
 # https://podiumdcontact.dev.kiss-demo.nl/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/4de76083-1fce-4852-876a-c833904d55a1
+###
+
+POST {{InterneTaakRoot}}/objects
+Accept: application/json
+Content-Type: application/json
+
+{
+    "record": {
+        "data": {
+            "contactmoment": "{{ContactmomentenRoot}}/contactmomenten/c85c9545-454a-4b0b-abc1-f85977fdfde3" 
+        }
+    }
+}
+
+###

@@ -38,11 +38,13 @@ try
     var app = builder.Build();
     // Configure the HTTP request pipeline.
     app.UseSerilogRequestLogging();
-    app.UseUrlRewriter();
+    //app.UseUrlRewriter();
 
     app.MapHealthChecks("/healthz").AllowAnonymous();
     app.MapEsuiteEndpoints();
+    app.MapInterneTaakCustomEndpoints();
     app.MapReverseProxy();
+
 
     app.Run();
 }
