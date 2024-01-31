@@ -8,7 +8,7 @@ namespace PodiumdAdapter.Web.Test
         const string KlantenBaseUrl = "/klanten/api/v1";
         const string ZakenBaseUrl = "/zaken/api/v1";
         const string CatalogiBaseUrl = "/catalogi/api/v1";
-        const string InterneTaakBaseUrl = "/internetaak/api/v2";
+        const string InterneTaakBaseUrl = "/api/v2";
 
         [Theory]
         [InlineData("/healthz", HttpStatusCode.OK)]

@@ -6,7 +6,7 @@ namespace PodiumdAdapter.Web.Endpoints
 {
     public static class InterneTaakCustomEndpoints
     {
-        const string ApiRoot = "/internetaak/api/v2/objects";
+        const string ApiRoot = "/api/v2/objects";
 
         public static IEndpointConventionBuilder MapInterneTaakCustomEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
         {

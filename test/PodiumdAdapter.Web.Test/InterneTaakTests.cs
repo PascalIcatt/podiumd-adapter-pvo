@@ -7,7 +7,7 @@ namespace PodiumdAdapter.Web.Test
         [Fact]
         public async Task Test()
         {
-            const string baseUrl = "/internetaak/api/v2/objects";
+            const string baseUrl = "/api/v2/objects";
             var cmId = Guid.NewGuid().ToString();
             var cmUrl = "https://www.google.nl/" + cmId;
             var expectedContent = $$"""
