@@ -10,8 +10,8 @@ namespace PodiumdAdapter.Web.Test
             const string baseUrl = "/api/v2/objects";
             var cmId = Guid.NewGuid().ToString();
             var cmUrl = "https://www.google.nl/" + cmId;
-            var expectedContent = $$"""
-            {"url":"http://localhost{{baseUrl}}/{{cmId}}"}
+            var expectedContent = $$$"""
+            {"record":{"data":{"contactmoment":"{{{cmUrl}}}"}},"url":"http://localhost{{{baseUrl}}}/{{{cmId}}}","uuid":"{{{cmId}}}"}
             """;
 
             using var client = factory.CreateClient();
