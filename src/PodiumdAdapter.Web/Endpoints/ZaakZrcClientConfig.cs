@@ -29,10 +29,10 @@ namespace PodiumdAdapter.Web.Endpoints
                 foreach (var item in page)
                 {
                     if (item != null
-                    && item["interneIdentificatie"]?.GetValue<string>() is string interneIdentificatie
-                    && !string.IsNullOrWhiteSpace(interneIdentificatie))
+                    && item["internZaaknummer"]?.GetValue<string>() is string internZaaknummer
+                    && !string.IsNullOrWhiteSpace(internZaaknummer))
                     {
-                        item["identificatie"] = interneIdentificatie;
+                        item["identificatie"] = internZaaknummer;
                     }
                 }
             }
