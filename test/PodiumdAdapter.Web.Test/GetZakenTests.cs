@@ -16,7 +16,7 @@
             using var client = factory.CreateClient();
             factory.Login(client);
             factory.MockHttpMessageHandler
-                .Expect(HttpMethod.Get, "https://localhost:12345/zgw-apis-provider/zrc/api/v1/zaken")
+                .Expect(HttpMethod.Get, factory.ESUITE_BASE_URL + "/zgw-apis-provider/zrc/api/v1/zaken")
                 .Respond("application/json", EsuiteResponse);
 
             var response = await client.GetStringAsync("/zaken/api/v1/zaken");
@@ -38,7 +38,7 @@
             using var client = factory.CreateClient();
             factory.Login(client);
             factory.MockHttpMessageHandler
-                .Expect(HttpMethod.Get, "https://localhost:12345/zgw-apis-provider/zrc/api/v1/zaken")
+                .Expect(HttpMethod.Get, factory.ESUITE_BASE_URL + "/zgw-apis-provider/zrc/api/v1/zaken")
                 .Respond("application/json", EsuiteResponse);
 
             var response = await client.GetStringAsync("/zaken/api/v1/zaken");
