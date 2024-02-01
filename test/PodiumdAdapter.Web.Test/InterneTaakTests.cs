@@ -5,7 +5,7 @@ namespace PodiumdAdapter.Web.Test
     public class InterneTaakTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
     {
         [Fact]
-        public async Task Test()
+        public async Task Post_response_contains_correct_url()
         {
             const string baseUrl = "/api/v2/objects";
             var cmId = Guid.NewGuid().ToString();

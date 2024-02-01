@@ -16,36 +16,37 @@ namespace PodiumdAdapter.Web.Endpoints
             {
                 group.RequireObjectenApiKey();
             }
-
-            group.MapPost("/", async (HttpRequest request) =>
-            {
-                var json = await JsonNode.ParseAsync(request.Body);
-
-                if (!TryParseContactmomentId(json, out var contactmomentId))
-                {
-                    return Results.Problem("contactmoment ontbreekt of is niet valide", statusCode: 400);
-                }
-
-                var uriBuilder = new UriBuilder
-                {
-                    Scheme = request.Scheme,
-                    Host = request.Host.Host,
-                    Path = ApiRoot + "/" + contactmomentId
-                };
-
-                if (request.Host.Port.HasValue)
-                {
-                    uriBuilder.Port = request.Host.Port.Value;
-                }
-
-                var url = uriBuilder.Uri.ToString();
-
-                var response = new JsonObject { ["url"] = url };
-
-                return Results.Ok(response);
-            });
+            group.MapPost("/", PostInterneTaak);
 
             return group;
+        }
+
+        private static async Task<IResult> PostInterneTaak(HttpRequest request)
+        {
+            var json = await JsonNode.ParseAsync(request.Body);
+
+            if (!TryParseContactmomentId(json, out var contactmomentId))
+            {
+                return Results.Problem("contactmoment ontbreekt of is niet valide", statusCode: 400);
+            }
+
+            var uriBuilder = new UriBuilder
+            {
+                Scheme = request.Scheme,
+                Host = request.Host.Host,
+                Path = ApiRoot + "/" + contactmomentId
+            };
+
+            if (request.Host.Port.HasValue)
+            {
+                uriBuilder.Port = request.Host.Port.Value;
+            }
+
+            var url = uriBuilder.Uri.ToString();
+
+            var response = new JsonObject { ["url"] = url };
+
+            return Results.Ok(response);
         }
 
         private static bool TryParseContactmomentId(JsonNode? json, [NotNullWhen(true)] out string? result)
