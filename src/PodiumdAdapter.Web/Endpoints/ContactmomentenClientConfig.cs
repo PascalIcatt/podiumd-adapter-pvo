@@ -33,11 +33,11 @@ namespace PodiumdAdapter.Web.Endpoints
                 // dit zit niet in de standaard. Mogelijk wordt dit nog wel in de API van de eSuite geimplementeerd. Dan kan onderstaande code eruit.
                 if (ShouldIncludeObjectContactmomenten(request))
                 {
-                    return GetContactmomentenWithObjectContactmomenten(client, url);
+                    return GetContactmomentenWithObjectContactmomenten(client, url, PlakAntwoordPropertyAchterTekstProperty);
                 }
 
                 // als je niet wil filteren op objectUrl, en ook de objectContactmomenten niet hoeft uit te klappen, kunnen we het request as-is proxyen
-                return GetContactmomentenDefault(client, url);
+                return GetContactmomentenDefault(client, url, PlakAntwoordPropertyAchterTekstProperty);
             });
 
             clientRoot.MapPost("/contactmomenten", () =>
@@ -135,7 +135,7 @@ namespace PodiumdAdapter.Web.Endpoints
             request.Query.TryGetValue("expand", out var expand)
             && expand.Contains(ObjectcontactmomentenKey);
 
-        private static IResult GetContactmomentenWithObjectContactmomenten(HttpClient client, string url) => client.ProxyResult(new ProxyRequest
+        private static IResult GetContactmomentenWithObjectContactmomenten(HttpClient client, string url, Action<JsonNode?> modifyContactmoment) => client.ProxyResult(new ProxyRequest
         {
             Url = url,
             Method = HttpMethod.Get,
@@ -150,7 +150,7 @@ namespace PodiumdAdapter.Web.Endpoints
 
                 var tasks = arr.Select(async (item) =>
                 {
-                    PlakAntwoordPropertyAchterTekstProperty(item);
+                    modifyContactmoment?.Invoke(item);
 
                     if (item is not JsonObject o
                         || o.ContainsKey(ObjectcontactmomentenKey)
@@ -172,7 +172,7 @@ namespace PodiumdAdapter.Web.Endpoints
             }
         });
 
-        private static IResult GetContactmomentenDefault(HttpClient client, string url) => client.ProxyResult(new ProxyRequest
+        private static IResult GetContactmomentenDefault(HttpClient client, string url, Action<JsonNode?> modifyContactmoment) => client.ProxyResult(new ProxyRequest
         {
             Url = url,
             ModifyResponseBody = (json, _) =>
@@ -181,7 +181,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 {
                     foreach (var item in page)
                     {
-                        PlakAntwoordPropertyAchterTekstProperty(item);
+                        modifyContactmoment?.Invoke(item);
                     }
                 }
                 return new ValueTask();
