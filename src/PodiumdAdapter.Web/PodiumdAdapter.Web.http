@@ -102,11 +102,32 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "record": {
+      "type": "my-type",
+      "record": {
+        "typeVersion": 1,
         "data": {
-            "contactmoment": "{{ContactmomentenRoot}}/contactmomenten/c85c9545-454a-4b0b-abc1-f85977fdfde3" 
+          "actor": null,
+          "status": "nieuw",
+          "betrokkene": {
+            "rol": "klant",
+            "klant": "http://localhost:56090/klanten/api/v1/klanten/83047d24-a213-4fc3-9878-367ffe06988e",
+            "digitaleAdressen": [
+              {
+                "adres": "n.simon@rotterdam.nl",
+                "omschrijving": "e-mailadres",
+                "soortDigitaalAdres": "e-mailadres"
+              }
+            ]
+          },
+          "toelichting": null,
+          "contactmoment": "http://localhost:56090/contactmomenten/api/v1/contactmomenten/4970067a-e0b8-40c0-b20a-f4b3c3947866",
+          "registratiedatum": "2021-03-08T09:43:47+01:00",
+          "medewerkerIdentificatie": {
+            "identificatie": "ESUITE_FG_LOKET",
+            "achternaam": "Het digitale loket"
+          }
         }
+      }
     }
-}
 
 ###

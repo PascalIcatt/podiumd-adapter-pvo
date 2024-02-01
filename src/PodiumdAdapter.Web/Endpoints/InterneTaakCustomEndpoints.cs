@@ -44,12 +44,14 @@ namespace PodiumdAdapter.Web.Endpoints
 
             var url = uriBuilder.Uri.ToString();
 
-            var response = new JsonObject { ["url"] = url };
+            var response = json.DeepClone();
+            response["url"] = url;
+            response["uuid"] = contactmomentId;
 
             return Results.Ok(response);
         }
 
-        private static bool TryParseContactmomentId(JsonNode? json, [NotNullWhen(true)] out string? result)
+        private static bool TryParseContactmomentId([NotNullWhen(true)] JsonNode? json, [NotNullWhen(true)] out string? result)
         {
             result = json?["record"]?["data"]?["contactmoment"]?.GetValue<string>()
                 ?.Split('/', StringSplitOptions.RemoveEmptyEntries)
