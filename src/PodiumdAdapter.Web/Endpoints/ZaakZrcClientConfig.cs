@@ -16,13 +16,13 @@ namespace PodiumdAdapter.Web.Endpoints
                 Url = "zaken" + request.QueryString,
                 ModifyResponseBody = (json, _) =>
                 {
-                    MapInterneIdentificatieToIdentificatie(json);
+                    MapInternZaaknummerToIdentificatie(json);
                     return new ValueTask();
                 }
             }));
         }
 
-        private static void MapInterneIdentificatieToIdentificatie(JsonNode json)
+        private static void MapInternZaaknummerToIdentificatie(JsonNode json)
         {
             if (json.TryParsePagination(out var page))
             {
