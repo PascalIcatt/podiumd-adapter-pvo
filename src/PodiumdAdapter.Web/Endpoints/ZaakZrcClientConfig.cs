@@ -28,8 +28,7 @@ namespace PodiumdAdapter.Web.Endpoints
             {
                 foreach (var item in page)
                 {
-                    if (item != null
-                    && item["internZaaknummer"]?.GetValue<string>() is string internZaaknummer
+                    if (item?["internZaaknummer"]?.GetValue<string>() is string internZaaknummer
                     && !string.IsNullOrWhiteSpace(internZaaknummer))
                     {
                         item["identificatie"] = internZaaknummer;
