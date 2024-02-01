@@ -29,6 +29,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton<IForwarderHttpClientFactory>(new CustomForwarderHttpClientFactory(MockHttpMessageHandler));
+                services.ConfigureHttpClientDefaults(x => x.ConfigurePrimaryHttpMessageHandler(_ => MockHttpMessageHandler));
             });
 
             builder.ConfigureAppConfiguration((context, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>
