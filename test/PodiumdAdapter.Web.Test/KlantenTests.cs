@@ -7,6 +7,35 @@ public class KlantenTests(CustomWebApplicationFactory factory) : IClassFixture<C
 {
     const string KlantenBaseUrl = "/klanten/api/v1";
 
+
+    [Fact]
+    public async Task Get_klanten_request_is_forwarded_to_expected_Url()
+    {
+
+        var esuiteUrl = factory.ESUITE_BASE_URL + "/klanten-api-provider/api/v1/klanten";
+        var adapterPath = "/klanten/api/v1/klanten";
+
+        using var client = factory.CreateClient();
+        factory.Login(client);
+
+        //MockHttpMessageHandler will intercept calls from the Adapter to e-Suite
+        //If the adapter behaves as expected
+        //esuiteUrl will be called from the adapter
+        //if a call to the adapter is made on the adapterUrl
+
+        var requestsToEsuite = factory.MockHttpMessageHandler
+            .Expect(HttpMethod.Get, esuiteUrl)
+            .Respond("application/json", "{}");
+
+        await client.GetAsync(adapterPath);
+
+        var nrOfCallsToEsuite = factory.MockHttpMessageHandler.GetMatchCount(requestsToEsuite);
+
+        Assert.Equal(1, nrOfCallsToEsuite);
+
+    }
+       
+
     [Fact]
     public async Task Integration_test_for_url_rewriting_request_and_response_bodies()
     {
