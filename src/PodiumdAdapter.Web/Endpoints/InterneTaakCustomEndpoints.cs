@@ -48,8 +48,8 @@ namespace PodiumdAdapter.Web.Endpoints
             [FromQuery(Name = "data_attrs")] string[] filterAttributes,
             [FromQuery(Name = "type")] string? objectType)
         {
-            var type = configuration["CONTACTVERZOEK_TYPE"];
-            if (type == null) return Results.Problem("Het type contact dat hoort bij een Contactverzoek is niet opgenomen in de instellingen van de adapter. Neem contact op met een beheerder", statusCode: 500);
+            var types = configuration.GetSection("CONTACTVERZOEK_TYPES")?.Get<IEnumerable<string>>()?.Where(x=> !string.IsNullOrWhiteSpace(x)).ToArray() ?? [];
+            if (types.Length == 0) return Results.Problem("Het type contact dat hoort bij een Contactverzoek is niet opgenomen in de instellingen van de adapter. Neem contact op met een beheerder", statusCode: 500);
 
             var klant = filterAttributes
                 .Select(x => x.Split("betrokkene__klant__exact__", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault())
@@ -60,7 +60,7 @@ namespace PodiumdAdapter.Web.Endpoints
 
             var builder = new QueryBuilder
             {
-                { "type", type }
+                { "type", types }
             };
 
             if (!string.IsNullOrWhiteSpace(klant))

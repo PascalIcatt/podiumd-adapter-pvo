@@ -38,7 +38,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
                 ["CLIENTS:0:SECRET"] = _clientSecret,
                 ["ESUITE_BASE_URL"] = ESUITE_BASE_URL,
                 ["ESUITE_TOKEN"] = "FAKE_TOKEN",
-                ["CONTACTVERZOEK_TYPE"] = "TYPE"
+                ["CONTACTVERZOEK_TYPES:0"] = "TYPE"
             }));
         }
 
