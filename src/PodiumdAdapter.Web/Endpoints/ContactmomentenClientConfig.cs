@@ -78,7 +78,7 @@ namespace PodiumdAdapter.Web.Endpoints
             if (json["actor"] is JsonObject actor)
             {
                 // dit is een contactverzoek
-                json["type"] = configuration["CONTACTVERZOEK_TYPE__0"];
+                json["type"] = configuration["CONTACTVERZOEK_TYPES__0"];
 
                 json["behandelaar"] = new JsonObject
                 {
