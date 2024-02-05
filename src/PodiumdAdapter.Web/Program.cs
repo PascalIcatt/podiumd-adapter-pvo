@@ -28,6 +28,7 @@ try
     builder.Services.AddESuiteClient(new KlantenClientConfig());
     builder.Services.AddESuiteClient(new ZaakZrcClientConfig());
     builder.Services.AddESuiteClient(new CatalogusZtcClientConfig());
+    builder.Services.AddESuiteClient(new DocumentenDrcClientConfig());
 
     if (!builder.Environment.IsDevelopment())
     {

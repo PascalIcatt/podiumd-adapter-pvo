@@ -3,6 +3,7 @@
 @KlantenRoot = {{PodiumdAdapter.Web_HostAddress}}/klanten/api/v1
 @ZrcRoot = {{PodiumdAdapter.Web_HostAddress}}/zaken/api/v1
 @ZtcRoot = {{PodiumdAdapter.Web_HostAddress}}/catalogi/api/v1
+@DrcRoot = {{PodiumdAdapter.Web_HostAddress}}/documenten/api/v1
 
 
 GET {{ContactmomentenRoot}}/contactmomenten?expand=objectcontactmomenten&klant={{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
@@ -86,3 +87,10 @@ GET {{ZrcRoot}}/zaken/f54736d7-dafb-4e15-8650-3ebf870f3cba
 GET {{ZtcRoot}}/zaaktypen
 
 ###
+
+GET {{DrcRoot}}/enkelvoudiginformatieobjecten/4de76083-1fce-4852-876a-c833904d55a1/download
+
+###
+
+
+# https://podiumdcontact.dev.kiss-demo.nl/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/4de76083-1fce-4852-876a-c833904d55a1
