@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Configuration;
 using PodiumdAdapter.Web.Infrastructure;
 
 namespace PodiumdAdapter.Web.Endpoints
@@ -63,7 +64,8 @@ namespace PodiumdAdapter.Web.Endpoints
                             identificatie["identificatie"] = "Felix";
                         }
 
-                        HandleContactverzoek(json, configuration["CONTACTVERZOEK_TYPES__0"]);
+                        var contactverzoekType = configuration.GetSection("CONTACTVERZOEK_TYPES").Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).FirstOrDefault();
+                        HandleContactverzoek(json, contactverzoekType);
 
                         return new ValueTask();
                     }
