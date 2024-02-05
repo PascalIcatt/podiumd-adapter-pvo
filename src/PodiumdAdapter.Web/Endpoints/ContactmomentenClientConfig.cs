@@ -63,7 +63,7 @@ namespace PodiumdAdapter.Web.Endpoints
                             identificatie["identificatie"] = "Felix";
                         }
 
-                        HandleContactverzoek(configuration, json);
+                        HandleContactverzoek(json, configuration["CONTACTVERZOEK_TYPES__0"]);
 
                         return new ValueTask();
                     }
@@ -71,14 +71,16 @@ namespace PodiumdAdapter.Web.Endpoints
             });
         }
 
-        private static void HandleContactverzoek(IConfiguration configuration, JsonNode json)
+        public static void HandleContactverzoek(JsonNode json, string? contactverzoekType)
         {
-            (json as JsonObject)?.Remove("status");
+            if (json is not JsonObject obj) return;
+
+            obj.Remove("status");
 
             if (json["actor"] is JsonObject actor)
             {
                 // dit is een contactverzoek
-                json["type"] = configuration["CONTACTVERZOEK_TYPES__0"];
+                json["type"] = contactverzoekType;
 
                 json["behandelaar"] = new JsonObject
                 {
@@ -87,6 +89,8 @@ namespace PodiumdAdapter.Web.Endpoints
                     ["gebruikersnaam"] = "Mark",
                     ["toelichting"] = json["toelichting"]?.DeepClone()
                 };
+
+                obj.Remove("actor");
             }
 
             if (json["betrokkene"]?["digitaleAdressen"] is JsonArray digitaleAdressen)
@@ -108,6 +112,8 @@ namespace PodiumdAdapter.Web.Endpoints
                     ["telefoonnummer"] = telefoonnummers.FirstOrDefault(),
                     ["telefoonnummerAlternatief"] = telefoonnummers.ElementAtOrDefault(1)
                 };
+
+                obj.Remove("betrokkene");
             }
         }
 

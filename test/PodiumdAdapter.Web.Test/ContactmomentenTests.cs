@@ -1,10 +1,10 @@
-﻿namespace PodiumdAdapter.Web.Test;
+﻿using System.Text.Json.Nodes;
+using PodiumdAdapter.Web.Endpoints;
+
+namespace PodiumdAdapter.Web.Test;
 
 public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
-    
-
-
     [Fact]
     public async Task Get_contactmomenten_request_is_forwarded_to_expected_Url()
     {
@@ -60,4 +60,97 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
 
     }
 
+    [Fact]
+    public void Contactverzoek_is_mapped_correctly()
+    {
+        const string InputJson = """
+            {
+                "bronorganisatie": "999990639",
+                "registratiedatum": "2024-02-05T15:59:12.584Z",
+                "kanaal": "contactformulier",
+                "tekst": "notitie",
+                "onderwerpLinks": [],
+                "initiatiefnemer": "klant",
+                "specifiekevraag": "specifieke vraag",
+                "gespreksresultaat": "Contactverzoek gemaakt",
+                "voorkeurskanaal": "",
+                "voorkeurstaal": "",
+                "medewerker": "",
+                "startdatum": "2024-02-05T15:32:23.320Z",
+                "verantwoordelijkeAfdeling": "Beheer openbare ruimte",
+                "einddatum": "2024-02-05T15:59:12.584Z",
+                "status": "te verwerken",
+                "toelichting": "interne toelichting",
+                "actor": {
+                    "identificatie": "bo-handhaving",
+                    "naam": "Handhaving",
+                    "soortActor": "organisatorische eenheid"
+                },
+                "betrokkene": {
+                    "rol": "klant",
+                    "persoonsnaam": {
+                        "voornaam": "Voor",
+                        "voorvoegselAchternaam": "tussen",
+                        "achternaam": "Achter"
+                    },
+                    "organisatie": "Org",
+                    "digitaleAdressen": [
+                        {
+                            "adres": "icatttest@gmail.com",
+                            "omschrijving": "e-mailadres",
+                            "soortDigitaalAdres": "e-mailadres"
+                        },
+                        {
+                            "adres": "0201234567",
+                            "omschrijving": "telefoonnummer",
+                            "soortDigitaalAdres": "telefoonnummer"
+                        },
+                        {
+                            "adres": "0207654321",
+                            "omschrijving": "werk",
+                            "soortDigitaalAdres": "telefoonnummer"
+                        }
+                    ]
+                }
+            }
+            """;
+
+        const string ExpectedResult = """
+            {
+              "bronorganisatie": "999990639",
+              "registratiedatum": "2024-02-05T15:59:12.584Z",
+              "kanaal": "contactformulier",
+              "tekst": "notitie",
+              "onderwerpLinks": [],
+              "initiatiefnemer": "klant",
+              "specifiekevraag": "specifieke vraag",
+              "gespreksresultaat": "Contactverzoek gemaakt",
+              "voorkeurskanaal": "",
+              "voorkeurstaal": "",
+              "medewerker": "",
+              "startdatum": "2024-02-05T15:32:23.320Z",
+              "verantwoordelijkeAfdeling": "Beheer openbare ruimte",
+              "einddatum": "2024-02-05T15:59:12.584Z",
+              "toelichting": "interne toelichting",
+              "type": "my-type",
+              "behandelaar": {
+                "gebruikersnaam": "Mark",
+                "toelichting": "interne toelichting"
+              },
+              "contactgegevens": {
+                "emailadres": "icatttest@gmail.com",
+                "telefoonnummer": "0201234567",
+                "telefoonnummerAlternatief": "0207654321"
+              }
+            }
+            """;
+
+        var parsed = JsonNode.Parse(InputJson)!;
+
+        ContactmomentenClientConfig.HandleContactverzoek(parsed, "my-type");
+
+        var result = parsed.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }).Replace("\r\n", "\n");
+
+        Assert.Equal(ExpectedResult, result);
+    }
 }
