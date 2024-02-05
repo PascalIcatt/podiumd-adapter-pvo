@@ -40,7 +40,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 return GetContactmomentenDefault(client, url, PlakAntwoordPropertyAchterTekstProperty);
             });
 
-            clientRoot.MapPost("/contactmomenten", () =>
+            clientRoot.MapPost("/contactmomenten", (IConfiguration configuration) =>
             {
                 var client = getClient();
                 return client.ProxyResult(new ProxyRequest
@@ -62,11 +62,53 @@ namespace PodiumdAdapter.Web.Endpoints
                         {
                             identificatie["identificatie"] = "Felix";
                         }
-                 
+
+                        HandleContactverzoek(configuration, json);
+
                         return new ValueTask();
                     }
                 });
             });
+        }
+
+        private static void HandleContactverzoek(IConfiguration configuration, JsonNode json)
+        {
+            (json as JsonObject)?.Remove("status");
+
+            if (json["actor"] is JsonObject actor)
+            {
+                // dit is een contactverzoek
+                json["type"] = configuration["CONTACTVERZOEK_TYPE__0"];
+
+                json["behandelaar"] = new JsonObject
+                {
+                    // tijdelijk hard coded afdeling/groep/medewerker
+                    //["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
+                    ["gebruikersnaam"] = "Mark",
+                    ["toelichting"] = json["toelichting"]?.DeepClone()
+                };
+            }
+
+            if (json["betrokkene"]?["digitaleAdressen"] is JsonArray digitaleAdressen)
+            {
+                var telefoonnummers = digitaleAdressen
+                    .Where(x => x?["soortDigitaalAdres"]?.GetValue<string>() == "telefoonnummer")
+                    .Select(x => x?["adres"]?.DeepClone())
+                    .Where(x => x != null)
+                    .Take(2)
+                    .ToList();
+
+                json["contactgegevens"] = new JsonObject
+                {
+                    ["emailadres"] = digitaleAdressen
+                        .Where(x => x?["soortDigitaalAdres"]?.GetValue<string>() == "e-mailadres")
+                        .Select(x => x?["adres"]?.DeepClone())
+                        .Where(x => x != null)
+                        .FirstOrDefault(),
+                    ["telefoonnummer"] = telefoonnummers.FirstOrDefault(),
+                    ["telefoonnummerAlternatief"] = telefoonnummers.ElementAtOrDefault(1)
+                };
+            }
         }
 
         private static IEnumerable<string> GetTekstParts(JsonNode json)
