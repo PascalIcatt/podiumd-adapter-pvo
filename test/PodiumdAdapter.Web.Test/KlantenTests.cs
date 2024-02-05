@@ -16,7 +16,7 @@ public class KlantenTests(CustomWebApplicationFactory factory) : IClassFixture<C
         var adapterPath = "/klanten/api/v1/klanten";
 
         using var client = factory.CreateClient();
-        factory.Login(client);
+        factory.SetZgwToken(client);
 
         //MockHttpMessageHandler will intercept calls from the Adapter to e-Suite
         //If the adapter behaves as expected

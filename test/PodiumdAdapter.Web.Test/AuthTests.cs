@@ -8,6 +8,7 @@ namespace PodiumdAdapter.Web.Test
         const string KlantenBaseUrl = "/klanten/api/v1";
         const string ZakenBaseUrl = "/zaken/api/v1";
         const string CatalogiBaseUrl = "/catalogi/api/v1";
+        const string DocumentenBaseUrl = "/documenten/api/v1";
         const string InterneTaakBaseUrl = "/api/v2";
 
         [Theory]
@@ -22,7 +23,9 @@ namespace PodiumdAdapter.Web.Test
         [InlineData(ZakenBaseUrl + "/zaken", HttpStatusCode.Unauthorized)]
         [InlineData(ZakenBaseUrl + "/zaken/a9aba7a1-5a91-4280-b079-dee5afad72e3", HttpStatusCode.Unauthorized)]
         [InlineData(CatalogiBaseUrl + "/zaaktypen", HttpStatusCode.Unauthorized)]
-        [InlineData(CatalogiBaseUrl + "/zaaktypen/a9aba7a1-5a91-4280-b079-dee5afad72e3", HttpStatusCode.Unauthorized, "PATCH")]
+        [InlineData(CatalogiBaseUrl + "/zaaktypen/a9aba7a1-5a91-4280-b079-dee5afad72e3", HttpStatusCode.Unauthorized)]
+        [InlineData(DocumentenBaseUrl + "/enkelvoudiginformatieobjecten", HttpStatusCode.Unauthorized)]
+        [InlineData(DocumentenBaseUrl + "/enkelvoudiginformatieobjecten/a9aba7a1-5a91-4280-b079-dee5afad72e3", HttpStatusCode.Unauthorized)]
         [InlineData(InterneTaakBaseUrl + "/objects", HttpStatusCode.Unauthorized, "POST")]
         public async Task Route_returns_expected_status_code_when_not_logged_in(string url, HttpStatusCode statusCode, string method = "GET")
         {

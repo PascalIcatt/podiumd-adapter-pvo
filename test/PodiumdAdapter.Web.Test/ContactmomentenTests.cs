@@ -13,7 +13,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
         var adapterPath = "/contactmomenten/api/v1/contactmomenten";
 
         using var client = factory.CreateClient();
-        factory.Login(client);
+        factory.SetZgwToken(client);
 
         //MockHttpMessageHandler will intercept calls from the Adapter to e-Suite
         //If the adapter behaves as expected
@@ -41,7 +41,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
         var adapterPath = "/contactmomenten/api/v1/contactmomenten";
 
         using var client = factory.CreateClient();
-        factory.Login(client);
+        factory.SetZgwToken(client);
 
         //MockHttpMessageHandler will intercept calls from the Adapter to e-Suite
         //If the adapter behaves as expected
