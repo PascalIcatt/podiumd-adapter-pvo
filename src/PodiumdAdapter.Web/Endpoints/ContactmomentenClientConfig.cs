@@ -48,23 +48,35 @@ namespace PodiumdAdapter.Web.Endpoints
                     Url = "contactmomenten",
                     ModifyRequestBody = (json, token) =>
                     {
-                        var tekst = json["tekst"]?.GetValue<string>();
+                        // tekst uitbereiden met vraag en primaire vraag
+                        var tekst = string.Join('\n', GetTekstParts(json));
                         if (string.IsNullOrWhiteSpace(tekst))
                         {
-                            json["tekst"] = "X";
+                            // tekst is verplicht in de nieuwere versie van de api
+                            tekst = "X";
                         }
+                        json["tekst"] = tekst;
+
+                        // tijdelijk medewerker hard meesturen
                         if (json["medewerkerIdentificatie"] is JsonObject identificatie)
                         {
                             identificatie["identificatie"] = "Felix";
                         }
                  
-                        //tijdelijk het kanaal hardcoded meesturen                
-                        json["kanaal"] = "E-mail";
-                    
                         return new ValueTask();
                     }
                 });
             });
+        }
+
+        private static IEnumerable<string> GetTekstParts(JsonNode json)
+        {
+            var tekst = json["tekst"]?.GetValue<string>();
+            if(!string.IsNullOrWhiteSpace(tekst)) yield return tekst;
+            var vraag = json["vraag"]?.GetValue<string>();
+            if(!string.IsNullOrWhiteSpace(vraag)) yield return vraag;
+            var specifiekeVraag = json["specifiekevraag"]?.GetValue<string>();
+            if(!string.IsNullOrWhiteSpace(specifiekeVraag)) yield return specifiekeVraag;
         }
 
         private static bool TryGetObjectUrlFromQuery(IQueryCollection query, out string result)
