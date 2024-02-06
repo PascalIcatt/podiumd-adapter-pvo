@@ -16,12 +16,12 @@ namespace PodiumdAdapter.Web.Endpoints
             {
                 group.RequireObjectenApiKey();
             }
-            group.MapPost("/", PostInterneTaak);
+            group.MapPost("/", OpslaanInterneTaakStub);
 
             return group;
         }
 
-        private static async Task<IResult> PostInterneTaak(HttpRequest request)
+        private static async Task<IResult> OpslaanInterneTaakStub(HttpRequest request)
         {
             var json = await JsonNode.ParseAsync(request.Body);
 
