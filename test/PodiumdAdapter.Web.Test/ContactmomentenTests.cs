@@ -135,7 +135,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
               "type": "my-type",
               "behandelaar": {
                 "gebruikersnaam": "Mark",
-                "toelichting": "interne toelichting"
+                "toelichting": "Contact opnemen met: Voor tussen Achter (Org)\nOmschrijving tweede telefoonnummer: werk\ninterne toelichting"
               },
               "contactgegevens": {
                 "emailadres": "icatttest@gmail.com",
