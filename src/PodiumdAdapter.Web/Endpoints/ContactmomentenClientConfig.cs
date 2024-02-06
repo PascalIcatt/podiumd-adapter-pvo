@@ -71,12 +71,12 @@ namespace PodiumdAdapter.Web.Endpoints
 
         private static IEnumerable<string> GetTekstParts(JsonNode json)
         {
-            var tekst = json["tekst"]?.GetValue<string>();
-            if(!string.IsNullOrWhiteSpace(tekst)) yield return tekst;
             var vraag = json["vraag"]?.GetValue<string>();
             if(!string.IsNullOrWhiteSpace(vraag)) yield return vraag;
             var specifiekeVraag = json["specifiekevraag"]?.GetValue<string>();
             if(!string.IsNullOrWhiteSpace(specifiekeVraag)) yield return specifiekeVraag;
+            var tekst = json["tekst"]?.GetValue<string>();
+            if (!string.IsNullOrWhiteSpace(tekst)) yield return tekst;
         }
 
         private static bool TryGetObjectUrlFromQuery(IQueryCollection query, out string result)
