@@ -131,7 +131,6 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
               "startdatum": "2024-02-05T15:32:23.320Z",
               "verantwoordelijkeAfdeling": "Beheer openbare ruimte",
               "einddatum": "2024-02-05T15:59:12.584Z",
-              "toelichting": "interne toelichting",
               "type": "my-type",
               "behandelaar": {
                 "gebruikersnaam": "Mark",

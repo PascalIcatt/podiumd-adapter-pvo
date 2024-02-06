@@ -144,6 +144,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 ["telefoonnummerAlternatief"] = telefoonnummer2
             };
 
+            obj.Remove("toelichting");
             obj.Remove("status");
             obj.Remove("betrokkene");
             obj.Remove("actor");
