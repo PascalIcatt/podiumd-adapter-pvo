@@ -35,7 +35,7 @@ namespace PodiumdAdapter.Web.Auth
         public static void RequireObjectenApiKey<T>(this T builder) where T : IEndpointConventionBuilder => builder
             // allow anonymous zorgt ervoor dat de bearer authenticatie uitgeschakeld wordt
             .AllowAnonymous()
-            .AddEndpointFilter<T, ObjectenApiKeyFilter>();
+            .AddEndpointFilter<T, HasObjectenApiKeyFilter>();
 
         private static IEnumerable<SecurityKey> GetKey(IConfiguration configuration, SecurityToken token)
         {
@@ -66,11 +66,11 @@ namespace PodiumdAdapter.Web.Auth
 
         private record ClientCredential(string ID, string SECRET);
 
-        private class ObjectenApiKeyFilter : IEndpointFilter
+        private class HasObjectenApiKeyFilter : IEndpointFilter
         {
             private readonly IConfiguration _configuration;
 
-            public ObjectenApiKeyFilter(IConfiguration configuration)
+            public HasObjectenApiKeyFilter(IConfiguration configuration)
             {
                 _configuration = configuration;
             }

@@ -16,7 +16,14 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public void MapCustomEndpoints(IEndpointRouteBuilder clientRoot, Func<HttpClient> getClient)
         {
-            clientRoot.MapGet("/contactmomenten", async (HttpRequest request, CancellationToken token) =>
+            clientRoot.MapGet("/contactmomenten", OphalenContactmomenten(getClient));
+
+            clientRoot.MapPost("/contactmomenten", OpslaanContactmomentOfContactverzoek(getClient));
+        }
+
+        private static Func<HttpRequest, CancellationToken, Task<IResult>> OphalenContactmomenten(Func<HttpClient> getClient)
+        {
+            return async (HttpRequest request, CancellationToken token) =>
             {
                 var client = getClient();
 
@@ -40,9 +47,12 @@ namespace PodiumdAdapter.Web.Endpoints
 
                 // als je niet wil filteren op objectUrl, en ook de objectContactmomenten niet hoeft uit te klappen, kunnen we het request as-is proxyen
                 return GetContactmomentenDefault(client, url, PlakAntwoordPropertyAchterTekstProperty);
-            });
+            };
+        }
 
-            clientRoot.MapPost("/contactmomenten", (IConfiguration configuration) =>
+        private static Func<IConfiguration, IResult> OpslaanContactmomentOfContactverzoek(Func<HttpClient> getClient)
+        {
+            return (IConfiguration configuration) =>
             {
                 var client = getClient();
                 return client.ProxyResult(new ProxyRequest
@@ -71,7 +81,7 @@ namespace PodiumdAdapter.Web.Endpoints
                         return new ValueTask();
                     }
                 });
-            });
+            };
         }
 
         public static void HandleContactverzoek(JsonNode json, string? contactverzoekType)
