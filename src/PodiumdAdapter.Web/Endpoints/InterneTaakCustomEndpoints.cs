@@ -19,22 +19,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 group.RequireObjectenApiKey();
             }
 
-            group.MapPost("/", async (HttpRequest request) =>
-            {
-                var json = await JsonNode.ParseAsync(request.Body);
-
-                if (!TryParseContactmomentId(json, out var contactmomentId))
-                {
-                    return Results.Problem("contactmoment ontbreekt of is niet valide", statusCode: 400);
-                }
-
-                var url = GetInterneTaakUrl(request, contactmomentId);
-
-                var response = new JsonObject { ["url"] = url };
-
-                return Results.Ok(response);
-            });
-
+            group.MapPost("/", OpslaanInterneTaakStub);
 
             group.MapGet("/", GetInterneTaken);
 
@@ -153,6 +138,22 @@ namespace PodiumdAdapter.Web.Endpoints
             };
         }
 
+        private static async Task<IResult> OpslaanInterneTaakStub(HttpRequest request)
+        {
+            var json = await JsonNode.ParseAsync(request.Body);
+
+            if (!TryParseContactmomentId(json, out var contactmomentId))
+            {
+                return Results.Problem("contactmoment ontbreekt of is niet valide", statusCode: 400);
+            }
+
+            var response = json.DeepClone();
+            response["url"] = GetInterneTaakUrl(request, contactmomentId);
+            response["uuid"] = contactmomentId;
+
+            return Results.Ok(response);
+        }
+
         private static async Task<string?> GetKlantUrl(HttpClient client, string cmUrl, CancellationToken cancellationToken)
         {
             var klantenJson = await client.JsonAsync("klantcontactmomenten?contactmoment=" + cmUrl, cancellationToken);
@@ -223,7 +224,7 @@ namespace PodiumdAdapter.Web.Endpoints
             return url;
         }
 
-        private static bool TryParseContactmomentId(JsonNode? json, [NotNullWhen(true)] out string? result)
+        private static bool TryParseContactmomentId([NotNullWhen(true)] JsonNode? json, [NotNullWhen(true)] out string? result)
         {
             result = json?["record"]?["data"]?["contactmoment"]?.GetValue<string>()
                 ?.Split('/', StringSplitOptions.RemoveEmptyEntries)

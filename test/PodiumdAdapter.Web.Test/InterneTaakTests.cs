@@ -9,10 +9,11 @@ namespace PodiumdAdapter.Web.Test
         [Fact]
         public async Task Post_response_contains_correct_url()
         {
+            const string baseUrl = "/api/v2/objects";
             var cmId = Guid.NewGuid().ToString();
             var cmUrl = "https://www.google.nl/" + cmId;
-            var expectedContent = $$"""
-            {"url":"http://localhost{{baseUrl}}/{{cmId}}"}
+            var expectedContent = $$$"""
+            {"record":{"data":{"contactmoment":"{{{cmUrl}}}"}},"url":"http://localhost{{{baseUrl}}}/{{{cmId}}}","uuid":"{{{cmId}}}"}
             """;
 
             using var client = factory.CreateClient();
@@ -28,7 +29,7 @@ namespace PodiumdAdapter.Web.Test
                     }
                 }
             });
-            
+
             Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
 
             var content = await response.Content.ReadAsStringAsync();
