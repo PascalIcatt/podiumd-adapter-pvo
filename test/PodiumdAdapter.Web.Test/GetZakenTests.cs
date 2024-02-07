@@ -12,7 +12,7 @@
             var adapterZakenPath = "/zaken/api/v1/zaken";
 
             using var client = factory.CreateClient();
-            factory.Login(client);
+            factory.SetZgwToken(client);
 
             //MockHttpMessageHandler will intercept calls from the Adapter to e-Suite
             //If the adapter behaves as expected
@@ -45,7 +45,7 @@
             """;
 
             using var client = factory.CreateClient();
-            factory.Login(client);
+            factory.SetZgwToken(client);
             factory.MockHttpMessageHandler
                 .Expect(HttpMethod.Get, factory.ESUITE_BASE_URL + "/zgw-apis-provider/zrc/api/v1/zaken")
                 .Respond("application/json", EsuiteResponse);
@@ -67,7 +67,7 @@
             """;
 
             using var client = factory.CreateClient();
-            factory.Login(client);
+            factory.SetZgwToken(client);
             factory.MockHttpMessageHandler
                 .Expect(HttpMethod.Get, factory.ESUITE_BASE_URL + "/zgw-apis-provider/zrc/api/v1/zaken")
                 .Respond("application/json", EsuiteResponse);

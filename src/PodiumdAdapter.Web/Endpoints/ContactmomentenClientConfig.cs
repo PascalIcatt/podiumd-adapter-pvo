@@ -1,5 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Configuration;
 using PodiumdAdapter.Web.Infrastructure;
 
 namespace PodiumdAdapter.Web.Endpoints
@@ -14,7 +16,14 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public void MapCustomEndpoints(IEndpointRouteBuilder clientRoot, Func<HttpClient> getClient)
         {
-            clientRoot.MapGet("/contactmomenten", async (HttpRequest request, CancellationToken token) =>
+            clientRoot.MapGet("/contactmomenten", OphalenContactmomenten(getClient));
+
+            clientRoot.MapPost("/contactmomenten", OpslaanContactmomentOfContactverzoek(getClient));
+        }
+
+        private static Func<HttpRequest, CancellationToken, Task<IResult>> OphalenContactmomenten(Func<HttpClient> getClient)
+        {
+            return async (HttpRequest request, CancellationToken token) =>
             {
                 var client = getClient();
 
@@ -38,9 +47,12 @@ namespace PodiumdAdapter.Web.Endpoints
 
                 // als je niet wil filteren op objectUrl, en ook de objectContactmomenten niet hoeft uit te klappen, kunnen we het request as-is proxyen
                 return GetContactmomentenDefault(client, url, PlakAntwoordPropertyAchterTekstProperty);
-            });
+            };
+        }
 
-            clientRoot.MapPost("/contactmomenten", () =>
+        private static Func<IConfiguration, IResult> OpslaanContactmomentOfContactverzoek(Func<HttpClient> getClient)
+        {
+            return (IConfiguration configuration) =>
             {
                 var client = getClient();
                 return client.ProxyResult(new ProxyRequest
@@ -62,11 +74,80 @@ namespace PodiumdAdapter.Web.Endpoints
                         {
                             identificatie["identificatie"] = "Felix";
                         }
-                 
+
+                        var contactverzoekType = configuration.GetSection("CONTACTVERZOEK_TYPES").Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).FirstOrDefault();
+                        HandleContactverzoek(json, contactverzoekType);
+
                         return new ValueTask();
                     }
                 });
-            });
+            };
+        }
+
+        public static void HandleContactverzoek(JsonNode json, string? contactverzoekType)
+        {
+            if (json is not JsonObject obj 
+                || json["betrokkene"] is not JsonObject betrokkene
+                || betrokkene["digitaleAdressen"] is not JsonArray digitaleAdressen 
+                || json["actor"] is not JsonObject actor)
+            {
+                return;
+            }
+
+            var organisatie = betrokkene["organisatie"]?.GetValue<string>();
+
+            var persoonsnaam = betrokkene["persoonsnaam"];
+
+            var voornaam = persoonsnaam?["voornaam"]?.GetValue<string>();
+            var voorvoegselAchternaam = persoonsnaam?["voorvoegselAchternaam"]?.GetValue<string>();
+            var achternaam = persoonsnaam?["achternaam"]?.GetValue<string>();
+
+            var email = digitaleAdressen
+                .Where(x => x?["soortDigitaalAdres"]?.GetValue<string>() == "e-mailadres")
+                .Select(x => x?["adres"]?.DeepClone())
+                .Where(x => x != null)
+                .FirstOrDefault();
+
+            var telefoonnummerEntries = digitaleAdressen
+                .Where(x => x?["soortDigitaalAdres"]?.GetValue<string>() == "telefoonnummer")
+                .Select(x => (Adres: x?["adres"]?.DeepClone(), Omschrijving: x?["omschrijving"]?.GetValue<string>()))
+                .Where(x => x.Adres != null)
+                .Take(2)
+                .ToList();
+
+            var telefoon2Toelichting = telefoonnummerEntries
+                .Select(x => x.Omschrijving)
+                .ElementAtOrDefault(1);
+
+            var telefoonnummers = telefoonnummerEntries.Select(x => x.Adres).ToList();
+            var telefoonnummer1 = telefoonnummers.FirstOrDefault();
+            var telefoonnummer2 = telefoonnummers.ElementAtOrDefault(1);
+
+            var toelichting = json["toelichting"]?.GetValue<string>();
+
+            var combinedToelichting = GetToelichting(voornaam, voorvoegselAchternaam, achternaam, organisatie, telefoon2Toelichting, toelichting);
+
+            json["type"] = contactverzoekType;
+
+            json["behandelaar"] = new JsonObject
+            {
+                // tijdelijk hard coded afdeling/groep/medewerker
+                //["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
+                ["gebruikersnaam"] = "Mark",
+                ["toelichting"] = combinedToelichting
+            };
+
+            json["contactgegevens"] = new JsonObject
+            {
+                ["emailadres"] = email,
+                ["telefoonnummer"] = telefoonnummer1,
+                ["telefoonnummerAlternatief"] = telefoonnummer2
+            };
+
+            obj.Remove("toelichting");
+            obj.Remove("status");
+            obj.Remove("betrokkene");
+            obj.Remove("actor");
         }
 
         private static IEnumerable<string> GetTekstParts(JsonNode json)
@@ -77,6 +158,54 @@ namespace PodiumdAdapter.Web.Endpoints
             if(!string.IsNullOrWhiteSpace(specifiekeVraag)) yield return specifiekeVraag;
             var tekst = json["tekst"]?.GetValue<string>();
             if (!string.IsNullOrWhiteSpace(tekst)) yield return tekst;
+        }
+
+        private static string GetToelichting(string? voornaam, string? voorvoegselAchternaam, string? achternaam, string? organisatie, string? toelichtingTelefoonnummer2, string? toelichting)
+        {
+            var builder = new StringBuilder();
+            if (!string.IsNullOrWhiteSpace(voornaam) || !string.IsNullOrWhiteSpace(achternaam) || !string.IsNullOrWhiteSpace(organisatie))
+            {
+                builder.Append("Contact opnemen met:");
+                if (!string.IsNullOrWhiteSpace(voornaam))
+                {
+                    builder.Append(' ')
+                        .Append(voornaam);
+                }
+                if (!string.IsNullOrWhiteSpace(voorvoegselAchternaam))
+                {
+                    builder.Append(' ')
+                        .Append(voorvoegselAchternaam);
+                }
+                if (!string.IsNullOrWhiteSpace(achternaam))
+                {
+                    builder.Append(' ')
+                        .Append(achternaam);
+                }
+                if (!string.IsNullOrWhiteSpace(organisatie))
+                {
+                    builder.Append(" (")
+                        .Append(organisatie)
+                        .Append(')');
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(toelichtingTelefoonnummer2))
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append('\n');
+                }
+                builder.Append("Omschrijving tweede telefoonnummer: ")
+                    .Append(toelichtingTelefoonnummer2);
+            }
+            if (!string.IsNullOrWhiteSpace(toelichting))
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append('\n');
+                }
+                builder.Append(toelichting);
+            }
+            return builder.ToString();
         }
 
         private static bool TryGetObjectUrlFromQuery(IQueryCollection query, out string result)

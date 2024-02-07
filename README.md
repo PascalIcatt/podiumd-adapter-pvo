@@ -28,9 +28,10 @@ $ESUITE_BASE_URL='https://www.my-e-suite.nl'
 # You need to generate this in the E-Suite
 $ESUITE_TOKEN='abc$%^&*defg1234567'
 
-# Each client what will connect to the podiumd-adapter must do so using a Bearer token,
+# Each client what will connect to the e-Suite (klanten, contactmomenten, zaken and catalogi) parts of the podiumd-adapter must do so using a Bearer token,
 # following the convention used in Open Zaak:
 # https://open-zaak.readthedocs.io/en/stable/client-development/authentication.html
+# For the OverigeObjecten (Interne taak) part of the podiumd-adapter you only need te specify a client secret.
 # Client IDs are set up using the CLIENTS__INDEX__ID naming convention
 # You will need to set up at least 1 Client
 $CLIENTS__0__ID='MY-CLIENT-ID-FOR-EXAMPLE-KISS'
@@ -38,6 +39,7 @@ $CLIENTS__1__ID='ANOTHER-CLIENT-ID-IF-APPLICABLE'
 
 # Just like with the client ids, you can set up multiple using the CLIENTS__INDEX__SECRET naming convention
 # Secrets have a minimum length of 16 characters
+# For the Interne taak part of the podiumd-adapter the client secrets are specified in the same way.
 $CLIENTS__0__SECRET='zyxu908237^%&*zyxu908237^%&*'
 $CLIENTS__1__SECRET='erfg94367!@$erfg94367!@$'
 ```

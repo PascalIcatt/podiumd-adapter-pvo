@@ -4,6 +4,7 @@
 @ZrcRoot = {{PodiumdAdapter.Web_HostAddress}}/zaken/api/v1
 @ZtcRoot = {{PodiumdAdapter.Web_HostAddress}}/catalogi/api/v1
 @DrcRoot = {{PodiumdAdapter.Web_HostAddress}}/documenten/api/v1
+@InterneTaakRoot = {{PodiumdAdapter.Web_HostAddress}}/internetaak/api/v2
 
 
 GET {{ContactmomentenRoot}}/contactmomenten?expand=objectcontactmomenten&klant={{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
@@ -94,3 +95,39 @@ GET {{DrcRoot}}/enkelvoudiginformatieobjecten/4de76083-1fce-4852-876a-c833904d55
 
 
 # https://podiumdcontact.dev.kiss-demo.nl/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/4de76083-1fce-4852-876a-c833904d55a1
+###
+
+POST {{InterneTaakRoot}}/objects
+Accept: application/json
+Content-Type: application/json
+
+{
+      "type": "my-type",
+      "record": {
+        "typeVersion": 1,
+        "data": {
+          "actor": null,
+          "status": "nieuw",
+          "betrokkene": {
+            "rol": "klant",
+            "klant": "http://localhost:56090/klanten/api/v1/klanten/83047d24-a213-4fc3-9878-367ffe06988e",
+            "digitaleAdressen": [
+              {
+                "adres": "n.simon@rotterdam.nl",
+                "omschrijving": "e-mailadres",
+                "soortDigitaalAdres": "e-mailadres"
+              }
+            ]
+          },
+          "toelichting": null,
+          "contactmoment": "http://localhost:56090/contactmomenten/api/v1/contactmomenten/4970067a-e0b8-40c0-b20a-f4b3c3947866",
+          "registratiedatum": "2021-03-08T09:43:47+01:00",
+          "medewerkerIdentificatie": {
+            "identificatie": "ESUITE_FG_LOKET",
+            "achternaam": "Het digitale loket"
+          }
+        }
+      }
+    }
+
+###

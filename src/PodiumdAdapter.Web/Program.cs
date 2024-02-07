@@ -42,7 +42,9 @@ try
 
     app.MapHealthChecks("/healthz").AllowAnonymous();
     app.MapEsuiteEndpoints();
+    app.MapInterneTaakCustomEndpoints();
     app.MapReverseProxy();
+
 
     app.Run();
 }

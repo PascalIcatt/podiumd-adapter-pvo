@@ -41,9 +41,14 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             }));
         }
 
-        public void Login(HttpClient httpClient)
+        public void SetZgwToken(HttpClient httpClient)
         {
             httpClient.DefaultRequestHeaders.Authorization = new("Bearer", GetToken(_clientId, _clientSecret));
+        }
+
+        public void SetObjectenToken(HttpClient httpClient)
+        {
+            httpClient.DefaultRequestHeaders.Authorization = new("Token", _clientSecret);
         }
 
         private static string GetToken(string id, string secret)
