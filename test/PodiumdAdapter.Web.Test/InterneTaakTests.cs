@@ -4,22 +4,21 @@ namespace PodiumdAdapter.Web.Test
 {
     public class InterneTaakTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
     {
-        const string baseUrl = "/api/v2/objects";
+        const string BaseUrl = "/api/v2/objects";
 
         [Fact]
         public async Task Post_response_contains_correct_url()
         {
-            const string baseUrl = "/api/v2/objects";
             var cmId = Guid.NewGuid().ToString();
             var cmUrl = "https://www.google.nl/" + cmId;
             var expectedContent = $$$"""
-            {"record":{"data":{"contactmoment":"{{{cmUrl}}}"}},"url":"http://localhost{{{baseUrl}}}/{{{cmId}}}","uuid":"{{{cmId}}}"}
+            {"record":{"data":{"contactmoment":"{{{cmUrl}}}"}},"url":"http://localhost{{{BaseUrl}}}/{{{cmId}}}","uuid":"{{{cmId}}}"}
             """;
 
             using var client = factory.CreateClient();
             factory.SetObjectenToken(client);
 
-            using var response = await client.PostAsJsonAsync(baseUrl, new
+            using var response = await client.PostAsJsonAsync(BaseUrl, new
             {
                 record = new
                 {
@@ -55,7 +54,7 @@ namespace PodiumdAdapter.Web.Test
             using var client = factory.CreateClient();
             factory.SetObjectenToken(client);
 
-            var str = await client.GetStringAsync(baseUrl + "?type=mytype");
+            var str = await client.GetStringAsync(BaseUrl + "?type=mytype");
             Assert.Equal(ExpectedResult, str);
         }
     }
