@@ -37,11 +37,11 @@
         public async Task Intern_zaaknummer_overschrijft_identificatie_indien_beschikbaar()
         {
             const string EsuiteResponse = """
-            {"results":[{"internZaaknummer":"12345","identificatie":"54321"}]}
+            {"results":[{"identificatieIntern":"12345","identificatie":"54321"}]}
             """;
 
             const string ExpectedApiResponse = """
-            {"results":[{"internZaaknummer":"12345","identificatie":"12345"}]}
+            {"results":[{"identificatieIntern":"12345","identificatie":"12345"}]}
             """;
 
             using var client = factory.CreateClient();
