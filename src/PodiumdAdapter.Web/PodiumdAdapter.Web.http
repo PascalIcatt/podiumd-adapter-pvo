@@ -131,3 +131,8 @@ Content-Type: application/json
     }
 
 ###
+
+GET {{InterneTaakRoot}}/objects?type=my-object-type&data_attrs=betrokkene__klant__exact__{{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
+Accept: application/json
+
+###

@@ -27,6 +27,7 @@ namespace PodiumdAdapter.Web.Test
         [InlineData(DocumentenBaseUrl + "/enkelvoudiginformatieobjecten", HttpStatusCode.Unauthorized)]
         [InlineData(DocumentenBaseUrl + "/enkelvoudiginformatieobjecten/a9aba7a1-5a91-4280-b079-dee5afad72e3", HttpStatusCode.Unauthorized)]
         [InlineData(InterneTaakBaseUrl + "/objects", HttpStatusCode.Unauthorized, "POST")]
+        [InlineData(InterneTaakBaseUrl + "/objects", HttpStatusCode.Unauthorized)]
         public async Task Route_returns_expected_status_code_when_not_logged_in(string url, HttpStatusCode statusCode, string method = "GET")
         {
             using var client = webApplicationFactory.CreateClient();
