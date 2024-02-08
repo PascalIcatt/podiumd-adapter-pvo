@@ -8,59 +8,111 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
     /// </summary>
     /// <param name="inner">The inner <see cref="PipeWriter"/>, for example the one that writes to the <see cref="HttpResponse"/> Body</param>
     /// <param name="rewriterCollection"></param>
-    public sealed class UrlRewritePipeWriter(PipeWriter inner, UrlRewriterCollection rewriterCollection) : DelegatingPipeWriter(inner)
+    public sealed class UrlRewritePipeWriter : DelegatingPipeWriter
     {
-        // Overridden WriteAsync method to process and rewrite URLs in the stream
+        private readonly UrlRewriterCollection _rewriterCollection;
+        private ReadOnlyMemory<byte> _internalBuffer;
+
+        public UrlRewritePipeWriter(PipeWriter inner, UrlRewriterCollection rewriterCollection) : base(inner)
+        {
+            _rewriterCollection = rewriterCollection;
+        }
+
+        /// <summary>
+        /// Overrides WriteAsync to implement URL rewriting logic.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public override ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
+            if (source.IsEmpty) return base.WriteAsync(source, cancellationToken);
             var sourceSpan = source.Span;
+            var prepend = _internalBuffer.Span;
 
-            // Checks if there are no rewriters or if the target size cannot be determined, then calls base WriteAsync
-            if (rewriterCollection.Count == 0 || !TryGetTargetSize(rewriterCollection, sourceSpan, out var targetSize))
+            if (!_internalBuffer.IsEmpty)
             {
-                return base.WriteAsync(source, cancellationToken);
+                prepend = _internalBuffer.Span;
+                _internalBuffer = new();
+                var bufferLength = prepend.Length;
+
+                foreach (var item in _rewriterCollection)
+                {
+                    var sliced = item.RemoteFullBytes.Span.Slice(bufferLength);
+                    if (sourceSpan.StartsWith(sliced))
+                    {
+                        sourceSpan = sourceSpan.Slice(sliced.Length);
+                        prepend = item.LocalFullBytes.Span;
+                    }
+                }
             }
+
+            if (_rewriterCollection.Count == 0 || !TryGetTargetSize(ref sourceSpan, out var targetSize))
+            {
+                var length = sourceSpan.Length + prepend.Length;
+                var target = GetSpan(length);
+                prepend.CopyAndMoveForward(ref target);
+                sourceSpan.CopyTo(target);
+                Advance(length);
+                return FlushAsync(cancellationToken);
+            }
+
+            targetSize += prepend.Length;
 
             var targetSpan = GetSpan(targetSize);
 
-            // Processes each rewriter in the collection and rewrites URLs as needed
-            while (TryGetNext(rewriterCollection, sourceSpan, out var index, out var replacer))
+            prepend.CopyAndMoveForward(ref targetSpan);
+
+            while (TryGetNext(sourceSpan, out var index, out var rewriter))
             {
                 if (index > 0)
                 {
-                    targetSpan = CopyAndAdvance(sourceSpan[..index], targetSpan);
+                    sourceSpan[..index].CopyAndMoveForward(ref targetSpan);
                 }
-                targetSpan = CopyAndAdvance(replacer.LocalFullBytes.Span, targetSpan);
-                var next = index + replacer.RemoteFullBytes.Length;
+                rewriter.LocalFullBytes.Span.CopyAndMoveForward(ref targetSpan);
+                var next = index + rewriter.RemoteFullBytes.Length;
                 sourceSpan = sourceSpan[next..];
             }
 
+
             sourceSpan.CopyTo(targetSpan);
 
-            // Advances the writer and flushes the result
             Advance(targetSize);
 
             return FlushAsync(cancellationToken);
+
         }
 
-        // Static method to calculate the target size for the rewritten buffer
-        static bool TryGetTargetSize(UrlRewriterCollection rewriterCollection, ReadOnlySpan<byte> source, out int size)
+        /// <summary>
+        /// Tries to find the length that the target <see cref="Span{byte}"/> needs to have, 
+        /// taking into account all rewritten URLs.
+        /// If no URL needs to be rewritten, this method returns <see cref="false"/>.
+        /// </summary>
+        /// <param name="originalBuffer"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        bool TryGetTargetSize(ref ReadOnlySpan<byte> originalBuffer, out int size)
         {
+            var source = originalBuffer;
             size = source.Length;
             var result = false;
             var found = true;
-            while (found && source.IndexOf(rewriterCollection.RemoteBaseUrlBytes.Span) is int index && index > -1)
+            var baseUrlSpan = _rewriterCollection.RemoteBaseUrlBytes.Span;
+
+            // optimization: first check if we can find the base url
+            // if we can't find that, there is no chance of finding a specific url
+            // this avoids unnecessarily looping the rewriter collection
+            while (found && source.IndexOf(baseUrlSpan) is int index && index > -1)
             {
                 source = source.Slice(index);
                 found = false;
 
-                // Searches for rewriters and adjusts the target size accordingly
-                foreach (var replacer in rewriterCollection)
+                foreach (var r in _rewriterCollection)
                 {
-                    var from = replacer.RemoteFullBytes.Span;
+                    var from = r.RemoteFullBytes.Span;
                     if (source.StartsWith(from))
                     {
-                        var to = replacer.LocalFullBytes.Span;
+                        var to = r.LocalFullBytes.Span;
                         var diff = to.Length - from.Length;
                         size += diff;
                         result = true;
@@ -71,25 +123,35 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
                 }
             }
 
+            HandlePartialMatch(ref originalBuffer, ref size, source);
+
             return result;
         }
 
-        // Static method to find the next URL rewriter to apply
-        static bool TryGetNext(UrlRewriterCollection rewriterCollection, ReadOnlySpan<byte> source, out int index, [NotNullWhen(true)] out UrlRewriter? replacer)
+        /// <summary>
+        /// // A method to find the next URL rewriter that matches the source buffer.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="index"></param>
+        /// <param name="rewriter"></param>
+        /// <returns></returns>
+        bool TryGetNext(ReadOnlySpan<byte> source, out int index, [NotNullWhen(true)] out UrlRewriter? rewriter)
         {
-            index = source.IndexOf(rewriterCollection.RemoteBaseUrlBytes.Span);
-            replacer = null;
+            // optimization: first check if we can find the base url
+            // if we can't find that, there is no chance of finding a specific url
+            // this avoids unnecessarily looping the rewriter collection
+            index = source.IndexOf(_rewriterCollection.RemoteBaseUrlBytes.Span);
+            rewriter = null;
 
             if (index < 0) return false;
 
             source = source.Slice(index);
 
-            // Iterates through rewriters to find a match
-            foreach (var r in rewriterCollection)
+            foreach (var r in _rewriterCollection)
             {
                 if (source.StartsWith(r.RemoteFullBytes.Span))
                 {
-                    replacer = r;
+                    rewriter = r;
                     return true;
                 }
             }
@@ -97,11 +159,26 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             return false;
         }
 
-        // Static method to copy a span of bytes and advance the target span
-        static Span<byte> CopyAndAdvance(ReadOnlySpan<byte> from, Span<byte> to)
+        private void HandlePartialMatch(ref ReadOnlySpan<byte> originalBuffer, ref int size, ReadOnlySpan<byte> source)
         {
-            from.CopyTo(to);
-            return to.Slice(from.Length);
+            var lengthOfPartialMatch = 0;
+            UrlRewriter? rewriterToPutInInternalBuffer = null;
+
+            foreach (var r in _rewriterCollection)
+            {
+                var span = r.RemoteFullBytes.Span;
+                if (source.MightMatchInNextBuffer(span, ref lengthOfPartialMatch))
+                {
+                    rewriterToPutInInternalBuffer = r;
+                }
+            }
+
+            if (rewriterToPutInInternalBuffer != null)
+            {
+                _internalBuffer = rewriterToPutInInternalBuffer.RemoteFullBytes.Slice(0, lengthOfPartialMatch);
+                originalBuffer = originalBuffer.Slice(0, originalBuffer.Length - lengthOfPartialMatch);
+                size -= lengthOfPartialMatch;
+            }
         }
     }
 }

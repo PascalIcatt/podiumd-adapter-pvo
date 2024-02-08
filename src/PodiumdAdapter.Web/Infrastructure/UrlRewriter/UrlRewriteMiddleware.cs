@@ -9,13 +9,13 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 
         public static void UseUrlRewriter(this IApplicationBuilder applicationBuilder) => applicationBuilder.Use((context, next) =>
         {
-            var replacerList = GetReplacers(context);
+            var rewriterCollection = GetRewriters(context);
             var responseBody = context.Features.Get<IHttpResponseBodyFeature>();
             var request = context.Features.Get<IHttpRequestFeature>();
 
-            if (replacerList != null && responseBody != null && request != null)
+            if (rewriterCollection != null && responseBody != null && request != null)
             {
-                var feature = new UrlRewriteFeature(request, responseBody, replacerList);
+                var feature = new UrlRewriteFeature(request, responseBody, rewriterCollection);
                 context.Features.Set<IHttpResponseBodyFeature>(feature);
                 context.Features.Set<IHttpRequestFeature>(feature);
                 context.Features.Set<IRequestBodyPipeFeature>(feature);
@@ -24,17 +24,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             return next(context);
         });
 
-        private static bool WrapFeature<T>(this HttpContext httpContext, Func<T, T> wrap)
-        {
-            var inner = httpContext.Features.Get<T>();
-            if (inner == null) return false;
-            var wrapped = wrap(inner);
-            httpContext.Features.Set(wrapped);
-
-            return true;
-        }
-
-        private static UrlRewriterCollection? GetReplacers(HttpContext context)
+        private static UrlRewriterCollection? GetRewriters(HttpContext context)
         {
             if (context?.Request == null) return null;
 
@@ -51,9 +41,13 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
                 var requestUriBuilder = new UriBuilder
                 {
                     Host = host,
-                    Port = request.Host.Port.GetValueOrDefault(),
                     Scheme = request.Scheme,
                 };
+
+                if (request.Host.Port.HasValue)
+                {
+                    requestUriBuilder.Port = request.Host.Port.GetValueOrDefault();
+                }
 
                 var proxyUriBuilder = new UriBuilder(proxyRootstring);
                 var proxyBaseUrl = proxyUriBuilder.Uri.ToString()!;
