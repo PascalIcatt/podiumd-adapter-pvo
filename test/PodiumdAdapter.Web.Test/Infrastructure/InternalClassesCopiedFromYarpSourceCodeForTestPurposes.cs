@@ -1,11 +1,17 @@
-﻿// Copyright (c) Microsoft Corporation.
+﻿// Omdat het moelijk was om de UrlRewrite functionaliteit op een represenatatieve manier te testen,
+// Hebben we deze interne YARP class overgehaald en licht aangepast.
+// YARP gebruikt namelijk een custom StreamCopier die anders werkt dan een simpele Stream.CopyTo(Stream otherStream)
+// De code komt van https://github.com/microsoft/reverse-proxy/blob/main/src/ReverseProxy/Forwarder/StreamCopier.cs
+
+
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Buffers;
 using System.Diagnostics;
 using System.Text;
 
-namespace PodiumdAdapter.Web.Test;
+namespace PodiumdAdapter.Web.Test.Infrastructure;
 
 internal enum StreamCopyResult
 {
@@ -18,7 +24,7 @@ internal enum StreamCopyResult
 /// <summary>
 /// A stream copier that captures errors.
 /// </summary>
-internal static class StreamCopier
+internal static class StreamCopierFromYarpSourceCode
 {
     // Based on performance investigations, see https://github.com/microsoft/reverse-proxy/pull/330#issuecomment-758851852.
     private const int DefaultBufferSize = 65536;
