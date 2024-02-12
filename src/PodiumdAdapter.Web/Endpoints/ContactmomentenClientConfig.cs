@@ -21,7 +21,19 @@ namespace PodiumdAdapter.Web.Endpoints
             clientRoot.MapGet("/contactmomenten", OphalenContactmomenten(getClient));
 
             clientRoot.MapPost("/contactmomenten", OpslaanContactmomentOfContactverzoek(getClient));
+
+            clientRoot.MapGet("/contactmomenten/{id:guid}", (Guid id) => OphalenContactmoment(id, getClient(), PlakAntwoordPropertyAchterTekstProperty));
         }
+
+        private static IResult OphalenContactmoment(Guid id, HttpClient client, Action<JsonNode?> modifyJson) => client.ProxyResult(new ProxyRequest
+        {
+            Url = "contactmomenten/" + id,
+            ModifyResponseBody = (json, _) =>
+            {
+                modifyJson(json);
+                return new ValueTask();
+            }
+        });
 
         private static Func<HttpRequest, CancellationToken, Task<IResult>> OphalenContactmomenten(Func<HttpClient> getClient)
         {

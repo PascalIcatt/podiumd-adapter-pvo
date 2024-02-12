@@ -4,10 +4,10 @@
 @ZrcRoot = {{PodiumdAdapter.Web_HostAddress}}/zaken/api/v1
 @ZtcRoot = {{PodiumdAdapter.Web_HostAddress}}/catalogi/api/v1
 @DrcRoot = {{PodiumdAdapter.Web_HostAddress}}/documenten/api/v1
-@InterneTaakRoot = {{PodiumdAdapter.Web_HostAddress}}/internetaak/api/v2
+@InterneTaakRoot = {{PodiumdAdapter.Web_HostAddress}}/api/v2
 
 
-GET {{ContactmomentenRoot}}/contactmomenten?expand=objectcontactmomenten&klant={{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
+GET {{ContactmomentenRoot}}/contactmomenten?identificatie=134-2024
 Accept: application/json
 
 ###
@@ -34,7 +34,7 @@ Content-Type: application/json
 
 ###
 
-GET {{ContactmomentenRoot}}/contactmomenten/c85c9545-454a-4b0b-abc1-f85977fdfde3
+GET {{ContactmomentenRoot}}/contactmomenten/16242f8a-ddc3-4f4f-8dca-a4781d40a84d
 
 ###
 
