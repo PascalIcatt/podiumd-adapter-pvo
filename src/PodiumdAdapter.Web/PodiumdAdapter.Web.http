@@ -7,7 +7,7 @@
 @InterneTaakRoot = {{PodiumdAdapter.Web_HostAddress}}/api/v2
 
 
-GET {{ContactmomentenRoot}}/contactmomenten?identificatie=134-2024
+GET {{ContactmomentenRoot}}/contactmomenten?expand=objectcontactmomenten&klant={{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
 Accept: application/json
 
 ###
