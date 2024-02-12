@@ -131,6 +131,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
               "startdatum": "2024-02-05T15:32:23.320Z",
               "verantwoordelijkeAfdeling": "Beheer openbare ruimte",
               "einddatum": "2024-02-05T15:59:12.584Z",
+              "status": "te verwerken",
               "type": "my-type",
               "behandelaar": {
                 "gebruikersnaam": "Mark",
@@ -146,7 +147,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
 
         var parsed = JsonNode.Parse(InputJson)!;
 
-        ContactmomentenClientConfig.HandleContactverzoek(parsed, "my-type");
+        ContactmomentenClientConfig.HandleContactverzoekToEsuiteMapping(parsed, "my-type", parsed["betrokkene"] as JsonObject, parsed["betrokkene"]["digitaleAdressen"] as JsonArray, parsed["actor"] as JsonObject  );
 
         var result = parsed.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }).Replace("\r\n", "\n");
 

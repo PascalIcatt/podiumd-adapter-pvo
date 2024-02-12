@@ -9,6 +9,8 @@ namespace PodiumdAdapter.Web.Endpoints
     public class ContactmomentenClientConfig : IESuiteClientConfig
     {
         const string ObjectcontactmomentenKey = "objectcontactmomenten";
+        private const string ContactverzoekStatusValue = "nieuw";
+        private const string ContactmomentStatusValue = "afgehandeld";
 
         public string ProxyBasePath => "/contactmomenten-api-provider/api/v1";
 
@@ -75,8 +77,19 @@ namespace PodiumdAdapter.Web.Endpoints
                             identificatie["identificatie"] = "Felix";
                         }
 
+                        // gespreskresultaaat toevoegen aan het antwoord veld (oa omdat antwoord niet leeg mag zijn bi een contactmoment)
+                        GespreksReultaatToevoegenAanEsuiteAntwoord(json);
+
                         var contactverzoekType = configuration.GetSection("CONTACTVERZOEK_TYPES").Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).FirstOrDefault();
-                        HandleContactverzoek(json, contactverzoekType);
+
+                        var isContactverzoek = IsContactverzoek(json, out var betrokkene, out var digitaleAdressen, out var actor);
+
+                        if (isContactverzoek)
+                        {
+                            HandleContactverzoekToEsuiteMapping(json, contactverzoekType, betrokkene, digitaleAdressen, actor);
+                        }                        
+
+                        json["status"] = isContactverzoek ? ContactverzoekStatusValue : ContactmomentStatusValue;
 
                         return new ValueTask();
                     }
@@ -84,44 +97,67 @@ namespace PodiumdAdapter.Web.Endpoints
             };
         }
 
-        public static void HandleContactverzoek(JsonNode json, string? contactverzoekType)
+        private static void GespreksReultaatToevoegenAanEsuiteAntwoord(JsonNode json)
         {
-            if (json is not JsonObject obj 
-                || json["betrokkene"] is not JsonObject betrokkene
-                || betrokkene["digitaleAdressen"] is not JsonArray digitaleAdressen 
-                || json["actor"] is not JsonObject actor)
+            // gespreskresultaaat toevoegen aan het antwoord veld
+            var antwoord = json["antwoord"]?.GetValue<string>();
+            var gespreksresultaat = json["gespreksresultaat"]?.GetValue<string>();
+
+            json["antwoord"] = string.Join("\n", new[] { antwoord, gespreksresultaat }.Where(x => !string.IsNullOrWhiteSpace(x)));// + (antwoord !=null && gespreksresultaat!=null) ? "\n" : "";
+        }
+
+        private static bool IsContactverzoek(JsonNode json,  out JsonObject? contactverzoekBetrokkene, out JsonArray? contactvezoekDigitaleAdressen, out JsonObject? contactverzoekActor)
+        {
+            contactverzoekBetrokkene = default;
+            contactvezoekDigitaleAdressen = default;
+            contactverzoekActor = default;
+
+            if (json is not JsonObject 
+               || json["betrokkene"] is not JsonObject betrokkene
+               || betrokkene["digitaleAdressen"] is not JsonArray digitaleAdressen
+               || json["actor"] is not JsonObject actor)
             {
-                return;
+                return false;
             }
 
-            var organisatie = betrokkene["organisatie"]?.GetValue<string>();
+            contactverzoekBetrokkene = betrokkene;
+            contactvezoekDigitaleAdressen = digitaleAdressen;
+            contactverzoekActor = actor;
 
-            var persoonsnaam = betrokkene["persoonsnaam"];
+            return true;
+        }
+
+            public static void HandleContactverzoekToEsuiteMapping(JsonNode json, string? contactverzoekType, JsonObject? betrokkene, JsonArray? digitaleAdressen, JsonObject? actor)
+        {
+         
+            var organisatie = betrokkene?["organisatie"]?.GetValue<string>();
+
+            var persoonsnaam = betrokkene?["persoonsnaam"];
 
             var voornaam = persoonsnaam?["voornaam"]?.GetValue<string>();
             var voorvoegselAchternaam = persoonsnaam?["voorvoegselAchternaam"]?.GetValue<string>();
             var achternaam = persoonsnaam?["achternaam"]?.GetValue<string>();
 
-            var email = digitaleAdressen
+            var email = digitaleAdressen?
                 .Where(x => x?["soortDigitaalAdres"]?.GetValue<string>() == "e-mailadres")
                 .Select(x => x?["adres"]?.DeepClone())
                 .Where(x => x != null)
                 .FirstOrDefault();
 
-            var telefoonnummerEntries = digitaleAdressen
+            var telefoonnummerEntries = digitaleAdressen?
                 .Where(x => x?["soortDigitaalAdres"]?.GetValue<string>() == "telefoonnummer")
                 .Select(x => (Adres: x?["adres"]?.DeepClone(), Omschrijving: x?["omschrijving"]?.GetValue<string>()))
                 .Where(x => x.Adres != null)
                 .Take(2)
                 .ToList();
 
-            var telefoon2Toelichting = telefoonnummerEntries
+            var telefoon2Toelichting = telefoonnummerEntries?
                 .Select(x => x.Omschrijving)
                 .ElementAtOrDefault(1);
 
-            var telefoonnummers = telefoonnummerEntries.Select(x => x.Adres).ToList();
-            var telefoonnummer1 = telefoonnummers.FirstOrDefault();
-            var telefoonnummer2 = telefoonnummers.ElementAtOrDefault(1);
+            var telefoonnummers = telefoonnummerEntries?.Select(x => x.Adres).ToList();
+            var telefoonnummer1 = telefoonnummers?.FirstOrDefault();
+            var telefoonnummer2 = telefoonnummers?.ElementAtOrDefault(1);
 
             var toelichting = json["toelichting"]?.GetValue<string>();
 
@@ -144,10 +180,10 @@ namespace PodiumdAdapter.Web.Endpoints
                 ["telefoonnummerAlternatief"] = telefoonnummer2
             };
 
-            obj.Remove("toelichting");
-            obj.Remove("status");
-            obj.Remove("betrokkene");
-            obj.Remove("actor");
+            var jsonObject = json as JsonObject;
+            jsonObject?.Remove("toelichting");
+            jsonObject?.Remove("betrokkene");
+            jsonObject?.Remove("actor");
         }
 
         private static IEnumerable<string> GetTekstParts(JsonNode json)
