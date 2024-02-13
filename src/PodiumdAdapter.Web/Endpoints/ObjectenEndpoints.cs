@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -6,11 +7,11 @@ using PodiumdAdapter.Web.Auth;
 
 namespace PodiumdAdapter.Web.Endpoints
 {
-    public static class InterneTaakCustomEndpoints
+    public static class ObjectenEndpoints
     {
         const string ApiRoot = "/api/v2/objects";
 
-        public static IEndpointConventionBuilder MapInterneTaakCustomEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
+        public static IEndpointConventionBuilder MapObjectenEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
         {
             var group = endpointRouteBuilder.MapGroup(ApiRoot);
 
@@ -21,19 +22,96 @@ namespace PodiumdAdapter.Web.Endpoints
 
             group.MapPost("/", OpslaanInterneTaakStub);
 
-            group.MapGet("/", GetInterneTaken);
+            group.MapGet("/", GetObjecten);
 
             return group;
         }
 
-        private static IResult GetInterneTaken(
+        public static void AddAfdelingenClient(this IServiceCollection services, IConfiguration config)
+        {
+            var baseUrl = config["AFDELINGEN_BASE_URL"];
+            var token = config["AFDELINGEN_TOKEN"];
+            services.AddHttpClient("afdelingen", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
+            });
+        }
+
+        public static void AddGroepenClient(this IServiceCollection services, IConfiguration config)
+        {
+            var baseUrl = config["GROEPEN_BASE_URL"];
+            var token = config["GROEPEN_TOKEN"];
+            services.AddHttpClient("groepen", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
+            });
+        }
+
+        private static async Task<IResult> GetObjecten(
             IConfiguration configuration,
             IHttpClientFactory factory,
             HttpRequest request,
             [FromQuery(Name = "data_attrs")] string[] filterAttributes,
-            [FromQuery(Name = "type")] string? objectType)
+            [FromQuery(Name = "type")] string objectType,
+            CancellationToken cancellationToken)
         {
-            var types = configuration.GetSection("CONTACTVERZOEK_TYPES")?.Get<IEnumerable<string>>()?.Where(x=> !string.IsNullOrWhiteSpace(x)).ToArray() ?? [];
+            var interneTaakType = configuration["INTERNE_TAAK_OBJECT_TYPE_URL"];
+            if (objectType == interneTaakType)
+            {
+                return GetInterneTaken(configuration, factory, request, filterAttributes, objectType);
+            }
+            var groepenType = configuration["GROEPEN_OBJECT_TYPE_URL"];
+            var afdelingenType = configuration["AFDELINGEN_OBJECT_TYPE_URL"];
+
+            if (objectType != afdelingenType)
+            {
+                return Results.Problem("type onbekend", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            return await GetAfdelingenEnGroepen(factory, request, afdelingenType, groepenType, cancellationToken);
+        }
+
+        private static async Task<IResult> GetAfdelingenEnGroepen(IHttpClientFactory factory, HttpRequest request, string afdelingenType, string groepenType, CancellationToken cancellationToken)
+        {
+            var afdelingenClient = factory.CreateClient("afdelingen");
+            var groepenClient = factory.CreateClient("groepen");
+
+            var groepenQuery = request.QueryString.Value?.Replace(afdelingenType, groepenType);
+            var afdelingenUrl = request.Path + request.QueryString;
+            var groepenUrl = request.Path + groepenQuery;
+
+            var afdelingenTask = afdelingenClient.GetAllPages(afdelingenUrl, cancellationToken).ToListAsync(cancellationToken);
+            var groepenTask = groepenClient.GetAllPages(groepenUrl, cancellationToken).ToListAsync(cancellationToken);
+            var afdelingen = await afdelingenTask;
+            var groepen = await groepenTask;
+
+            var all = afdelingen.Concat(groepen).Select(x =>
+            {
+                if (x == null) return null;
+                var json = x.DeepClone();
+                var type = json["type"]?.GetValue<string>();
+                json["type"] = afdelingenType;
+                if (json["record"]?["data"] is JsonObject data
+                && data["naam"]?.GetValue<string>() is string naam
+                && !string.IsNullOrWhiteSpace(naam))
+                {
+                    var prefix = type == afdelingenType
+                        ? "afdeling:"
+                        : "groep:";
+                    data["naam"] = prefix + naam;
+                }
+                return json;
+            }).ToArray();
+            var result = all.ToPaginatedResult();
+
+            return Results.Json(result);
+        }
+
+        private static IResult GetInterneTaken(IConfiguration configuration, IHttpClientFactory factory, HttpRequest request, string[] filterAttributes, string? objectType)
+        {
+            var types = configuration.GetSection("CONTACTVERZOEK_TYPES")?.Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray() ?? [];
             if (types.Length == 0) return Results.Problem("Het type contact dat hoort bij een Contactverzoek is niet opgenomen in de instellingen van de adapter. Neem contact op met een beheerder", statusCode: 500);
 
             var klant = filterAttributes
@@ -103,7 +181,7 @@ namespace PodiumdAdapter.Web.Endpoints
             var groep = obj["groep"]?.GetValue<string>();
 
             JsonObject? actor = null;
-            
+
             if (!string.IsNullOrWhiteSpace(actorGebruikersnaam))
             {
                 actor = new JsonObject
@@ -183,12 +261,12 @@ namespace PodiumdAdapter.Web.Endpoints
         private static async Task<string?> GetKlantUrl(HttpClient client, string cmUrl, CancellationToken cancellationToken)
         {
             var klantenJson = await client.JsonAsync("klantcontactmomenten?contactmoment=" + cmUrl, cancellationToken);
-            
+
             if (klantenJson.TryParsePagination(out var klantPage))
             {
-               return klantPage.Select(x => x?["klant"]?.GetValue<string>())
-                    .Where(x => !string.IsNullOrWhiteSpace(x))
-                    .FirstOrDefault();
+                return klantPage.Select(x => x?["klant"]?.GetValue<string>())
+                     .Where(x => !string.IsNullOrWhiteSpace(x))
+                     .FirstOrDefault();
             }
 
             return null;

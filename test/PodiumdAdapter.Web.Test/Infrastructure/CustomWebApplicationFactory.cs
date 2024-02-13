@@ -19,6 +19,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
         public readonly MockHttpMessageHandler MockHttpMessageHandler = new();
 
         public readonly string ESUITE_BASE_URL = "https://localhost:12345";
+        public readonly string INTERNE_TAAK_OBJECT_TYPE_URL = "my-type";
 
         public string LastRequest { get; private set; } = "";
 
@@ -38,7 +39,8 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
                 ["CLIENTS:0:SECRET"] = _clientSecret,
                 ["ESUITE_BASE_URL"] = ESUITE_BASE_URL,
                 ["ESUITE_TOKEN"] = "FAKE_TOKEN",
-                ["CONTACTVERZOEK_TYPES:0"] = "TYPE"
+                ["CONTACTVERZOEK_TYPES:0"] = "TYPE",
+                ["INTERNE_TAAK_OBJECT_TYPE_URL"] = INTERNE_TAAK_OBJECT_TYPE_URL
             }));
         }
 

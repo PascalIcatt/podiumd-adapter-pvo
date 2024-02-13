@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 
 namespace PodiumdAdapter.Web
@@ -45,6 +46,25 @@ namespace PodiumdAdapter.Web
 
         public static bool TryParsePagination(this JsonNode? node, out JsonArray result)
             => node.TryParsePagination(out result, out _);
+
+        public static async IAsyncEnumerable<JsonNode?> GetAllPages(this HttpClient client, string? url, [EnumeratorCancellation] CancellationToken token)
+        {
+            while (!string.IsNullOrWhiteSpace(url) && (await client.JsonAsync(url, token)).TryParsePagination(out var records, out url))
+            {
+                foreach (var item in records)
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        public static JsonObject ToPaginatedResult(this JsonNode?[] items) => new JsonObject
+        {
+            ["results"] = new JsonArray(items),
+            ["next"] = null,
+            ["previous"] = null,
+            ["count"] = items.Length,
+        };
     }
 
     public class ProxyResult(HttpClient client, ProxyRequest request) : IResult

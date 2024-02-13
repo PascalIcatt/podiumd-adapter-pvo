@@ -318,13 +318,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 PlakAntwoordPropertyAchterTekstProperty(item);
             }
 
-            var paginated = new JsonObject
-            {
-                ["results"] = new JsonArray(contactmomenten),
-                ["next"] = null,
-                ["previous"] = null,
-                ["count"] = contactmomenten.Length,
-            };
+            var paginated = contactmomenten.ToPaginatedResult();
 
             return Results.Json(paginated);
         }
@@ -339,18 +333,8 @@ namespace PodiumdAdapter.Web.Endpoints
         }
 
         private static IAsyncEnumerable<JsonNode?> GetObjectContactmomenten(HttpClient client, string objectUrl, CancellationToken token)
-            => GetAllPages(client, "objectcontactmomenten?object=" + objectUrl, token);
+            => client.GetAllPages("objectcontactmomenten?object=" + objectUrl, token);
 
-        private static async IAsyncEnumerable<JsonNode?> GetAllPages(HttpClient client, string? url, [EnumeratorCancellation] CancellationToken token)
-        {
-            while (!string.IsNullOrWhiteSpace(url) && (await client.JsonAsync(url, token)).TryParsePagination(out var records, out url))
-            {
-                foreach (var item in records)
-                {
-                    yield return item;
-                }
-            }
-        }
         private static bool ShouldIncludeObjectContactmomenten(HttpRequest request) =>
             request.Query.TryGetValue("expand", out var expand)
             && expand.Contains(ObjectcontactmomentenKey);

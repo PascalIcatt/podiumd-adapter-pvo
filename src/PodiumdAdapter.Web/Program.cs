@@ -29,6 +29,8 @@ try
     builder.Services.AddESuiteClient(new ZaakZrcClientConfig());
     builder.Services.AddESuiteClient(new CatalogusZtcClientConfig());
     builder.Services.AddESuiteClient(new DocumentenDrcClientConfig());
+    builder.Services.AddAfdelingenClient(builder.Configuration);
+    builder.Services.AddGroepenClient(builder.Configuration);
 
     if (!builder.Environment.IsDevelopment())
     {
@@ -42,7 +44,7 @@ try
 
     app.MapHealthChecks("/healthz").AllowAnonymous();
     app.MapEsuiteEndpoints();
-    app.MapInterneTaakCustomEndpoints();
+    app.MapObjectenEndpoints();
     app.MapReverseProxy();
 
 
