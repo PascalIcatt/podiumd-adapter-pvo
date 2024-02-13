@@ -98,7 +98,40 @@ namespace PodiumdAdapter.Web.Endpoints
             var medewerkerIdentificatie = obj["medewerkerIdentificatie"]?.DeepClone();
             var behandelaar = obj["behandelaar"];
             var actorNaam = behandelaar?["volledigeNaam"]?.DeepClone();
-            var actorGebruikersnaam = behandelaar?["gebruikersnaam"]?.DeepClone();
+            var actorGebruikersnaam = behandelaar?["gebruikersnaam"]?.GetValue<string>();
+            var afdeling = obj["afdeling"]?.GetValue<string>();
+            var groep = obj["groep"]?.GetValue<string>();
+
+            JsonObject? actor = null;
+            
+            if (!string.IsNullOrWhiteSpace(actorGebruikersnaam))
+            {
+                actor = new JsonObject
+                {
+                    ["naam"] = actorNaam,
+                    ["soortActor"] = "medewerker",
+                    ["identificatie"] = actorGebruikersnaam
+                };
+            }
+            else if (!string.IsNullOrWhiteSpace(groep))
+            {
+                actor = new JsonObject
+                {
+                    ["naam"] = groep,
+                    ["identificatie"] = groep,
+                    ["soortActor"] = "organisatorische eenheid"
+                };
+            }
+            else if (!string.IsNullOrWhiteSpace(afdeling))
+            {
+                actor = new JsonObject
+                {
+                    ["naam"] = afdeling,
+                    ["identificatie"] = afdeling,
+                    ["soortActor"] = "organisatorische eenheid"
+                };
+            }
+
             var toelichting = behandelaar?["toelichting"]?.DeepClone();
             var status = obj["status"]?.DeepClone();
             var registratieDatum = obj["registratiedatum"]?.DeepClone();
@@ -114,14 +147,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 ["typeVersion"] = 1,
                 ["data"] = new JsonObject
                 {
-                    ["actor"] = actorGebruikersnaam == null
-                        ? null
-                        : new JsonObject
-                        {
-                            ["naam"] = actorNaam,
-                            ["soortActor"] = "medewerker",
-                            ["identificatie"] = actorGebruikersnaam
-                        },
+                    ["actor"] = actor,
                     ["status"] = status,
                     ["betrokkene"] = new JsonObject
                     {
