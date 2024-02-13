@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.Configuration;
 using PodiumdAdapter.Web.Infrastructure;
 
 namespace PodiumdAdapter.Web.Endpoints
@@ -100,7 +98,7 @@ namespace PodiumdAdapter.Web.Endpoints
                         if (isContactverzoek)
                         {
                             HandleContactverzoekToEsuiteMapping(json, contactverzoekType, betrokkene, digitaleAdressen, actor);
-                        }                        
+                        }
                         else if (TryGetAfdelingOrGroep(json["verantwoordelijkeAfdeling"]?.GetValue<string>(), out var value, out var propName))
                         {
                             json[propName] = value;
@@ -123,13 +121,13 @@ namespace PodiumdAdapter.Web.Endpoints
             json["antwoord"] = string.Join("\n", new[] { antwoord, gespreksresultaat }.Where(x => !string.IsNullOrWhiteSpace(x)));// + (antwoord !=null && gespreksresultaat!=null) ? "\n" : "";
         }
 
-        private static bool IsContactverzoek(JsonNode json,  out JsonObject? contactverzoekBetrokkene, out JsonArray? contactvezoekDigitaleAdressen, out JsonObject? contactverzoekActor)
+        private static bool IsContactverzoek(JsonNode json, out JsonObject? contactverzoekBetrokkene, out JsonArray? contactvezoekDigitaleAdressen, out JsonObject? contactverzoekActor)
         {
             contactverzoekBetrokkene = default;
             contactvezoekDigitaleAdressen = default;
             contactverzoekActor = default;
 
-            if (json is not JsonObject 
+            if (json is not JsonObject
                || json["betrokkene"] is not JsonObject betrokkene
                || betrokkene["digitaleAdressen"] is not JsonArray digitaleAdressen
                || json["actor"] is not JsonObject actor)
@@ -146,7 +144,7 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public static void HandleContactverzoekToEsuiteMapping(JsonNode json, string? contactverzoekType, JsonObject? betrokkene, JsonArray? digitaleAdressen, JsonObject? actor)
         {
-         
+
             var organisatie = betrokkene?["organisatie"]?.GetValue<string>();
 
             var persoonsnaam = betrokkene?["persoonsnaam"];
@@ -196,7 +194,7 @@ namespace PodiumdAdapter.Web.Endpoints
             {
                 json[propName] = value;
             }
-            else if(soortActor == "medewerker") 
+            else if (soortActor == "medewerker")
             {
                 // tijdelijk hard coded medewerker
                 //behandelaar["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
@@ -228,9 +226,9 @@ namespace PodiumdAdapter.Web.Endpoints
         private static IEnumerable<string> GetTekstParts(JsonNode json)
         {
             var vraag = json["vraag"]?.GetValue<string>();
-            if(!string.IsNullOrWhiteSpace(vraag)) yield return vraag;
+            if (!string.IsNullOrWhiteSpace(vraag)) yield return vraag;
             var specifiekeVraag = json["specifiekevraag"]?.GetValue<string>();
-            if(!string.IsNullOrWhiteSpace(specifiekeVraag)) yield return specifiekeVraag;
+            if (!string.IsNullOrWhiteSpace(specifiekeVraag)) yield return specifiekeVraag;
             var tekst = json["tekst"]?.GetValue<string>();
             if (!string.IsNullOrWhiteSpace(tekst)) yield return tekst;
         }
