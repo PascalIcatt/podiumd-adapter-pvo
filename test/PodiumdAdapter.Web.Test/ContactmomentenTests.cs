@@ -83,7 +83,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
                 "toelichting": "interne toelichting",
                 "actor": {
                     "identificatie": "bo-handhaving",
-                    "naam": "Handhaving",
+                    "naam": "afdeling:Handhaving",
                     "soortActor": "organisatorische eenheid"
                 },
                 "betrokkene": {
@@ -134,9 +134,9 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
               "status": "te verwerken",
               "type": "my-type",
               "behandelaar": {
-                "gebruikersnaam": "Mark",
                 "toelichting": "Contact opnemen met: Voor tussen Achter (Org)\nOmschrijving tweede telefoonnummer: werk\ninterne toelichting"
               },
+              "afdeling": "Handhaving",
               "contactgegevens": {
                 "emailadres": "icatttest@gmail.com",
                 "telefoonnummer": "0201234567",

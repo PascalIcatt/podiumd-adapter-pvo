@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Configuration;
@@ -100,6 +101,10 @@ namespace PodiumdAdapter.Web.Endpoints
                         {
                             HandleContactverzoekToEsuiteMapping(json, contactverzoekType, betrokkene, digitaleAdressen, actor);
                         }                        
+                        else if (TryGetAfdelingOrGroep(json["verantwoordelijkeAfdeling"]?.GetValue<string>(), out var value, out var propName))
+                        {
+                            json[propName] = value;
+                        }
 
                         json["status"] = isContactverzoek ? ContactverzoekStatusValue : ContactmomentStatusValue;
 
@@ -139,7 +144,7 @@ namespace PodiumdAdapter.Web.Endpoints
             return true;
         }
 
-            public static void HandleContactverzoekToEsuiteMapping(JsonNode json, string? contactverzoekType, JsonObject? betrokkene, JsonArray? digitaleAdressen, JsonObject? actor)
+        public static void HandleContactverzoekToEsuiteMapping(JsonNode json, string? contactverzoekType, JsonObject? betrokkene, JsonArray? digitaleAdressen, JsonObject? actor)
         {
          
             var organisatie = betrokkene?["organisatie"]?.GetValue<string>();
@@ -177,13 +182,26 @@ namespace PodiumdAdapter.Web.Endpoints
 
             json["type"] = contactverzoekType;
 
-            json["behandelaar"] = new JsonObject
+            var behandelaar = new JsonObject
             {
-                // tijdelijk hard coded afdeling/groep/medewerker
-                //["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
-                ["gebruikersnaam"] = "Mark",
                 ["toelichting"] = combinedToelichting
             };
+            json["behandelaar"] = behandelaar;
+
+            var soortActor = actor?["soortActor"]?.GetValue<string>();
+
+            if (soortActor == "organisatorische eenheid"
+                && actor?["naam"]?.GetValue<string>() is string afdelingOfGroep
+                && TryGetAfdelingOrGroep(afdelingOfGroep, out var value, out var propName))
+            {
+                json[propName] = value;
+            }
+            else if(soortActor == "medewerker") 
+            {
+                // tijdelijk hard coded medewerker
+                //behandelaar["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
+                behandelaar["gebruikersnaam"] = "Mark";
+            }
 
             json["contactgegevens"] = new JsonObject
             {
@@ -196,6 +214,15 @@ namespace PodiumdAdapter.Web.Endpoints
             jsonObject?.Remove("toelichting");
             jsonObject?.Remove("betrokkene");
             jsonObject?.Remove("actor");
+        }
+
+        private static bool TryGetAfdelingOrGroep([NotNullWhen(true)] string? afdelingOfGroep, [NotNullWhen(true)] out string? value, [NotNullWhen(true)] out string propName)
+        {
+            var split = afdelingOfGroep?.Split(":", StringSplitOptions.RemoveEmptyEntries) ?? [];
+            var prefix = split.FirstOrDefault();
+            value = split.Length > 1 ? string.Join(":", split.Skip(1)) : prefix;
+            propName = split.Length > 1 && prefix == "groep" ? "groep" : "afdeling";
+            return !string.IsNullOrWhiteSpace(value);
         }
 
         private static IEnumerable<string> GetTekstParts(JsonNode json)

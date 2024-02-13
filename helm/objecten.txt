@@ -27,6 +27,7 @@ helm upgrade --install `
 --set settings.database.username=postgres `
 --set settings.allowedHosts=$OBJECTEN_URL `
 --set settings.database.password=$POSTGRES_PW_OBJECTS `
+--set extraEnvVars[0]=NOTIFICATIONS_DISABLED=true `
 my-repo/objecten
 
 helm upgrade --install `
@@ -43,6 +44,7 @@ helm upgrade --install `
 --set settings.database.username=postgres `
 --set settings.allowedHosts=$OBJECTTYPEN_URL `
 --set settings.database.password=$POSTGRES_PW_OBJECTS `
+--set extraEnvVars[0]=NOTIFICATIONS_DISABLED=true `
 my-repo/objecttypen
 
 
