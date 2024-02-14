@@ -182,7 +182,8 @@ namespace PodiumdAdapter.Web.Endpoints
 
             var behandelaar = new JsonObject
             {
-                ["toelichting"] = combinedToelichting
+                ["toelichting"] = combinedToelichting,
+                ["gebruikersnaam"] = "Felix",
             };
             json["behandelaar"] = behandelaar;
 
