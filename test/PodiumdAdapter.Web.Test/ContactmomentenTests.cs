@@ -134,7 +134,8 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
               "status": "te verwerken",
               "type": "my-type",
               "behandelaar": {
-                "toelichting": "Contact opnemen met: Voor tussen Achter (Org)\nOmschrijving tweede telefoonnummer: werk\ninterne toelichting"
+                "toelichting": "Contact opnemen met: Voor tussen Achter (Org)\nOmschrijving tweede telefoonnummer: werk\ninterne toelichting",
+                "gebruikersnaam": "Felix"
               },
               "afdeling": "Handhaving",
               "contactgegevens": {
