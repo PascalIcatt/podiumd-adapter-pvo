@@ -88,10 +88,7 @@ namespace PodiumdAdapter.Web.Endpoints
             var groepenClient = factory.CreateClient("groepen");
 
             var query = request.Query.ToDictionary();
-            var search = filterAttributes
-                .Select(x => x.Split("naam__icontains__", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault())
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .FirstOrDefault();
+            var search = ExtractFilterAttribute(filterAttributes, "naam__icontains__");
 
             if (search?.StartsWith("afdeling:") ?? false)
             {
@@ -144,10 +141,7 @@ namespace PodiumdAdapter.Web.Endpoints
             var types = configuration.GetSection("CONTACTVERZOEK_TYPES")?.Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray() ?? [];
             if (types.Length == 0) return Results.Problem("Het type contact dat hoort bij een Contactverzoek is niet opgenomen in de instellingen van de adapter. Neem contact op met een beheerder", statusCode: 500);
 
-            var klant = filterAttributes
-                .Select(x => x.Split("betrokkene__klant__exact__", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault())
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .FirstOrDefault();
+            var klant = ExtractFilterAttribute(filterAttributes, "betrokkene__klant__exact__");
 
             var client = factory.CreateClient(nameof(ContactmomentenClientConfig));
 
@@ -168,6 +162,14 @@ namespace PodiumdAdapter.Web.Endpoints
                 Url = "contactmomenten" + queryString,
                 ModifyResponseBody = (json, cancellationToken) => MapContactmomentenResponseToContactverzoeken(json, request, client, klant, objectType, cancellationToken)
             });
+        }
+
+        private static string? ExtractFilterAttribute(string[] filterAttributes, string prefix)
+        {
+            return filterAttributes
+                .Select(x => x.Split(prefix, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .FirstOrDefault();
         }
 
         private static async ValueTask MapContactmomentenResponseToContactverzoeken(
