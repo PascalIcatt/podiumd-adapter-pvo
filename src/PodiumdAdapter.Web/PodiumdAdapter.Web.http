@@ -27,9 +27,11 @@ Content-Type: application/json
 {
     "bronorganisatie": "123",
     "url": "{{ContactmomentenRoot}}/contactmomenten/123",
-    "tekst": "ik heb een vraag",
+    "tekst": "dit is tekst",
+    "vraag": "dit is vraag",
+    "specifiekevraag": "dit is specifiekevraag",
     "type": "Melding",
-    "kanaal": "Internet"
+    "kanaal": "e-mail"
 }
 
 ###
