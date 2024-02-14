@@ -36,6 +36,8 @@ namespace PodiumdAdapter.Web.Endpoints
                     return new ValueTask();
                 }
             }));
+
+            clientRoot.MapPost("/zaakcontactmomenten", () => Results.NoContent());
         }
 
         private static void MapInternZaaknummerToIdentificatie(JsonNode? item)
