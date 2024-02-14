@@ -29,10 +29,10 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public static void AddAfdelingenClient(this IServiceCollection services, IConfiguration config)
         {
-            var baseUrl = config["AFDELINGEN_BASE_URL"];
-            var token = config["AFDELINGEN_TOKEN"];
-            services.AddHttpClient("afdelingen", client =>
+            services.AddHttpClient("afdelingen", (client) =>
             {
+                var baseUrl = config["AFDELINGEN_BASE_URL"];
+                var token = config["AFDELINGEN_TOKEN"];
                 client.BaseAddress = new Uri(baseUrl);
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
             });
@@ -40,10 +40,10 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public static void AddGroepenClient(this IServiceCollection services, IConfiguration config)
         {
-            var baseUrl = config["GROEPEN_BASE_URL"];
-            var token = config["GROEPEN_TOKEN"];
-            services.AddHttpClient("groepen", client =>
+            services.AddHttpClient("groepen", (client) =>
             {
+                var baseUrl = config["GROEPEN_BASE_URL"];
+                var token = config["GROEPEN_TOKEN"];
                 client.BaseAddress = new Uri(baseUrl);
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
             });
