@@ -42,6 +42,22 @@ $CLIENTS__1__ID='ANOTHER-CLIENT-ID-IF-APPLICABLE'
 # For the Interne taak part of the podiumd-adapter the client secrets are specified in the same way.
 $CLIENTS__0__SECRET='zyxu908237^%&*zyxu908237^%&*'
 $CLIENTS__1__SECRET='erfg94367!@$erfg94367!@$'
+
+# Configure the Contact Types in the E-Suite that correspond with a contactverzoek in KISS
+# Use the same naming convention for arrays as above
+$CONTACTVERZOEK_TYPES__0=Terugbelverzoek
+
+# Configure the object types from the object types registration. These need to match te values you've configured for KISS.
+$INTERNE_TAAK_OBJECT_TYPE_URL=https://www.my-obect-types-registration.nl/api/v2/objecttypes/1df73259-1a58-4180-bf98-598eefc184d4
+$AFDELINGEN_OBJECT_TYPE_URL=https://www.my-obect-types-registration.nl/api/v2/objecttypes/ec65c0be-5e8d-4b72-b07f-7c4f78c84a18
+$GROEPEN_OBJECT_TYPE_URL=https://www.my-obect-types-registration.nl/api/v2/objecttypes/8b9d6bf9-7b5a-4c38-ad10-f37cd1e81a8f
+
+// Configure the base url for your objects registration and the token you've configured in the objects registration 
+$AFDELINGEN_BASE_URL=https://www.my-objects-registration.nl
+$AFDELINGEN_TOKEN='zxoiuoi234987#$%#$^^'
+$GROEPEN_BASE_URL=https://www.my-objects-registration.nl
+$GROEPEN_TOKEN='0982309823498@#$@#$'
+
 ```
 ## 2. Create a `namespace`
 ```powershell
@@ -50,7 +66,12 @@ kubectl create namespace podiumd-adapter-namespace
 ## 3. Create a `config map`
 ```powershell
 kubectl -n podiumd-adapter-namespace create configmap podiumd-adapter-config `
---from-literal=ESUITE_BASE_URL=$ESUITE_BASE_URL
+--from-literal=ESUITE_BASE_URL=$ESUITE_BASE_URL `
+--from-literal=INTERNE_TAAK_OBJECT_TYPE_URL=$INTERNE_TAAK_OBJECT_TYPE_URL `
+--from-literal=AFDELINGEN_BASE_URL=$AFDELINGEN_BASE_URL `
+--from-literal=AFDELINGEN_OBJECT_TYPE_URL=$AFDELINGEN_OBJECT_TYPE_URL `
+--from-literal=GROEPEN_BASE_URL=$GROEPEN_BASE_URL `
+--from-literal=GROEPEN_OBJECT_TYPE_URL=$GROEPEN_OBJECT_TYPE_URL
 ```
 ## 4. Create a `secret`
 ```powershell
@@ -59,7 +80,9 @@ kubectl -n podiumd-adapter-namespace create secret generic podiumd-adapter-secre
 --from-literal=CLIENTS__0__ID=$CLIENTS__0__ID `
 --from-literal=CLIENTS__0__SECRET=$CLIENTS__0__SECRET `
 --from-literal=CLIENTS__1__ID=$CLIENTS__1__ID `
---from-literal=CLIENTS__1__SECRET=$CLIENTS__1__SECRET
+--from-literal=CLIENTS__1__SECRET=$CLIENTS__1__SECRET `
+--from-literal=AFDELINGEN_TOKEN=$AFDELINGEN_TOKEN `
+--from-literal=GROEPEN_TOKEN=$GROEPEN_TOKEN
 ```
 ## 5. Use the `helm chart` to deploy the application
 ```powershell
