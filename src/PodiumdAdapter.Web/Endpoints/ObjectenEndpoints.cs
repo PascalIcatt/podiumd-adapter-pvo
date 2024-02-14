@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using PodiumdAdapter.Web.Auth;
 
 namespace PodiumdAdapter.Web.Endpoints
@@ -65,22 +66,51 @@ namespace PodiumdAdapter.Web.Endpoints
             var groepenType = configuration["GROEPEN_OBJECT_TYPE_URL"];
             var afdelingenType = configuration["AFDELINGEN_OBJECT_TYPE_URL"];
 
+            if (objectType == groepenType)
+            {
+                return factory.CreateClient("groepen").ProxyResult(new ProxyRequest
+                {
+                    Url = request.Path + request.QueryString,
+                });
+            }
+
             if (objectType != afdelingenType)
             {
                 return Results.Problem("type onbekend", statusCode: StatusCodes.Status400BadRequest);
             }
 
-            return await GetAfdelingenEnGroepen(factory, request, afdelingenType, groepenType, cancellationToken);
+            return await GetAfdelingenEnGroepen(factory, request, filterAttributes, afdelingenType, groepenType, cancellationToken);
         }
 
-        private static async Task<IResult> GetAfdelingenEnGroepen(IHttpClientFactory factory, HttpRequest request, string afdelingenType, string groepenType, CancellationToken cancellationToken)
+        private static async Task<IResult> GetAfdelingenEnGroepen(IHttpClientFactory factory, HttpRequest request, string[] filterAttributes, string afdelingenType, string groepenType, CancellationToken cancellationToken)
         {
             var afdelingenClient = factory.CreateClient("afdelingen");
             var groepenClient = factory.CreateClient("groepen");
 
-            var groepenQuery = request.QueryString.Value?.Replace(afdelingenType, groepenType);
-            var afdelingenUrl = request.Path + request.QueryString;
-            var groepenUrl = request.Path + groepenQuery;
+            var query = request.Query.ToDictionary();
+            var search = filterAttributes
+                .Select(x => x.Split("naam__icontains__", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .FirstOrDefault();
+
+            if (search?.StartsWith("afdeling:") ?? false)
+            {
+                search = search.Substring("afdeling:".Length);
+            }
+            else if (search?.StartsWith("groep:") ?? false)
+            {
+                search = search.Substring("groep:".Length);
+            }
+
+            if (search != null)
+            {
+                query["data_attrs"] = $"naam__icontains__{search}";
+            }
+
+            var afdelingenUrl = QueryHelpers.AddQueryString(request.Path, query);
+
+            query["type"] = groepenType;
+            var groepenUrl = QueryHelpers.AddQueryString(request.Path, query);
 
             var afdelingenTask = afdelingenClient.GetAllPages(afdelingenUrl, cancellationToken).ToListAsync(cancellationToken);
             var groepenTask = groepenClient.GetAllPages(groepenUrl, cancellationToken).ToListAsync(cancellationToken);

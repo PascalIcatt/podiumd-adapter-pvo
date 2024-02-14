@@ -32,7 +32,8 @@ Content-Type: application/json
     "url": "{{ContactmomentenRoot}}/contactmomenten/123",
     "tekst": "ik heb een vraag",
     "type": "Melding",
-    "kanaal": "Internet"
+    "kanaal": "e-mail",
+    "antwoord": "tekst"
 }
 
 ###
@@ -105,7 +106,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-      "type": "my-type",
+      "type": "{{InterneTaakType}}",
       "record": {
         "typeVersion": 1,
         "data": {
@@ -143,5 +144,54 @@ Accept: application/json
           
 GET {{ObjectenRoot}}/objects?type={{AfdelingenType}}
 Accept: application/json
+
+###
+
+POST {{ContactmomentenRoot}}/contactmomenten
+Accept: application/json
+Content-Type: application/json   
+
+{
+    "actor": {
+        "identificatie": "PUBL_HV_ADM",
+        "naam": "groep:Administratie handhavingsverzoek",
+        "soortActor": "organisatorische eenheid"
+    },
+    "betrokkene": {
+        "digitaleAdressen": [
+            {
+                "adres": "0612345678",
+                "omschrijving": "telefoonnummer",
+                "soortDigitaalAdres": "telefoonnummer"
+            }
+        ],
+        "persoonsnaam": {
+        },
+        "rol": "klant"
+    },
+    "bronorganisatie": "999990639",
+    "einddatum": "2024-02-14T13:59:12.010Z",
+    "gespreksresultaat": "Contactverzoek gemaakt",
+    "initiatiefnemer": "klant",
+    "kanaal": "Twitter",
+    "medewerker": "sdfdsf",
+    "medewerkerIdentificatie": {
+        "achternaam": "Cornelissen",
+        "identificatie": "Felix@icatt.nl",
+        "voorletters": "Felix",
+        "voorvoegselAchternaam": "sdfsdf"
+    },
+    "onderwerpLinks": [
+    ],
+    "registratiedatum": "2024-02-14T13:59:12.010Z",
+    "specifiekevraag": "specifieke vraag",
+    "startdatum": "2024-02-14T13:50:39.152Z",
+    "status": "te verwerken",
+    "tekst": "notitie",
+    "toelichting": "notitie 14 feb 2:55",
+    "verantwoordelijkeAfdeling": "afdeling:Algemeen",
+    "voorkeurskanaal": "sdfsdf",
+    "voorkeurstaal": "dsfsdf"
+}
 
 ###
