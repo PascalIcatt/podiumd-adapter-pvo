@@ -12,6 +12,10 @@ namespace PodiumdAdapter.Web.Endpoints
     public static class ObjectenEndpoints
     {
         const string ApiRoot = "/api/v2/objects";
+        private const string GroepPrefix = "groep:";
+        private const string AfdelingPrefix = "afdeling:";
+        private const string GroepenClientName = "groepen";
+        private const string AfdelingenClientName = "afdelingen";
 
         public static IEndpointConventionBuilder MapObjectenEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
         {
@@ -42,7 +46,7 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public static void AddGroepenClient(this IServiceCollection services, IConfiguration config)
         {
-            services.AddHttpClient("groepen", (client) =>
+            services.AddHttpClient(GroepenClientName, (client) =>
             {
                 var baseUrl = config.GetRequiredValue("GROEPEN_BASE_URL");
                 var token = config.GetRequiredValue("GROEPEN_TOKEN");
@@ -85,7 +89,7 @@ namespace PodiumdAdapter.Web.Endpoints
             // die call mag geen error teruggeven
             if (objectType == groepenType)
             {
-                return factory.CreateClient("groepen").ProxyResult(new ProxyRequest
+                return factory.CreateClient(GroepenClientName).ProxyResult(new ProxyRequest
                 {
                     Url = request.Path + request.QueryString,
                 });
@@ -96,19 +100,19 @@ namespace PodiumdAdapter.Web.Endpoints
 
         private static async Task<IResult> GetAfdelingenEnGroepen(IHttpClientFactory factory, HttpRequest request, string[] filterAttributes, string afdelingenType, string groepenType, CancellationToken cancellationToken)
         {
-            var afdelingenClient = factory.CreateClient("afdelingen");
-            var groepenClient = factory.CreateClient("groepen");
+            var afdelingenClient = factory.CreateClient(AfdelingenClientName);
+            var groepenClient = factory.CreateClient(GroepenClientName);
 
             var query = request.Query.ToDictionary();
             var search = ExtractFilterAttribute(filterAttributes, "naam__icontains__");
 
-            if (search?.StartsWith("afdeling:") ?? false)
+            if (search?.StartsWith(AfdelingPrefix) ?? false)
             {
-                search = search.Substring("afdeling:".Length);
+                search = search.Substring(AfdelingPrefix.Length);
             }
-            else if (search?.StartsWith("groep:") ?? false)
+            else if (search?.StartsWith(GroepPrefix) ?? false)
             {
-                search = search.Substring("groep:".Length);
+                search = search.Substring(GroepPrefix.Length);
             }
 
             if (search != null)
@@ -148,8 +152,8 @@ namespace PodiumdAdapter.Web.Endpoints
                 && !string.IsNullOrWhiteSpace(naam))
             {
                 var prefix = type == afdelingenType
-                    ? "afdeling:"
-                    : "groep:";
+                    ? AfdelingPrefix
+                    : GroepPrefix;
                 
                 data["naam"] = prefix + naam;
             }
