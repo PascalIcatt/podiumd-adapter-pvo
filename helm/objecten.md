@@ -1,4 +1,7 @@
+# These are the steps we needed to perform to get a working objects and objecttypes registry. Your mileage may vary
 
+
+```powershell
 $OBJECTEN_URL="objectenpodiumd.dev.kiss-demo.nl"
 $OBJECTTYPEN_URL="objecttypenpodiumd.dev.kiss-demo.nl"
 $POSTGRES_PW_OBJECTS=
@@ -54,3 +57,4 @@ objecttypen my-repo/objecttypen
 
 kubectl exec -it objecttypen-59854884b-j5ktf -- python src/manage.py createinitialsuperuser
 kubectl exec -it objecttypen-59854884b-j5ktf -- python src/manage.py createsuperuser
+```

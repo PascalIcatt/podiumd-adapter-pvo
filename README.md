@@ -101,3 +101,5 @@ helm upgrade --install podiumd-adapter-ci-release podiumd-adapter `
 --set ingress.host=$INGRESS_HOST `
 --set ingress.secretName=$INGRESS_SECRET_NAME
 ```
+
+# You need an objects registration. For an example on getting that to work, see `/helm/objecten.md`
