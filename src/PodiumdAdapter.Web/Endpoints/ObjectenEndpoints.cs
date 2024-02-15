@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using PodiumdAdapter.Web.Auth;
+using PodiumdAdapter.Web.Infrastructure;
 
 namespace PodiumdAdapter.Web.Endpoints
 {
@@ -32,8 +33,8 @@ namespace PodiumdAdapter.Web.Endpoints
         {
             services.AddHttpClient("afdelingen", (client) =>
             {
-                var baseUrl = config["AFDELINGEN_BASE_URL"];
-                var token = config["AFDELINGEN_TOKEN"];
+                var baseUrl = config.GetRequiredValue("AFDELINGEN_BASE_URL");
+                var token = config.GetRequiredValue("AFDELINGEN_TOKEN");
                 client.BaseAddress = new Uri(baseUrl);
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
             });
@@ -43,8 +44,8 @@ namespace PodiumdAdapter.Web.Endpoints
         {
             services.AddHttpClient("groepen", (client) =>
             {
-                var baseUrl = config["GROEPEN_BASE_URL"];
-                var token = config["GROEPEN_TOKEN"];
+                var baseUrl = config.GetRequiredValue("GROEPEN_BASE_URL");
+                var token = config.GetRequiredValue("GROEPEN_TOKEN");
                 client.BaseAddress = new Uri(baseUrl);
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
             });
@@ -114,26 +115,35 @@ namespace PodiumdAdapter.Web.Endpoints
             var afdelingen = await afdelingenTask;
             var groepen = await groepenTask;
 
-            var all = afdelingen.Concat(groepen).Select(x =>
-            {
-                if (x == null) return null;
-                var json = x.DeepClone();
-                var type = json["type"]?.GetValue<string>();
-                json["type"] = afdelingenType;
-                if (json["record"]?["data"] is JsonObject data
-                && data["naam"]?.GetValue<string>() is string naam
-                && !string.IsNullOrWhiteSpace(naam))
-                {
-                    var prefix = type == afdelingenType
-                        ? "afdeling:"
-                        : "groep:";
-                    data["naam"] = prefix + naam;
-                }
-                return json;
-            }).ToArray();
+            var all = afdelingen
+                .Concat(groepen)
+                .Select(x => AddAfdelingGroepPrefix(afdelingenType, x))
+                .ToArray();
+
             var result = all.ToPaginatedResult();
 
             return Results.Json(result);
+        }
+
+        private static JsonNode? AddAfdelingGroepPrefix(string afdelingenType, JsonNode? x)
+        {
+            if (x == null) return null;
+            var json = x.DeepClone();
+            var type = json["type"]?.GetValue<string>();
+            json["type"] = afdelingenType;
+
+            if (json["record"]?["data"] is JsonObject data
+                && data["naam"]?.GetValue<string>() is string naam
+                && !string.IsNullOrWhiteSpace(naam))
+            {
+                var prefix = type == afdelingenType
+                    ? "afdeling:"
+                    : "groep:";
+                
+                data["naam"] = prefix + naam;
+            }
+
+            return json;
         }
 
         private static IResult GetInterneTaken(IConfiguration configuration, IHttpClientFactory factory, HttpRequest request, string[] filterAttributes, string? objectType)

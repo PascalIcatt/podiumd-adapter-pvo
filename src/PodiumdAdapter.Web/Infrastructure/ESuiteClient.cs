@@ -22,7 +22,7 @@ namespace PodiumdAdapter.Web.Infrastructure
             {
                 var config = s.GetRequiredService<IConfiguration>();
 
-                var token = config["ESUITE_TOKEN"] ?? throw new Exception("No token found for key ESUITE_TOKEN");
+                var token = config.GetRequiredValue("ESUITE_TOKEN");
 
                 return new RouteConfig
                 {
@@ -63,7 +63,7 @@ namespace PodiumdAdapter.Web.Infrastructure
             services.AddSingleton(s =>
             {
                 var config = s.GetRequiredService<IConfiguration>();
-                var baseUrl = config["ESUITE_BASE_URL"] ?? throw new Exception("No value found for key ESUITE_BASE_URL");
+                var baseUrl = config.GetRequiredValue("ESUITE_BASE_URL");
                 var baseUri = new UriBuilder(baseUrl) { Path = remotePath }.Uri.ToString();
 
                 return new ClusterConfig
@@ -85,8 +85,8 @@ namespace PodiumdAdapter.Web.Infrastructure
             services.AddHttpClient(clientName, (s, x) =>
             {
                 var config = s.GetRequiredService<IConfiguration>();
-                var urlFromConfig = config["ESUITE_BASE_URL"] ?? throw new Exception("No value found for key ESUITE_BASE_URL");
-                var token = config["ESUITE_TOKEN"] ?? throw new Exception("No token found for key ESUITE_TOKEN");
+                var urlFromConfig = config.GetRequiredValue("ESUITE_BASE_URL");
+                var token = config.GetRequiredValue("ESUITE_TOKEN");
                 var baseUrl = new UriBuilder(urlFromConfig) { Path = remotePath };
                 x.BaseAddress = baseUrl.Uri;
                 x.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
