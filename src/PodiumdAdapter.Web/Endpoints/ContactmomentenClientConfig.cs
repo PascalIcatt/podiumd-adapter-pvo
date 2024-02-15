@@ -82,27 +82,20 @@ namespace PodiumdAdapter.Web.Endpoints
                         }
                         json["tekst"] = tekst;
 
-                        // tijdelijk medewerker hard meesturen
-                        if (json["medewerkerIdentificatie"] is JsonObject identificatie)
-                        {
-                            identificatie["identificatie"] = "Felix";
-                        }
-
                         // gespreskresultaaat toevoegen aan het antwoord veld (oa omdat antwoord niet leeg mag zijn bi een contactmoment)
                         GespreksReultaatToevoegenAanEsuiteAntwoord(json);
+                        
+                        HandleAfdelingGroepMedewerker(json);
 
                         var contactverzoekType = configuration.GetSection("CONTACTVERZOEK_TYPES").Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).FirstOrDefault();
 
-                        var isContactverzoek = IsContactverzoek(json, out var betrokkene, out var digitaleAdressen, out var actor);
+                        var isContactverzoek = IsContactverzoek(json, out var betrokkene, out var digitaleAdressen);
 
                         if (isContactverzoek)
                         {
-                            HandleContactverzoekToEsuiteMapping(json, contactverzoekType, betrokkene, digitaleAdressen, actor);
+                            HandleContactverzoekToEsuiteMapping(json, contactverzoekType, betrokkene, digitaleAdressen);
                         }
-                        else if (TryGetAfdelingOrGroep(json["verantwoordelijkeAfdeling"]?.GetValue<string>(), out var value, out var propName))
-                        {
-                            json[propName] = value;
-                        }
+
 
                         json["status"] = isContactverzoek ? ContactverzoekStatusValue : ContactmomentStatusValue;
 
@@ -121,28 +114,25 @@ namespace PodiumdAdapter.Web.Endpoints
             json["antwoord"] = string.Join("\n", new[] { antwoord, gespreksresultaat }.Where(x => !string.IsNullOrWhiteSpace(x)));// + (antwoord !=null && gespreksresultaat!=null) ? "\n" : "";
         }
 
-        private static bool IsContactverzoek(JsonNode json, out JsonObject? contactverzoekBetrokkene, out JsonArray? contactvezoekDigitaleAdressen, out JsonObject? contactverzoekActor)
+        private static bool IsContactverzoek(JsonNode json, out JsonObject? contactverzoekBetrokkene, out JsonArray? contactvezoekDigitaleAdressen)
         {
             contactverzoekBetrokkene = default;
             contactvezoekDigitaleAdressen = default;
-            contactverzoekActor = default;
 
             if (json is not JsonObject
                || json["betrokkene"] is not JsonObject betrokkene
-               || betrokkene["digitaleAdressen"] is not JsonArray digitaleAdressen
-               || json["actor"] is not JsonObject actor)
+               || betrokkene["digitaleAdressen"] is not JsonArray digitaleAdressen)
             {
                 return false;
             }
 
             contactverzoekBetrokkene = betrokkene;
             contactvezoekDigitaleAdressen = digitaleAdressen;
-            contactverzoekActor = actor;
 
             return true;
         }
 
-        public static void HandleContactverzoekToEsuiteMapping(JsonNode json, string? contactverzoekType, JsonObject? betrokkene, JsonArray? digitaleAdressen, JsonObject? actor)
+        public static void HandleContactverzoekToEsuiteMapping(JsonNode json, string? contactverzoekType, JsonObject? betrokkene, JsonArray? digitaleAdressen)
         {
 
             var organisatie = betrokkene?["organisatie"]?.GetValue<string>();
@@ -180,27 +170,13 @@ namespace PodiumdAdapter.Web.Endpoints
 
             json["type"] = contactverzoekType;
 
-            var behandelaar = new JsonObject
+            var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject
             {
-                ["toelichting"] = combinedToelichting,
-                ["gebruikersnaam"] = "Felix",
-            };
-            json["behandelaar"] = behandelaar;
+                // TODO tijdelijk hardcoded gebruikersnaam, omdat deze verplicht is in de esuite API
+                ["gebruikersnaam"] = "Mark"
+            });
 
-            var soortActor = actor?["soortActor"]?.GetValue<string>();
-
-            if (soortActor == "organisatorische eenheid"
-                && actor?["naam"]?.GetValue<string>() is string afdelingOfGroep
-                && TryGetAfdelingOrGroep(afdelingOfGroep, out var value, out var propName))
-            {
-                json[propName] = value;
-            }
-            else if (soortActor == "medewerker")
-            {
-                // tijdelijk hard coded medewerker
-                //behandelaar["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
-                behandelaar["gebruikersnaam"] = "Mark";
-            }
+            behandelaar["toelichting"] = combinedToelichting;
 
             json["contactgegevens"] = new JsonObject
             {
@@ -390,5 +366,40 @@ namespace PodiumdAdapter.Web.Endpoints
                 return new ValueTask();
             }
         });
+
+        private static void HandleAfdelingGroepMedewerker(JsonNode? json)
+        {
+            if (json == null) return;
+            var actor = json["actor"];
+            var soortActor = actor?["soortActor"]?.GetValue<string>();
+            
+            // TODO tijdelijk hardCoded, ingelogde gebruiker moet uiteindelijk gemapt worden op gebruiker in eSuite
+            if (json["medewerkerIdentificatie"] is JsonObject identificatie)
+            {
+                identificatie["identificatie"] = "Felix";
+            }
+
+            // verantwoordelijke afdeling wordt gevuld bij elk contactmoment
+            if (TryGetAfdelingOrGroep(json["verantwoordelijkeAfdeling"]?.GetValue<string>(), out var value, out var propName))
+            {
+                json[propName] = value;
+            }
+
+            // als het om een contactverzoek gaat kan je nog een keer een afdeling kiezen. die overschrijft eventueel de waarde van hierboven
+            if (soortActor == "organisatorische eenheid"
+                && TryGetAfdelingOrGroep(actor?["naam"]?.GetValue<string>(), out value, out propName))
+            {
+                json[propName] = value;
+            }
+
+            // in een contactverzoek kan je ook een medewerker selecteren ipv een afdeling/groep
+            if (soortActor == "medewerker")
+            {
+                var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject());
+                // TODO tijdelijk hard coded medewerker, todat we de objecten netjes gevuld hebben met medewerkers uit de esuite
+                //behandelaar["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
+                behandelaar["gebruikersnaam"] = "Mark";
+            }
+        }
     }
 }

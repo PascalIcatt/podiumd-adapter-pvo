@@ -65,6 +65,16 @@ namespace PodiumdAdapter.Web
             ["previous"] = null,
             ["count"] = items.Length,
         };
+
+        public static T GetOrSetProperty<T>(this JsonNode json, string key, Func<T> defaultFunc) where T: JsonNode
+        {
+            if (json[key] is not T result)
+            {
+                result = defaultFunc();
+                json[key] = result;
+            }
+            return result;
+        }
     }
 
     public class ProxyResult(HttpClient client, ProxyRequest request) : IResult
