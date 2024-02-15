@@ -84,17 +84,6 @@ namespace PodiumdAdapter.Web.Endpoints
                 return await GetAfdelingenEnGroepen(factory, request, filterAttributes, afdelingenType, groepenType, cancellationToken);
             }
 
-            // groepen worden opgehaald op de normale manier
-            // dit is nodig omdat kiss voor elke afdeling checkt of er groepen onder vallen
-            // die call mag geen error teruggeven
-            if (objectType == groepenType)
-            {
-                return factory.CreateClient(GroepenClientName).ProxyResult(new ProxyRequest
-                {
-                    Url = request.Path + request.QueryString,
-                });
-            }
-
             return Results.Problem("objecttype onbekend: " + objectType, statusCode: StatusCodes.Status400BadRequest);
         }
 
