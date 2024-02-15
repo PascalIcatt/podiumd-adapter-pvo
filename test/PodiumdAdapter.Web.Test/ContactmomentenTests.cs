@@ -134,10 +134,9 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
               "status": "te verwerken",
               "type": "my-type",
               "behandelaar": {
-                "toelichting": "Contact opnemen met: Voor tussen Achter (Org)\nOmschrijving tweede telefoonnummer: werk\ninterne toelichting",
-                "gebruikersnaam": "Felix"
+                "gebruikersnaam": "Mark",
+                "toelichting": "Contact opnemen met: Voor tussen Achter (Org)\nOmschrijving tweede telefoonnummer: werk\ninterne toelichting"
               },
-              "afdeling": "Handhaving",
               "contactgegevens": {
                 "emailadres": "icatttest@gmail.com",
                 "telefoonnummer": "0201234567",
@@ -148,7 +147,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
 
         var parsed = JsonNode.Parse(InputJson)!;
 
-        ContactmomentenClientConfig.HandleContactverzoekToEsuiteMapping(parsed, "my-type", parsed["betrokkene"] as JsonObject, parsed["betrokkene"]["digitaleAdressen"] as JsonArray, parsed["actor"] as JsonObject  );
+        ContactmomentenClientConfig.HandleContactverzoekToEsuiteMapping(parsed, "my-type", parsed["betrokkene"] as JsonObject, parsed["betrokkene"]["digitaleAdressen"] as JsonArray);
 
         var result = parsed.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }).Replace("\r\n", "\n");
 

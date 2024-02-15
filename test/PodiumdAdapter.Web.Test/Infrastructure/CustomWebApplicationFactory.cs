@@ -48,7 +48,9 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
                 ["AFDELINGEN_BASE_URL"] = AFDELINGEN_BASE_URL,
                 ["GROEPEN_BASE_URL"] = GROEPEN_BASE_URL,
                 ["AFDELINGEN_OBJECT_TYPE_URL"] = AFDELINGEN_OBJECT_TYPE_URL,
-                ["GROEPEN_OBJECT_TYPE_URL"] = GROEPEN_OBJECT_TYPE_URL
+                ["GROEPEN_OBJECT_TYPE_URL"] = GROEPEN_OBJECT_TYPE_URL,
+                ["AFDELINGEN_TOKEN"] = "FAKE_TOKEN",
+                ["GROEPEN_TOKEN"] = "FAKE_TOKEN",
             };
 
 

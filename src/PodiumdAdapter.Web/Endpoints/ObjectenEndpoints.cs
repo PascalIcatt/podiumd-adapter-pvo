@@ -51,6 +51,10 @@ namespace PodiumdAdapter.Web.Endpoints
             });
         }
 
+        // Haalt objecten op van de volgende types:
+        // InterneTaak
+        // Afdeling
+        // Groep
         private static async Task<IResult> GetObjecten(
             IConfiguration configuration,
             IHttpClientFactory factory,
@@ -59,14 +63,26 @@ namespace PodiumdAdapter.Web.Endpoints
             [FromQuery(Name = "type")] string objectType,
             CancellationToken cancellationToken)
         {
-            var interneTaakType = configuration["INTERNE_TAAK_OBJECT_TYPE_URL"];
+            var interneTaakType = configuration.GetRequiredValue("INTERNE_TAAK_OBJECT_TYPE_URL");
+            var groepenType = configuration.GetRequiredValue("GROEPEN_OBJECT_TYPE_URL");
+            var afdelingenType = configuration.GetRequiredValue("AFDELINGEN_OBJECT_TYPE_URL");
+
+            // voor interne taak gaan we naar de contactmomenten api van de esuite
             if (objectType == interneTaakType)
             {
                 return GetInterneTaken(configuration, factory, request, filterAttributes, objectType);
             }
-            var groepenType = configuration["GROEPEN_OBJECT_TYPE_URL"];
-            var afdelingenType = configuration["AFDELINGEN_OBJECT_TYPE_URL"];
 
+            // afdelingen vullen we met zowel afdelingen als groepen, met ieder een eigen prefix
+            // dit is nodig omdat kiss er vanuit gaat dat groepen onder afdelingen vallen, maar dit is niet altijd het geval
+            if (objectType == afdelingenType)
+            {
+                return await GetAfdelingenEnGroepen(factory, request, filterAttributes, afdelingenType, groepenType, cancellationToken);
+            }
+
+            // groepen worden opgehaald op de normale manier
+            // dit is nodig omdat kiss voor elke afdeling checkt of er groepen onder vallen
+            // die call mag geen error teruggeven
             if (objectType == groepenType)
             {
                 return factory.CreateClient("groepen").ProxyResult(new ProxyRequest
@@ -75,12 +91,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 });
             }
 
-            if (objectType != afdelingenType)
-            {
-                return Results.Problem("type onbekend", statusCode: StatusCodes.Status400BadRequest);
-            }
-
-            return await GetAfdelingenEnGroepen(factory, request, filterAttributes, afdelingenType, groepenType, cancellationToken);
+            return Results.Problem("objecttype onbekend: " + objectType, statusCode: StatusCodes.Status400BadRequest);
         }
 
         private static async Task<IResult> GetAfdelingenEnGroepen(IHttpClientFactory factory, HttpRequest request, string[] filterAttributes, string afdelingenType, string groepenType, CancellationToken cancellationToken)
