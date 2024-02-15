@@ -12,6 +12,9 @@ Be sure to set-up environment variables first
 3. In the development environment there is no authentication on calls to the Adapter. Any technically valid value for the API keys and id's in PodiumD Contact will do. 
 
 # Installation in Kubernetes
+Ideally, you would set up the following in a CI/CD pipeline.
+If you were to install the adapter by hand, you can follow these steps:
+
 ## 1. Come up with values for the environment variables
 ```powershell
 # Specify the image tag to use. we will recommend one when we reach a stable version
@@ -45,17 +48,19 @@ $CLIENTS__1__SECRET='erfg94367!@$erfg94367!@$'
 
 # Configure the Contact Types in the E-Suite that correspond with a contactverzoek in KISS
 # Use the same naming convention for arrays as above
-$CONTACTVERZOEK_TYPES__0=Terugbelverzoek
+$CONTACTVERZOEK_TYPES__0='Terugbelverzoek'
 
-# Configure the object types from the object types registration. These need to match te values you've configured for KISS.
-$INTERNE_TAAK_OBJECT_TYPE_URL=https://www.my-obect-types-registration.nl/api/v2/objecttypes/1df73259-1a58-4180-bf98-598eefc184d4
-$AFDELINGEN_OBJECT_TYPE_URL=https://www.my-obect-types-registration.nl/api/v2/objecttypes/ec65c0be-5e8d-4b72-b07f-7c4f78c84a18
-$GROEPEN_OBJECT_TYPE_URL=https://www.my-obect-types-registration.nl/api/v2/objecttypes/8b9d6bf9-7b5a-4c38-ad10-f37cd1e81a8f
+# Configure the object types from the object types registration. 
+# These need to match te values you've configured for KISS. 
+# All of thes values are required.
+$INTERNE_TAAK_OBJECT_TYPE_URL='https://www.my-obect-types-registration.nl/api/v2/objecttypes/1df73259-1a58-4180-bf98-598eefc184d4'
+$AFDELINGEN_OBJECT_TYPE_URL='https://www.my-obect-types-registration.nl/api/v2/objecttypes/ec65c0be-5e8d-4b72-b07f-7c4f78c84a18'
+$GROEPEN_OBJECT_TYPE_URL='https://www.my-obect-types-registration.nl/api/v2/objecttypes/8b9d6bf9-7b5a-4c38-ad10-f37cd1e81a8f'
 
-// Configure the base url for your objects registration and the token you've configured in the objects registration 
-$AFDELINGEN_BASE_URL=https://www.my-objects-registration.nl
+# Configure the base url for your objects registration and the token you've configured in the objects registration 
+$AFDELINGEN_BASE_URL='https://www.my-objects-registration.nl'
 $AFDELINGEN_TOKEN='zxoiuoi234987#$%#$^^'
-$GROEPEN_BASE_URL=https://www.my-objects-registration.nl
+$GROEPEN_BASE_URL='https://www.my-objects-registration.nl'
 $GROEPEN_TOKEN='0982309823498@#$@#$'
 
 ```
