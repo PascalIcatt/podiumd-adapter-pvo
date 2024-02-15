@@ -35,7 +35,7 @@ namespace PodiumdAdapter.Web.Endpoints
 
         public static void AddAfdelingenClient(this IServiceCollection services, IConfiguration config)
         {
-            services.AddHttpClient("afdelingen", (client) =>
+            services.AddHttpClient(AfdelingenClientName, (client) =>
             {
                 var baseUrl = config.GetRequiredValue("AFDELINGEN_BASE_URL");
                 var token = config.GetRequiredValue("AFDELINGEN_TOKEN");
