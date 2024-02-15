@@ -16,6 +16,7 @@ Ideally, you would set up the following in a CI/CD pipeline.
 If you were to install the adapter by hand, you can follow these steps:
 
 ## 1. Come up with values for the environment variables
+### All values are mandatory, for array values you need to specify at least one.
 ```powershell
 # Specify the image tag to use. we will recommend one when we reach a stable version
 $IMAGE_TAG='main-latest'
@@ -51,8 +52,8 @@ $CLIENTS__1__SECRET='erfg94367!@$erfg94367!@$'
 $CONTACTVERZOEK_TYPES__0='Terugbelverzoek'
 
 # Configure the object types from the object types registration. 
-# These need to match te values you've configured for KISS. 
-# All of thes values are required.
+# These need to match the values you've configured for KISS. 
+# The adapter uses the same endpoint for interne taken, afdelingen and groepen and uses the object types to determine how to handle each request correctly
 $INTERNE_TAAK_OBJECT_TYPE_URL='https://www.my-obect-types-registration.nl/api/v2/objecttypes/1df73259-1a58-4180-bf98-598eefc184d4'
 $AFDELINGEN_OBJECT_TYPE_URL='https://www.my-obect-types-registration.nl/api/v2/objecttypes/ec65c0be-5e8d-4b72-b07f-7c4f78c84a18'
 $GROEPEN_OBJECT_TYPE_URL='https://www.my-obect-types-registration.nl/api/v2/objecttypes/8b9d6bf9-7b5a-4c38-ad10-f37cd1e81a8f'

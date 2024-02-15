@@ -9,7 +9,7 @@ helm install db oci://registry-1.docker.io/bitnamicharts/postgresql --set auth.p
 
 kubectl run postgresql-client --rm --tty -i --restart='Never' --image docker.io/bitnami/postgresql:14.5.0-debian-11-r35 --env="PGPASSWORD=$POSTGRES_PW_OBJECTS" `
 --command -- psql --host db-postgresql -U postgres -p 5432 -c `
-"CREATE DATABASE OBJECTEN_DATABASE"
+"CREATE DATABASE $OBJECTEN_DATABASE"
 
 kubectl run postgresql-client --rm --tty -i --restart='Never' --image docker.io/bitnami/postgresql:14.5.0-debian-11-r35 --env="PGPASSWORD=$POSTGRES_PW_OBJECTS" `
 --command -- psql --host db-postgresql -U postgres -p 5432 -c `
