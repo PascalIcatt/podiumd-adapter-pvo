@@ -379,18 +379,24 @@ namespace PodiumdAdapter.Web.Endpoints
                 identificatie["identificatie"] = "Felix";
             }
 
+
+            //Als het een contactverzoek betreft voor een afdeling en er is een afdeling of groep gekozen bij het contactverzoek,
+            //..dan wordt die afdeling of groep doorgestuurd
+            //Als het een contactverzoek voor een medewerker of een contactmoment betreft, 
+            //..dan wordt de afdeling die bij het contactmomentgekozen is doorgestuurd
+
             // verantwoordelijke afdeling wordt gevuld bij elk contactmoment
             if (TryGetAfdelingOrGroep(json["verantwoordelijkeAfdeling"]?.GetValue<string>(), out var value, out var propName))
             {
                 json[propName] = value;
             }
-
             // als het om een contactverzoek gaat kan je nog een keer een afdeling kiezen. die overschrijft eventueel de waarde van hierboven
             if (soortActor == "organisatorische eenheid"
                 && TryGetAfdelingOrGroep(actor?["naam"]?.GetValue<string>(), out value, out propName))
             {
                 json[propName] = value;
             }
+
 
             // in een contactverzoek kan je ook een medewerker selecteren ipv een afdeling/groep
             if (soortActor == "medewerker")
