@@ -74,7 +74,10 @@ namespace PodiumdAdapter.Web.Endpoints
                     Url = "contactmomenten",
                     ModifyRequestBody = (json, token) =>
                     {
-                        // tekst uitbereiden met vraag en primaire vraag
+                        // tekst stoppen we in antwoord
+                        json["antwoord"] = json["tekst"]?.DeepClone();
+
+                        // tekst vervangen met vraag en primaire vraag
                         var tekst = string.Join('\n', GetTekstParts(json));
                         if (string.IsNullOrWhiteSpace(tekst))
                         {
@@ -204,8 +207,6 @@ namespace PodiumdAdapter.Web.Endpoints
             if(!string.IsNullOrWhiteSpace(vraag)) yield return vraag;
             var specifiekeVraag = json["specifiekevraag"]?.GetValue<string>();
             if(!string.IsNullOrWhiteSpace(specifiekeVraag)) yield return specifiekeVraag;
-            var tekst = json["tekst"]?.GetValue<string>();
-            if (!string.IsNullOrWhiteSpace(tekst)) yield return tekst;
         }
 
         private static string GetToelichting(string? voornaam, string? voorvoegselAchternaam, string? achternaam, string? organisatie, string? toelichtingTelefoonnummer2, string? toelichting)
