@@ -84,8 +84,8 @@ namespace PodiumdAdapter.Web.Endpoints
 
                         // gespreskresultaaat toevoegen aan het antwoord veld (oa omdat antwoord niet leeg mag zijn bi een contactmoment)
                         GespreksReultaatToevoegenAanEsuiteAntwoord(json);
-                        
-                        HandleAfdelingGroepMedewerker(json);
+
+
 
                         var contactverzoekType = configuration.GetSection("CONTACTVERZOEK_TYPES").Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).FirstOrDefault();
 
@@ -96,6 +96,7 @@ namespace PodiumdAdapter.Web.Endpoints
                             HandleContactverzoekToEsuiteMapping(json, contactverzoekType, betrokkene, digitaleAdressen);
                         }
 
+                        HandleAfdelingGroepMedewerker(json, isContactverzoek);
 
                         json["status"] = isContactverzoek ? ContactverzoekStatusValue : ContactmomentStatusValue;
 
@@ -367,12 +368,12 @@ namespace PodiumdAdapter.Web.Endpoints
             }
         });
 
-        private static void HandleAfdelingGroepMedewerker(JsonNode? json)
+        private static void HandleAfdelingGroepMedewerker(JsonNode? json, bool isContactverzoek)
         {
             if (json == null) return;
             var actor = json["actor"];
             var soortActor = actor?["soortActor"]?.GetValue<string>();
-            
+
             // TODO tijdelijk hardCoded, ingelogde gebruiker moet uiteindelijk gemapt worden op gebruiker in eSuite
             if (json["medewerkerIdentificatie"] is JsonObject identificatie)
             {
@@ -380,32 +381,57 @@ namespace PodiumdAdapter.Web.Endpoints
             }
 
 
+
             //Als het een contactverzoek betreft voor een afdeling en er is een afdeling of groep gekozen bij het contactverzoek,
-            //..dan wordt die afdeling of groep doorgestuurd
+            //.. dan wordt die afdeling of groep doorgestuurd
             //Als het een contactverzoek voor een medewerker of een contactmoment betreft, 
-            //..dan wordt de afdeling die bij het contactmomentgekozen is doorgestuurd
+            //.. dan wordt de afdeling die bij het contactmomentgekozen is doorgestuurd
 
+            if (isContactverzoek)
+            {
+                if (IsVoorEenAfdelingOfGroep(actor))
+                {
+                    if (TryGetAfdelingOrGroep(actor?["naam"]?.GetValue<string>(), out var naamVanAfdelingOfGroep, out var propertyNaamVoorAfdelingOfGroep))
+                    {
+                        json[propertyNaamVoorAfdelingOfGroep] = naamVanAfdelingOfGroep;
+                    }
+                }
+                else
+                {
+                    // als het contactverzoek niet aan een afdeling of groep gericht is,
+                    // dan wordt het gekoppeld aan de afdeling van het contactmoment
+                    AfdelingOfGroepOvernemenVanHetContactmoment(json);
+
+                    // als het contactverzoek niet aan een afdeling of groep gericht is,
+                    // dan is het aan een medewerker gericht
+                    var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject());
+                    // TODO tijdelijk hard coded medewerker, todat we de objecten netjes gevuld hebben met medewerkers uit de esuite
+                    // behandelaar["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
+                    behandelaar["gebruikersnaam"] = "Mark";
+                }
+            }
+            else
+            {
+                // als het een contactmoment betreft,
+                // dan wordt het gekoppeld aan de afdeling van het contactmoment
+                AfdelingOfGroepOvernemenVanHetContactmoment(json);
+            }                        
+        }
+
+
+        private static void AfdelingOfGroepOvernemenVanHetContactmoment(JsonNode? json)
+        {
             // verantwoordelijke afdeling wordt gevuld bij elk contactmoment
-            if (TryGetAfdelingOrGroep(json["verantwoordelijkeAfdeling"]?.GetValue<string>(), out var value, out var propName))
+            if (TryGetAfdelingOrGroep(json?["verantwoordelijkeAfdeling"]?.GetValue<string>(), out var value, out var propName))
             {
                 json[propName] = value;
             }
-            // als het om een contactverzoek gaat kan je nog een keer een afdeling kiezen. die overschrijft eventueel de waarde van hierboven
-            if (soortActor == "organisatorische eenheid"
-                && TryGetAfdelingOrGroep(actor?["naam"]?.GetValue<string>(), out value, out propName))
-            {
-                json[propName] = value;
-            }
+        }
 
-
-            // in een contactverzoek kan je ook een medewerker selecteren ipv een afdeling/groep
-            if (soortActor == "medewerker")
-            {
-                var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject());
-                // TODO tijdelijk hard coded medewerker, todat we de objecten netjes gevuld hebben met medewerkers uit de esuite
-                //behandelaar["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
-                behandelaar["gebruikersnaam"] = "Mark";
-            }
+        private static bool IsVoorEenAfdelingOfGroep(JsonNode? actor)
+        {
+            var soortActor = actor?["soortActor"]?.GetValue<string>();
+            return soortActor == "organisatorische eenheid";
         }
     }
 }
