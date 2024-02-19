@@ -40,7 +40,7 @@ namespace PodiumdAdapter.Web.Test
         public async Task Get_internetaak_mapping_is_implemented_correctly()
         {
             const string ApiResponse = """
-                {"results":[{"afdeling":"Algemeen","behandelaar":{"gebruikersnaam":"Gebruikersnaam","volledigeNaam":"Voornaam Achternaam","toelichting":"toelichting"},"bronorganisatie":"CHANGEME","contactgegevens":{"emailadres":"admin@example.com","telefoonnummer":"0612345678", "telefoonnummerAlternatief": "067654321"},"identificatie":"73-2024","kanaal":"contactformulier","medewerkerIdentificatie":{"identificatie":"Gebruikersnaam","achternaam":"Voornaam Achternaam"},"onderwerp":"afd:Algemeen","registratiedatum":"2024-02-01T12:21:35+01:00","status":"nieuw","tekst":"vraag","type":"Terugbelverzoek","url":"http://localhost:56090/contactmomenten/api/v1/contactmomenten/adc06246-4143-449e-a79a-3623442b24a0","objectcontactmomenten":[]}]}
+                {"results":[{"afdeling":"Algemeen","behandelaar":{"gebruikersnaam":"Gebruikersnaam","volledigeNaam":"Voornaam Achternaam"},"toelichting":"toelichting","bronorganisatie":"CHANGEME","contactgegevens":{"emailadres":"admin@example.com","telefoonnummer":"0612345678", "telefoonnummerAlternatief": "067654321"},"identificatie":"73-2024","kanaal":"contactformulier","medewerkerIdentificatie":{"identificatie":"Gebruikersnaam","achternaam":"Voornaam Achternaam"},"onderwerp":"afd:Algemeen","registratiedatum":"2024-02-01T12:21:35+01:00","status":"nieuw","tekst":"vraag","type":"Terugbelverzoek","url":"http://localhost:56090/contactmomenten/api/v1/contactmomenten/adc06246-4143-449e-a79a-3623442b24a0","objectcontactmomenten":[]}]}
                 """;
 
             const string ExpectedResult = """

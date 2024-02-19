@@ -256,7 +256,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 };
             }
 
-            var toelichting = behandelaar?["toelichting"]?.DeepClone();
+            var toelichting = obj["toelichting"]?.DeepClone();
             var status = obj["status"]?.DeepClone();
             var registratieDatum = obj["registratiedatum"]?.DeepClone();
             var digitaleAdressen = GetDigitaleAdressen(obj);
