@@ -156,6 +156,7 @@ namespace PodiumdAdapter.Web.Endpoints
             if (types.Length == 0) return Results.Problem("Het type contact dat hoort bij een Contactverzoek is niet opgenomen in de instellingen van de adapter. Neem contact op met een beheerder", statusCode: 500);
 
             var klant = ExtractFilterAttribute(filterAttributes, "betrokkene__klant__exact__");
+            var digitaleAdressen = ExtractFilterAttribute(filterAttributes, "betrokkene__digitaleAdressen__icontains__");
 
             var client = factory.CreateClient(nameof(ContactmomentenClientConfig));
 
@@ -167,6 +168,11 @@ namespace PodiumdAdapter.Web.Endpoints
             if (!string.IsNullOrWhiteSpace(klant))
             {
                 builder.Add("klant", klant);
+            }
+
+            if (!string.IsNullOrWhiteSpace(digitaleAdressen))
+            {
+                builder.Add("telefoonnummerOfEmailadres", digitaleAdressen);
             }
 
             var queryString = builder.ToQueryString().Value ?? "";
@@ -181,8 +187,8 @@ namespace PodiumdAdapter.Web.Endpoints
         private static string? ExtractFilterAttribute(string[] filterAttributes, string prefix)
         {
             return filterAttributes
-                .Select(x => x.Split(prefix, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault())
-                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Where(x => x.StartsWith(prefix))
+                .Select(x => x.Substring(prefix.Length))
                 .FirstOrDefault();
         }
 
@@ -263,6 +269,17 @@ namespace PodiumdAdapter.Web.Endpoints
             var registratieDatum = obj["registratiedatum"]?.DeepClone();
             var digitaleAdressen = GetDigitaleAdressen(obj);
 
+            var betrokkene = new JsonObject
+            {
+                ["rol"] = "klant",
+                ["digitaleAdressen"] = digitaleAdressen
+            };
+
+            if (klant != null)
+            {
+                betrokkene["klant"] = klant;
+            }
+
             obj.Clear();
             obj["url"] = taakUrl;
             obj["uuid"] = uuid;
@@ -275,12 +292,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 {
                     ["actor"] = actor,
                     ["status"] = status,
-                    ["betrokkene"] = new JsonObject
-                    {
-                        ["rol"] = "klant",
-                        ["klant"] = klant,
-                        ["digitaleAdressen"] = digitaleAdressen
-                    },
+                    ["betrokkene"] = betrokkene,
 
                     ["toelichting"] = toelichting,
                     ["contactmoment"] = cmUrl,
