@@ -85,11 +85,6 @@ namespace PodiumdAdapter.Web.Endpoints
                         }
                         json["tekst"] = tekst;
 
-                        // gespreskresultaaat toevoegen aan het antwoord veld (oa omdat antwoord niet leeg mag zijn bi een contactmoment)
-                        GespreksReultaatToevoegenAanEsuiteAntwoord(json);
-
-
-
                         var contactverzoekType = configuration.GetSection("CONTACTVERZOEK_TYPES").Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).FirstOrDefault();
 
                         var isContactverzoek = IsContactverzoek(json, out var betrokkene, out var digitaleAdressen);
@@ -107,15 +102,6 @@ namespace PodiumdAdapter.Web.Endpoints
                     }
                 });
             };
-        }
-
-        private static void GespreksReultaatToevoegenAanEsuiteAntwoord(JsonNode json)
-        {
-            // gespreskresultaaat toevoegen aan het antwoord veld
-            var antwoord = json["antwoord"]?.GetValue<string>();
-            var gespreksresultaat = json["gespreksresultaat"]?.GetValue<string>();
-
-            json["antwoord"] = string.Join("\n", new[] { antwoord, gespreksresultaat }.Where(x => !string.IsNullOrWhiteSpace(x)));// + (antwoord !=null && gespreksresultaat!=null) ? "\n" : "";
         }
 
         private static bool IsContactverzoek(JsonNode json, out JsonObject? contactverzoekBetrokkene, out JsonArray? contactvezoekDigitaleAdressen)
