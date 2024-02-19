@@ -4,7 +4,10 @@
 @ZrcRoot = {{PodiumdAdapter.Web_HostAddress}}/zaken/api/v1
 @ZtcRoot = {{PodiumdAdapter.Web_HostAddress}}/catalogi/api/v1
 @DrcRoot = {{PodiumdAdapter.Web_HostAddress}}/documenten/api/v1
-@InterneTaakRoot = {{PodiumdAdapter.Web_HostAddress}}/api/v2
+@ObjectenRoot = {{PodiumdAdapter.Web_HostAddress}}/api/v2
+@InterneTaakType = https://objecttypenpodiumd.dev.kiss-demo.nl/api/v2/objecttypes/1df73259-1a58-4180-bf98-598eefc184d4
+@AfdelingenType = https://objecttypenpodiumd.dev.kiss-demo.nl/api/v2/objecttypes/ec65c0be-5e8d-4b72-b07f-7c4f78c84a18
+@GroepenType = https://objecttypenpodiumd.dev.kiss-demo.nl/api/v2/objecttypes/8b9d6bf9-7b5a-4c38-ad10-f37cd1e81a8f
 
 
 GET {{ContactmomentenRoot}}/contactmomenten?expand=objectcontactmomenten&klant={{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
@@ -99,12 +102,12 @@ GET {{DrcRoot}}/enkelvoudiginformatieobjecten/4de76083-1fce-4852-876a-c833904d55
 # https://podiumdcontact.dev.kiss-demo.nl/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/4de76083-1fce-4852-876a-c833904d55a1
 ###
 
-POST {{InterneTaakRoot}}/objects
+POST {{ObjectenRoot}}/objects
 Accept: application/json
 Content-Type: application/json
 
 {
-      "type": "my-type",
+      "type": "{{InterneTaakType}}",
       "record": {
         "typeVersion": 1,
         "data": {
@@ -134,7 +137,62 @@ Content-Type: application/json
 
 ###
 
-GET {{InterneTaakRoot}}/objects?type=my-object-type&data_attrs=betrokkene__klant__exact__{{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
+GET {{ObjectenRoot}}/objects?type={{InterneTaakType}}&data_attrs=betrokkene__klant__exact__{{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
 Accept: application/json
+
+###
+
+          
+GET {{ObjectenRoot}}/objects?type={{AfdelingenType}}
+Accept: application/json
+
+###
+
+POST {{ContactmomentenRoot}}/contactmomenten
+Accept: application/json
+Content-Type: application/json   
+
+{
+    "actor": {
+        "identificatie": "PUBL_HV_ADM",
+        "naam": "groep:Administratie handhavingsverzoek",
+        "soortActor": "organisatorische eenheid"
+    },
+    "betrokkene": {
+        "digitaleAdressen": [
+            {
+                "adres": "0612345678",
+                "omschrijving": "telefoonnummer",
+                "soortDigitaalAdres": "telefoonnummer"
+            }
+        ],
+        "persoonsnaam": {
+        },
+        "rol": "klant"
+    },
+    "bronorganisatie": "999990639",
+    "einddatum": "2024-02-14T13:59:12.010Z",
+    "gespreksresultaat": "Contactverzoek gemaakt",
+    "initiatiefnemer": "klant",
+    "kanaal": "Twitter",
+    "medewerker": "sdfdsf",
+    "medewerkerIdentificatie": {
+        "achternaam": "Cornelissen",
+        "identificatie": "Felix@icatt.nl",
+        "voorletters": "Felix",
+        "voorvoegselAchternaam": "sdfsdf"
+    },
+    "onderwerpLinks": [
+    ],
+    "registratiedatum": "2024-02-14T13:59:12.010Z",
+    "specifiekevraag": "specifieke vraag",
+    "startdatum": "2024-02-14T13:50:39.152Z",
+    "status": "te verwerken",
+    "tekst": "notitie",
+    "toelichting": "notitie 14 feb 2:55",
+    "verantwoordelijkeAfdeling": "afdeling:Algemeen",
+    "voorkeurskanaal": "sdfsdf",
+    "voorkeurstaal": "dsfsdf"
+}
 
 ###

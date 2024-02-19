@@ -1,7 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.Configuration;
 using PodiumdAdapter.Web.Infrastructure;
 
 namespace PodiumdAdapter.Web.Endpoints
@@ -86,23 +85,21 @@ namespace PodiumdAdapter.Web.Endpoints
                         }
                         json["tekst"] = tekst;
 
-                        // tijdelijk medewerker hard meesturen
-                        if (json["medewerkerIdentificatie"] is JsonObject identificatie)
-                        {
-                            identificatie["identificatie"] = "Felix";
-                        }
-
                         // gespreskresultaaat toevoegen aan het antwoord veld (oa omdat antwoord niet leeg mag zijn bi een contactmoment)
                         GespreksReultaatToevoegenAanEsuiteAntwoord(json);
 
+
+
                         var contactverzoekType = configuration.GetSection("CONTACTVERZOEK_TYPES").Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).FirstOrDefault();
 
-                        var isContactverzoek = IsContactverzoek(json, out var betrokkene, out var digitaleAdressen, out var actor);
+                        var isContactverzoek = IsContactverzoek(json, out var betrokkene, out var digitaleAdressen);
 
                         if (isContactverzoek)
                         {
-                            HandleContactverzoekToEsuiteMapping(json, contactverzoekType, betrokkene, digitaleAdressen, actor);
-                        }                        
+                            HandleContactverzoekToEsuiteMapping(json, contactverzoekType, betrokkene, digitaleAdressen);
+                        }
+
+                        HandleAfdelingGroepMedewerker(json, isContactverzoek);
 
                         json["status"] = isContactverzoek ? ContactverzoekStatusValue : ContactmomentStatusValue;
 
@@ -121,30 +118,27 @@ namespace PodiumdAdapter.Web.Endpoints
             json["antwoord"] = string.Join("\n", new[] { antwoord, gespreksresultaat }.Where(x => !string.IsNullOrWhiteSpace(x)));// + (antwoord !=null && gespreksresultaat!=null) ? "\n" : "";
         }
 
-        private static bool IsContactverzoek(JsonNode json,  out JsonObject? contactverzoekBetrokkene, out JsonArray? contactvezoekDigitaleAdressen, out JsonObject? contactverzoekActor)
+        private static bool IsContactverzoek(JsonNode json, out JsonObject? contactverzoekBetrokkene, out JsonArray? contactvezoekDigitaleAdressen)
         {
             contactverzoekBetrokkene = default;
             contactvezoekDigitaleAdressen = default;
-            contactverzoekActor = default;
 
-            if (json is not JsonObject 
+            if (json is not JsonObject
                || json["betrokkene"] is not JsonObject betrokkene
-               || betrokkene["digitaleAdressen"] is not JsonArray digitaleAdressen
-               || json["actor"] is not JsonObject actor)
+               || betrokkene["digitaleAdressen"] is not JsonArray digitaleAdressen)
             {
                 return false;
             }
 
             contactverzoekBetrokkene = betrokkene;
             contactvezoekDigitaleAdressen = digitaleAdressen;
-            contactverzoekActor = actor;
 
             return true;
         }
 
-            public static void HandleContactverzoekToEsuiteMapping(JsonNode json, string? contactverzoekType, JsonObject? betrokkene, JsonArray? digitaleAdressen, JsonObject? actor)
+        public static void HandleContactverzoekToEsuiteMapping(JsonNode json, string? contactverzoekType, JsonObject? betrokkene, JsonArray? digitaleAdressen)
         {
-         
+
             var organisatie = betrokkene?["organisatie"]?.GetValue<string>();
 
             var persoonsnaam = betrokkene?["persoonsnaam"];
@@ -180,13 +174,7 @@ namespace PodiumdAdapter.Web.Endpoints
 
             json["type"] = contactverzoekType;
 
-            json["behandelaar"] = new JsonObject
-            {
-                // tijdelijk hard coded afdeling/groep/medewerker
-                //["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
-                ["gebruikersnaam"] = "Mark",
-                ["toelichting"] = combinedToelichting
-            };
+            json["toelichting"] = combinedToelichting;
 
             json["contactgegevens"] = new JsonObject
             {
@@ -196,15 +184,23 @@ namespace PodiumdAdapter.Web.Endpoints
             };
 
             var jsonObject = json as JsonObject;
-            jsonObject?.Remove("toelichting");
             jsonObject?.Remove("betrokkene");
             jsonObject?.Remove("actor");
+        }
+
+        private static bool TryGetAfdelingOrGroep([NotNullWhen(true)] string? afdelingOfGroep, [NotNullWhen(true)] out string? value, [NotNullWhen(true)] out string propName)
+        {
+            var split = afdelingOfGroep?.Split(":", StringSplitOptions.RemoveEmptyEntries) ?? [];
+            var prefix = split.FirstOrDefault();
+            value = split.Length > 1 ? string.Join(":", split.Skip(1)) : prefix;
+            propName = split.Length > 1 && prefix == "groep" ? "groep" : "afdeling";
+            return !string.IsNullOrWhiteSpace(value);
         }
 
         private static IEnumerable<string> GetTekstParts(JsonNode json)
         {
             var vraag = json["vraag"]?.GetValue<string>();
-            if(!string.IsNullOrWhiteSpace(vraag)) yield return vraag;
+            if (!string.IsNullOrWhiteSpace(vraag)) yield return vraag;
             var specifiekeVraag = json["specifiekevraag"]?.GetValue<string>();
             if(!string.IsNullOrWhiteSpace(specifiekeVraag)) yield return specifiekeVraag;
         }
@@ -292,13 +288,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 PlakAntwoordPropertyAchterTekstProperty(item);
             }
 
-            var paginated = new JsonObject
-            {
-                ["results"] = new JsonArray(contactmomenten),
-                ["next"] = null,
-                ["previous"] = null,
-                ["count"] = contactmomenten.Length,
-            };
+            var paginated = contactmomenten.ToPaginatedResult();
 
             return Results.Json(paginated);
         }
@@ -313,18 +303,8 @@ namespace PodiumdAdapter.Web.Endpoints
         }
 
         private static IAsyncEnumerable<JsonNode?> GetObjectContactmomenten(HttpClient client, string objectUrl, CancellationToken token)
-            => GetAllPages(client, "objectcontactmomenten?object=" + objectUrl, token);
+            => client.GetAllPages("objectcontactmomenten?object=" + objectUrl, token);
 
-        private static async IAsyncEnumerable<JsonNode?> GetAllPages(HttpClient client, string? url, [EnumeratorCancellation] CancellationToken token)
-        {
-            while (!string.IsNullOrWhiteSpace(url) && (await client.JsonAsync(url, token)).TryParsePagination(out var records, out url))
-            {
-                foreach (var item in records)
-                {
-                    yield return item;
-                }
-            }
-        }
         private static bool ShouldIncludeObjectContactmomenten(HttpRequest request) =>
             request.Query.TryGetValue("expand", out var expand)
             && expand.Contains(ObjectcontactmomentenKey);
@@ -381,5 +361,74 @@ namespace PodiumdAdapter.Web.Endpoints
                 return new ValueTask();
             }
         });
+
+        private static void HandleAfdelingGroepMedewerker(JsonNode? json, bool isContactverzoek)
+        {
+            if (json == null) return;
+            var actor = json["actor"];
+            var soortActor = actor?["soortActor"]?.GetValue<string>();
+
+            // TODO tijdelijk hardCoded, ingelogde gebruiker moet uiteindelijk gemapt worden op gebruiker in eSuite
+            if (json["medewerkerIdentificatie"] is JsonObject identificatie)
+            {
+                identificatie["identificatie"] = "Felix";
+            }
+
+            // als het geen contactverzoek betreft,
+            // dan wordt de afdeling/groep van het contactmoment doorgestuurd als afdeling/groep van het contact
+            if (!isContactverzoek)
+            {
+                AfdelingOfGroepOvernemenVanHetContactmoment(json);
+                return;
+            }
+
+            // Als het een contactverzoek betreft en er is een afdeling/groep gekozen bij het contactverzoek,
+            // .. dan wordt die afdeling/groep doorgestuurd als afdeling/groep van het contact
+            // .. dan doen we niks met de afdeling/groep van het contactmoment
+            if (TryGetOrganisatorischeEenheid(actor, out var naamVanAfdelingOfGroep, out var propertyNaamVoorAfdelingOfGroep))
+            {
+                json[propertyNaamVoorAfdelingOfGroep] = naamVanAfdelingOfGroep;
+                return;
+            }
+
+            // Als het een contactverzoek betreft en er is een medewerker gekozen bij het contactverzoek,
+            // .. dan wordt die medewerker doorgestuurd als de behandelaar van het contact
+            // .. dan doen we niks met de afdeling/groep van het contactmoment
+            if (TryGetActorUserName(actor, out var username))
+            {
+                var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject());
+                // TODO tijdelijk hard coded medewerker, todat we de objecten netjes gevuld hebben met medewerkers uit de esuite
+                // behandelaar["gebruikersnaam"] = username,
+                behandelaar["gebruikersnaam"] = "Mark";
+            }
+        }
+
+
+        private static void AfdelingOfGroepOvernemenVanHetContactmoment(JsonNode? json)
+        {
+            // verantwoordelijke afdeling wordt gevuld bij elk contactmoment
+            if (TryGetAfdelingOrGroep(json?["verantwoordelijkeAfdeling"]?.GetValue<string>(), out var value, out var propName))
+            {
+                json[propName] = value;
+            }
+        }
+
+        private static bool TryGetOrganisatorischeEenheid(JsonNode? actor, out string? value, out string propertyName)
+        {
+            value = "";
+            propertyName = "";
+            var soortActor = actor?["soortActor"]?.GetValue<string>();
+            if( soortActor != "organisatorische eenheid") return false;
+            return TryGetAfdelingOrGroep(actor?["naam"]?.GetValue<string>(), out value, out propertyName);
+        }
+
+        private static bool TryGetActorUserName(JsonNode? actor, out string username)
+        {
+            username = "";
+            var soortActor = actor?["soortActor"]?.GetValue<string>();
+            if (soortActor != "medewerker") return false;
+            username = actor?["identificatie"]?.GetValue<string>() ?? "";
+            return !string.IsNullOrWhiteSpace(username);
+        }
     }
 }
