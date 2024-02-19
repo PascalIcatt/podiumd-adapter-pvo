@@ -381,42 +381,33 @@ namespace PodiumdAdapter.Web.Endpoints
                 identificatie["identificatie"] = "Felix";
             }
 
-
-
-            //Als het een contactverzoek betreft voor een afdeling en er is een afdeling of groep gekozen bij het contactverzoek,
-            //.. dan wordt die afdeling of groep doorgestuurd
-            //Als het een contactverzoek voor een medewerker of een contactmoment betreft, 
-            //.. dan wordt de afdeling die bij het contactmomentgekozen is doorgestuurd
-
-            if (isContactverzoek)
+            // als het geen contactverzoek betreft,
+            // dan wordt de afdeling/groep van het contactmoment doorgestuurd als afdeling/groep van het contact
+            if (!isContactverzoek)
             {
-                if (IsVoorEenAfdelingOfGroep(actor))
-                {
-                    if (TryGetAfdelingOrGroep(actor?["naam"]?.GetValue<string>(), out var naamVanAfdelingOfGroep, out var propertyNaamVoorAfdelingOfGroep))
-                    {
-                        json[propertyNaamVoorAfdelingOfGroep] = naamVanAfdelingOfGroep;
-                    }
-                }
-                else
-                {
-                    // als het contactverzoek niet aan een afdeling of groep gericht is,
-                    // dan wordt het gekoppeld aan de afdeling van het contactmoment
-                    AfdelingOfGroepOvernemenVanHetContactmoment(json);
-
-                    // als het contactverzoek niet aan een afdeling of groep gericht is,
-                    // dan is het aan een medewerker gericht
-                    var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject());
-                    // TODO tijdelijk hard coded medewerker, todat we de objecten netjes gevuld hebben met medewerkers uit de esuite
-                    // behandelaar["gebruikersnaam"] = actor["identificatie"]?.DeepClone(),
-                    behandelaar["gebruikersnaam"] = "Mark";
-                }
-            }
-            else
-            {
-                // als het een contactmoment betreft,
-                // dan wordt het gekoppeld aan de afdeling van het contactmoment
                 AfdelingOfGroepOvernemenVanHetContactmoment(json);
-            }                        
+                return;
+            }
+
+            // Als het een contactverzoek betreft en er is een afdeling/groep gekozen bij het contactverzoek,
+            // .. dan wordt die afdeling/groep doorgestuurd als afdeling/groep van het contact
+            // .. dan doen we niks met de afdeling/groep van het contactmoment
+            if (TryGetOrganisatorischeEenheid(actor, out var naamVanAfdelingOfGroep, out var propertyNaamVoorAfdelingOfGroep))
+            {
+                json[propertyNaamVoorAfdelingOfGroep] = naamVanAfdelingOfGroep;
+                return;
+            }
+
+            // Als het een contactverzoek betreft en er is een medewerker gekozen bij het contactverzoek,
+            // .. dan wordt die medewerker doorgestuurd als de behandelaar van het contact
+            // .. dan doen we niks met de afdeling/groep van het contactmoment
+            if (TryGetActorUserName(actor, out var username))
+            {
+                var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject());
+                // TODO tijdelijk hard coded medewerker, todat we de objecten netjes gevuld hebben met medewerkers uit de esuite
+                // behandelaar["gebruikersnaam"] = username,
+                behandelaar["gebruikersnaam"] = "Mark";
+            }
         }
 
 
@@ -429,10 +420,22 @@ namespace PodiumdAdapter.Web.Endpoints
             }
         }
 
-        private static bool IsVoorEenAfdelingOfGroep(JsonNode? actor)
+        private static bool TryGetOrganisatorischeEenheid(JsonNode? actor, out string? value, out string propertyName)
         {
+            value = "";
+            propertyName = "";
             var soortActor = actor?["soortActor"]?.GetValue<string>();
-            return soortActor == "organisatorische eenheid";
+            if( soortActor != "organisatorische eenheid") return false;
+            return TryGetAfdelingOrGroep(actor?["naam"]?.GetValue<string>(), out value, out propertyName);
+        }
+
+        private static bool TryGetActorUserName(JsonNode? actor, out string username)
+        {
+            username = "";
+            var soortActor = actor?["soortActor"]?.GetValue<string>();
+            if (soortActor != "medewerker") return false;
+            username = actor?["identificatie"]?.GetValue<string>() ?? "";
+            return !string.IsNullOrWhiteSpace(username);
         }
     }
 }
