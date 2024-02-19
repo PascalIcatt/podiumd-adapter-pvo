@@ -239,6 +239,7 @@ namespace PodiumdAdapter.Web.Endpoints
             }
             else if (!string.IsNullOrWhiteSpace(groep))
             {
+                groep = GroepPrefix + groep;
                 actor = new JsonObject
                 {
                     ["naam"] = groep,
@@ -248,6 +249,7 @@ namespace PodiumdAdapter.Web.Endpoints
             }
             else if (!string.IsNullOrWhiteSpace(afdeling))
             {
+                afdeling = AfdelingPrefix + afdeling;
                 actor = new JsonObject
                 {
                     ["naam"] = afdeling,
