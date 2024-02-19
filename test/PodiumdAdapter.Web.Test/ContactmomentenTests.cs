@@ -120,7 +120,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
               "bronorganisatie": "999990639",
               "registratiedatum": "2024-02-05T15:59:12.584Z",
               "kanaal": "contactformulier",
-              "tekst": "notitie",
+              "tekst": "specifieke vraag",
               "onderwerpLinks": [],
               "initiatiefnemer": "klant",
               "specifiekevraag": "specifieke vraag",
@@ -131,20 +131,53 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
               "startdatum": "2024-02-05T15:32:23.320Z",
               "verantwoordelijkeAfdeling": "Beheer openbare ruimte",
               "einddatum": "2024-02-05T15:59:12.584Z",
-              "status": "te verwerken",
+              "status": "nieuw",
               "toelichting": "Contact opnemen met: Voor tussen Achter (Org)\nOmschrijving tweede telefoonnummer: werk\ninterne toelichting",
+              "actor": {
+                "identificatie": "bo-handhaving",
+                "naam": "afdeling:Handhaving",
+                "soortActor": "organisatorische eenheid"
+              },
+              "betrokkene": {
+                "rol": "klant",
+                "persoonsnaam": {
+                  "voornaam": "Voor",
+                  "voorvoegselAchternaam": "tussen",
+                  "achternaam": "Achter"
+                },
+                "organisatie": "Org",
+                "digitaleAdressen": [
+                  {
+                    "adres": "icatttest@gmail.com",
+                    "omschrijving": "e-mailadres",
+                    "soortDigitaalAdres": "e-mailadres"
+                  },
+                  {
+                    "adres": "0201234567",
+                    "omschrijving": "telefoonnummer",
+                    "soortDigitaalAdres": "telefoonnummer"
+                  },
+                  {
+                    "adres": "0207654321",
+                    "omschrijving": "werk",
+                    "soortDigitaalAdres": "telefoonnummer"
+                  }
+                ]
+              },
+              "antwoord": "notitie\nContactverzoek gemaakt",
               "type": "my-type",
               "contactgegevens": {
                 "emailadres": "icatttest@gmail.com",
                 "telefoonnummer": "0201234567",
                 "telefoonnummerAlternatief": "0207654321"
-              }
+              },
+              "afdeling": "Handhaving"
             }
             """;
 
         var parsed = JsonNode.Parse(InputJson)!;
 
-        ContactmomentenClientConfig.HandleContactverzoekToEsuiteMapping(parsed, "my-type", parsed["betrokkene"] as JsonObject, parsed["betrokkene"]["digitaleAdressen"] as JsonArray);
+        ContactmomentenClientConfig.ModifyPostContactmomentBody(parsed, "my-type");
 
         var result = parsed.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }).Replace("\r\n", "\n");
 

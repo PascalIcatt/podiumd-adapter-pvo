@@ -19,7 +19,7 @@ namespace PodiumdAdapter.Web.Endpoints
         {
             clientRoot.MapGet("/contactmomenten", OphalenContactmomenten(getClient));
 
-            clientRoot.MapPost("/contactmomenten", OpslaanContactmomentOfContactverzoek(getClient));
+            clientRoot.MapPost("/contactmomenten", (IConfiguration config) => OpslaanContactmomentOfContactverzoek(getClient(), config));
 
             clientRoot.MapGet("/contactmomenten/{id:guid}", (Guid id) => OphalenContactmoment(id, getClient(), PlakAntwoordPropertyAchterTekstProperty));
         }
@@ -63,50 +63,51 @@ namespace PodiumdAdapter.Web.Endpoints
             };
         }
 
-        private static Func<IConfiguration, IResult> OpslaanContactmomentOfContactverzoek(Func<HttpClient> getClient)
+        private static IResult OpslaanContactmomentOfContactverzoek(HttpClient client, IConfiguration configuration)
         {
-            return (IConfiguration configuration) =>
+            var contactverzoekType = configuration.GetSection("CONTACTVERZOEK_TYPES").Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).FirstOrDefault();
+            return client.ProxyResult(new ProxyRequest
             {
-                var client = getClient();
-                return client.ProxyResult(new ProxyRequest
+                Url = "contactmomenten",
+                ModifyRequestBody = (json, token) =>
                 {
-                    Url = "contactmomenten",
-                    ModifyRequestBody = (json, token) =>
-                    {
-                        // tekst stoppen we in antwoord
-                        json["antwoord"] = json["tekst"]?.DeepClone();
+                    ModifyPostContactmomentBody(json, contactverzoekType);
 
-                        // tekst vervangen met vraag en primaire vraag
-                        var tekst = string.Join('\n', GetTekstParts(json));
-                        if (string.IsNullOrWhiteSpace(tekst))
-                        {
-                            // tekst is verplicht in de nieuwere versie van de api
-                            tekst = "X";
-                        }
-                        json["tekst"] = tekst;
+                    return new ValueTask();
+                }
+            });
+        }
 
-                        // gespreskresultaaat toevoegen aan het antwoord veld (oa omdat antwoord niet leeg mag zijn bi een contactmoment)
-                        GespreksReultaatToevoegenAanEsuiteAntwoord(json);
+        public static void ModifyPostContactmomentBody(JsonNode json, string? contactverzoekType)
+        {
+            // tekst stoppen we in antwoord
+            json["antwoord"] = json["tekst"]?.DeepClone();
+
+            // tekst vervangen met vraag en primaire vraag
+            var tekst = string.Join('\n', GetTekstParts(json));
+            if (string.IsNullOrWhiteSpace(tekst))
+            {
+                // tekst is verplicht in de nieuwere versie van de api
+                tekst = "X";
+            }
+            json["tekst"] = tekst;
+
+            // gespreskresultaaat toevoegen aan het antwoord veld (oa omdat antwoord niet leeg mag zijn bi een contactmoment)
+            GespreksReultaatToevoegenAanEsuiteAntwoord(json);
 
 
 
-                        var contactverzoekType = configuration.GetSection("CONTACTVERZOEK_TYPES").Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).FirstOrDefault();
 
-                        var isContactverzoek = IsContactverzoek(json, out var betrokkene, out var digitaleAdressen);
+            var isContactverzoek = IsContactverzoek(json, out var betrokkene, out var digitaleAdressen);
 
-                        if (isContactverzoek)
-                        {
-                            HandleContactverzoekToEsuiteMapping(json, contactverzoekType, betrokkene, digitaleAdressen);
-                        }
+            if (isContactverzoek)
+            {
+                HandleContactverzoekToEsuiteMapping(json, contactverzoekType, betrokkene, digitaleAdressen);
+            }
 
-                        HandleAfdelingGroepMedewerker(json, isContactverzoek);
+            HandleAfdelingGroepMedewerker(json, isContactverzoek);
 
-                        json["status"] = isContactverzoek ? ContactverzoekStatusValue : ContactmomentStatusValue;
-
-                        return new ValueTask();
-                    }
-                });
-            };
+            json["status"] = isContactverzoek ? ContactverzoekStatusValue : ContactmomentStatusValue;
         }
 
         private static void GespreksReultaatToevoegenAanEsuiteAntwoord(JsonNode json)
@@ -182,10 +183,6 @@ namespace PodiumdAdapter.Web.Endpoints
                 ["telefoonnummer"] = telefoonnummer1,
                 ["telefoonnummerAlternatief"] = telefoonnummer2
             };
-
-            var jsonObject = json as JsonObject;
-            jsonObject?.Remove("betrokkene");
-            jsonObject?.Remove("actor");
         }
 
         private static bool TryGetAfdelingOrGroep([NotNullWhen(true)] string? afdelingOfGroep, [NotNullWhen(true)] out string? value, [NotNullWhen(true)] out string propName)
