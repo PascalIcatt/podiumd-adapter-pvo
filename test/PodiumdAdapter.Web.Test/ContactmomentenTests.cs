@@ -132,11 +132,8 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
               "verantwoordelijkeAfdeling": "Beheer openbare ruimte",
               "einddatum": "2024-02-05T15:59:12.584Z",
               "status": "te verwerken",
+              "toelichting": "Contact opnemen met: Voor tussen Achter (Org)\nOmschrijving tweede telefoonnummer: werk\ninterne toelichting",
               "type": "my-type",
-              "behandelaar": {
-                "gebruikersnaam": "Mark",
-                "toelichting": "Contact opnemen met: Voor tussen Achter (Org)\nOmschrijving tweede telefoonnummer: werk\ninterne toelichting"
-              },
               "contactgegevens": {
                 "emailadres": "icatttest@gmail.com",
                 "telefoonnummer": "0201234567",

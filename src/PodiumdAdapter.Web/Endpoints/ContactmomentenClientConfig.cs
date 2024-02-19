@@ -174,13 +174,7 @@ namespace PodiumdAdapter.Web.Endpoints
 
             json["type"] = contactverzoekType;
 
-            var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject
-            {
-                // TODO tijdelijk hardcoded gebruikersnaam, omdat deze verplicht is in de esuite API
-                ["gebruikersnaam"] = "Mark"
-            });
-
-            behandelaar["toelichting"] = combinedToelichting;
+            json["toelichting"] = combinedToelichting;
 
             json["contactgegevens"] = new JsonObject
             {
@@ -190,7 +184,6 @@ namespace PodiumdAdapter.Web.Endpoints
             };
 
             var jsonObject = json as JsonObject;
-            jsonObject?.Remove("toelichting");
             jsonObject?.Remove("betrokkene");
             jsonObject?.Remove("actor");
         }
