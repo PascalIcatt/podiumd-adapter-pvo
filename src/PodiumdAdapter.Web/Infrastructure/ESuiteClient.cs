@@ -1,7 +1,12 @@
-﻿using System.Net.Http.Headers;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Tokens;
 using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Transforms;
 
 namespace PodiumdAdapter.Web.Infrastructure
 {
@@ -18,46 +23,34 @@ namespace PodiumdAdapter.Web.Infrastructure
 
             services.AddSingleton<IESuiteClientConfig>(clientConfig);
 
-            services.AddSingleton(s =>
+            services.AddSingleton(new RouteConfig
             {
-                var config = s.GetRequiredService<IConfiguration>();
-
-                var token = config.GetRequiredValue("ESUITE_TOKEN");
-
-                return new RouteConfig
+                RouteId = clientName,
+                ClusterId = clientName,
+                Match = new RouteMatch { Path = $"/{trimmedRootUrl}/{{*any}}" },
+                Transforms = new Dictionary<string, string>[]
                 {
-                    RouteId = clientName,
-                    ClusterId = clientName,
-                    Match = new RouteMatch { Path = $"/{trimmedRootUrl}/{{*any}}" },
-                    Transforms = new Dictionary<string, string>[]
+                    new()
                     {
-                        new()
-                        {
-                            // dit zorgt ervoor dat de gematchde string uit het pad niet in het verzoek van YARP terecht komt
-                            // deze komt namelijk niet overeen met het pad binnen de E-Suite.
-                            ["PathRemovePrefix"] = $"/{trimmedRootUrl}"
-                        },
-                        new()
-                        {
-                            // we rewriten urls tussen de adapter en de esuite.
-                            // dat betekent dat de lengte van de body regelmatig niet meer klopt met de Content-Length header
-                            // daarom verwijderen we deze header uit de geproxyde verzoeken
-                            ["ResponseHeaderRemove"] = "Content-Length"
-                        },
-                        new()
-                        {
-                            // YARP voegt standaard een aantal headers toe over waar het oorspronkelijke verzoek vandaan komt
-                            // de urls uit de response van de E-Suite worden daardoor verhaspelt.
-                            // daarom verwijderen we deze headers uit de geproxyde verzoeken
-                            ["X-Forwarded"] = "Remove"
-                        },
-                        new()
-                        {
-                            ["RequestHeader"] = "Authorization",
-                            ["Set"] = "Bearer " + token
-                        }
+                        // dit zorgt ervoor dat de gematchde string uit het pad niet in het verzoek van YARP terecht komt
+                        // deze komt namelijk niet overeen met het pad binnen de E-Suite.
+                        ["PathRemovePrefix"] = $"/{trimmedRootUrl}"
+                    },
+                    new()
+                    {
+                        // we rewriten urls tussen de adapter en de esuite.
+                        // dat betekent dat de lengte van de body regelmatig niet meer klopt met de Content-Length header
+                        // daarom verwijderen we deze header uit de geproxyde verzoeken
+                        ["ResponseHeaderRemove"] = "Content-Length"
+                    },
+                    new()
+                    {
+                        // YARP voegt standaard een aantal headers toe over waar het oorspronkelijke verzoek vandaan komt
+                        // de urls uit de response van de E-Suite worden daardoor verhaspelt.
+                        // daarom verwijderen we deze headers uit de geproxyde verzoeken
+                        ["X-Forwarded"] = "Remove"
                     }
-                };
+                }
             });
 
             services.AddSingleton(s =>
@@ -86,7 +79,9 @@ namespace PodiumdAdapter.Web.Infrastructure
             {
                 var config = s.GetRequiredService<IConfiguration>();
                 var urlFromConfig = config.GetRequiredValue("ESUITE_BASE_URL");
-                var token = config.GetRequiredValue("ESUITE_TOKEN");
+                var clientId = config.GetRequiredValue("ESUITE_CLIENT_ID");
+                var clientSecret = config.GetRequiredValue("ESUITE_CLIENT_SECRET");
+                var token = GetToken(clientId, clientSecret);
                 var baseUrl = new UriBuilder(urlFromConfig) { Path = remotePath };
                 x.BaseAddress = baseUrl.Uri;
                 x.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -102,6 +97,40 @@ namespace PodiumdAdapter.Web.Infrastructure
                 var root = builder.MapGroup(item.RootUrl);
                 item.MapCustomEndpoints(root, getClient);
             }
+        }
+
+        public static void AddEsuiteToken(this IReverseProxyBuilder builder) => builder.AddTransforms(context =>
+        {
+            var config = context.Services.GetRequiredService<IConfiguration>();
+            var clientId = config.GetRequiredValue("ESUITE_CLIENT_ID");
+            var clientSecret = config.GetRequiredValue("ESUITE_CLIENT_SECRET");
+            var token = GetToken(clientId, clientSecret);
+            context.AddRequestHeader("Authorization", "Bearer " + token);
+        });
+
+        public static string GetToken(string id, string secret, Dictionary<string,object>? claims = null)
+        {
+            var now = DateTimeOffset.UtcNow;
+            // one minute leeway to account for clock differences between machines
+            var issuedAt = now.AddMinutes(-1);
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(secret);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Issuer = id,
+                IssuedAt = issuedAt.DateTime,
+                NotBefore = issuedAt.DateTime,
+                Claims = claims ?? new Dictionary<string, object>
+                {
+                    { "client_id", id },
+                },
+                Subject = new ClaimsIdentity(),
+                Expires = now.AddHours(1).DateTime,
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
         private class SimpleProxyProvider(IProxyConfig proxyConfig) : IProxyConfigProvider

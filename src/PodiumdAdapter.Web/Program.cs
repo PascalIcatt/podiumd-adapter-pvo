@@ -23,7 +23,7 @@ try
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddHealthChecks();
-    builder.Services.AddReverseProxy();
+    builder.Services.AddReverseProxy().AddEsuiteToken();
     builder.Services.AddESuiteClient(new ContactmomentenClientConfig());
     builder.Services.AddESuiteClient(new KlantenClientConfig());
     builder.Services.AddESuiteClient(new ZaakZrcClientConfig());
