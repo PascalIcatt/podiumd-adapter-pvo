@@ -394,9 +394,7 @@ namespace PodiumdAdapter.Web.Endpoints
             if (TryGetActorUserName(actor, out var username))
             {
                 var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject());
-                // TODO tijdelijk hard coded medewerker, todat we de objecten netjes gevuld hebben met medewerkers uit de esuite
-                // behandelaar["gebruikersnaam"] = username,
-                behandelaar["gebruikersnaam"] = "Mark";
+                behandelaar["gebruikersnaam"] = username;
             }
         }
 
