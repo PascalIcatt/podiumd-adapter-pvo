@@ -81,14 +81,20 @@ namespace PodiumdAdapter.Web.Endpoints
         public static void ModifyPostContactmomentBody(JsonNode json, string? contactverzoekType)
         {
             // tekst stoppen we in antwoord
-            json["antwoord"] = json["tekst"]?.DeepClone();
+            var antwoord = json["tekst"]?.GetValue<string>();
+            if (string.IsNullOrWhiteSpace(antwoord))
+            {
+                // antwoord is verplicht in de e-suite, maar tekst is niet verplicht in KISS
+                antwoord = "N.v.t.";
+            }
+            json["antwoord"] = antwoord;
 
             // tekst vervangen met vraag en primaire vraag
             var tekst = string.Join('\n', GetTekstParts(json));
             if (string.IsNullOrWhiteSpace(tekst))
             {
-                // tekst is verplicht in de nieuwere versie van de api
-                tekst = "X";
+                // tekst is verplicht in de nieuwere versie van de api maar niet in KISS
+                tekst = "N.v.t.";
             }
             json["tekst"] = tekst;
 
