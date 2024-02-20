@@ -92,8 +92,6 @@ namespace PodiumdAdapter.Web.Endpoints
             }
             json["tekst"] = tekst;
 
-                        var contactverzoekType = configuration.GetSection("CONTACTVERZOEK_TYPES").Get<IEnumerable<string>>()?.Where(x => !string.IsNullOrWhiteSpace(x)).FirstOrDefault();
-
             var isContactverzoek = IsContactverzoek(json, out var betrokkene, out var digitaleAdressen);
 
             if (isContactverzoek)
