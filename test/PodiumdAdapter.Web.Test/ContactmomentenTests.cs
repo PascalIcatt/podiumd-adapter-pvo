@@ -164,7 +164,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
                   }
                 ]
               },
-              "antwoord": "notitie\nContactverzoek gemaakt",
+              "antwoord": "notitie",
               "type": "my-type",
               "contactgegevens": {
                 "emailadres": "icatttest@gmail.com",
