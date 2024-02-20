@@ -6,8 +6,8 @@
         /// Check if the start of one Span matches the end of another Span.
         /// If so, we need to keep it in memory.
         /// </summary>
-        /// <param name="searchIn"></param>
-        /// <param name="searchFor"></param>
+        /// <param name="searchIn">The bytes in which to search</param>
+        /// <param name="searchFor">The bytes to search for</param>
         /// <param name="length">The minimum length of a match. This value is updated if a longer match is found</param>
         /// <returns></returns>
         public static bool MightMatchInNextBuffer(this Span<byte> searchIn, ReadOnlySpan<byte> searchFor, ref int length)
@@ -17,9 +17,9 @@
         /// Check if the start of one Span matches the end of another Span.
         /// If so, we need to keep it in memory.
         /// </summary>
-        /// <param name="searchIn"></param>
-        /// <param name="searchFor"></param>
-        /// <param name="length"></param>
+        /// <param name="searchIn">The bytes in which to search</param>
+        /// <param name="searchFor">The bytes to search for</param>
+        /// <param name="length">The minimum length of a match. This value is updated if a longer match is found</param>
         /// <returns></returns>
         public static bool MightMatchInNextBuffer(this ReadOnlySpan<byte> searchIn, ReadOnlySpan<byte> searchFor, ref int length)
         {

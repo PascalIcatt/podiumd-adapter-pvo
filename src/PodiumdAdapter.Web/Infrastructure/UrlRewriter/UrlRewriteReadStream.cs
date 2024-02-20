@@ -10,7 +10,7 @@
         // Scenario 1:
         //   Na het vervangen van de urls is er niet genoeg ruimte in de buffer die als parameter is meegegeven aan ReadAsync.
         //   dan houden we de url die we willen invoegen vast in _internalBufferPart1
-        //   dan houden we de nog niet verwerkte bytes vast in _internalBufferPart1
+        //   dan houden we de nog niet verwerkte bytes uit de oorspronkelijke buffer vast in _internalBufferPart1
         //
         // Scenario 2:
         //   Het laatste stuk van de buffer bevat het begin van een van de urls die we willen vervangen
@@ -101,6 +101,7 @@
                     // stop helemaal met replacen en return het aantal geschreven bytes
                     return bytesWritten;
                 }
+
                 if (!foundFullMatch)
                 {
                     // we vinden een match op de base url, maar niet op een volledige url.
