@@ -8,6 +8,7 @@
 @InterneTaakType = https://objecttypenpodiumd.dev.kiss-demo.nl/api/v2/objecttypes/1df73259-1a58-4180-bf98-598eefc184d4
 @AfdelingenType = https://objecttypenpodiumd.dev.kiss-demo.nl/api/v2/objecttypes/ec65c0be-5e8d-4b72-b07f-7c4f78c84a18
 @GroepenType = https://objecttypenpodiumd.dev.kiss-demo.nl/api/v2/objecttypes/8b9d6bf9-7b5a-4c38-ad10-f37cd1e81a8f
+@SmoelenboekType = https://objecttypenpodiumd.dev.kiss-demo.nl/api/v2/objecttypes/748dd17b-2eb6-4084-95f0-a9040e27dced
 
 
 GET {{ContactmomentenRoot}}/contactmomenten?expand=objectcontactmomenten&klant={{KlantenRoot}}/klanten/83047d24-a213-4fc3-9878-367ffe06988e
@@ -194,5 +195,11 @@ Content-Type: application/json
     "voorkeurskanaal": "sdfsdf",
     "voorkeurstaal": "dsfsdf"
 }
+
+###       
+
+
+GET {{ObjectenRoot}}/objects?type={{SmoelenboekType}}
+Accept: application/json
 
 ###

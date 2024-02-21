@@ -16,6 +16,7 @@ namespace PodiumdAdapter.Web.Endpoints
         private const string AfdelingPrefix = "afdeling:";
         private const string GroepenClientName = "groepen";
         private const string AfdelingenClientName = "afdelingen";
+        private const string SmoelenboekClientName = "smoelenboek";
 
         public static IEndpointConventionBuilder MapObjectenEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
         {
@@ -55,6 +56,17 @@ namespace PodiumdAdapter.Web.Endpoints
             });
         }
 
+        public static void AddSmoelenboekClient(this IServiceCollection services, IConfiguration config)
+        {
+            services.AddHttpClient(SmoelenboekClientName, (client) =>
+            {
+                var baseUrl = config.GetRequiredValue("SMOELENBOEK_BASE_URL");
+                var token = config.GetRequiredValue("SMOELENBOEK_TOKEN");
+                client.BaseAddress = new Uri(baseUrl);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
+            });
+        }
+
         // Haalt objecten op van de volgende types:
         // InterneTaak
         // Afdeling
@@ -70,6 +82,7 @@ namespace PodiumdAdapter.Web.Endpoints
             var interneTaakType = configuration.GetRequiredValue("INTERNE_TAAK_OBJECT_TYPE_URL");
             var groepenType = configuration.GetRequiredValue("GROEPEN_OBJECT_TYPE_URL");
             var afdelingenType = configuration.GetRequiredValue("AFDELINGEN_OBJECT_TYPE_URL");
+            var smoelenboekType = configuration.GetRequiredValue("SMOELENBOEK_OBJECT_TYPE_URL");
 
             // voor interne taak gaan we naar de contactmomenten api van de esuite
             if (objectType == interneTaakType)
@@ -84,7 +97,36 @@ namespace PodiumdAdapter.Web.Endpoints
                 return await GetAfdelingenEnGroepen(factory, request, filterAttributes, afdelingenType, groepenType, cancellationToken);
             }
 
+            if (objectType == smoelenboekType)
+            {
+                return GetSmoelenboek(factory, request);
+            }
+
             return Results.Problem("objecttype onbekend: " + objectType, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        private static IResult GetSmoelenboek(IHttpClientFactory factory, HttpRequest request)
+        {
+            var client = factory.CreateClient(SmoelenboekClientName);
+            return client.ProxyResult(new ProxyRequest 
+            {
+                Url = request.Path + request.QueryString,
+                ModifyResponseBody = (json, _) =>
+                {
+                    if (json.TryParsePagination(out var page))
+                    {
+                        foreach (var item in page)
+                        {
+                            if (item?["record"]?["data"] is JsonObject data
+                                && data["volledigeNaam"] is JsonNode volledigeNaam)
+                            {
+                                data["achternaam"] = volledigeNaam.DeepClone();
+                            }
+                        }
+                    }
+                    return new ValueTask();
+                }
+            });
         }
 
         private static async Task<IResult> GetAfdelingenEnGroepen(IHttpClientFactory factory, HttpRequest request, string[] filterAttributes, string afdelingenType, string groepenType, CancellationToken cancellationToken)
