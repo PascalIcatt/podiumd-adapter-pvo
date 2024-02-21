@@ -1,13 +1,9 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
+using PodiumdAdapter.Web.Infrastructure;
 using Yarp.ReverseProxy.Forwarder;
-using Microsoft.AspNetCore.Builder;
 
 namespace PodiumdAdapter.Web.Test.Infrastructure
 {
@@ -42,7 +38,8 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
                 ["CLIENTS:0:ID"] = _clientId,
                 ["CLIENTS:0:SECRET"] = _clientSecret,
                 ["ESUITE_BASE_URL"] = ESUITE_BASE_URL,
-                ["ESUITE_TOKEN"] = "FAKE_TOKEN",
+                ["ESUITE_CLIENT_ID"] = "FAKE_ID",
+                ["ESUITE_CLIENT_SECRET"] = "FAKE_SECRET_OF_AT_LEAST_32_CHARS",
                 ["CONTACTVERZOEK_TYPES:0"] = "TYPE",
                 ["INTERNE_TAAK_OBJECT_TYPE_URL"] = INTERNE_TAAK_OBJECT_TYPE_URL,
                 ["AFDELINGEN_BASE_URL"] = AFDELINGEN_BASE_URL,
@@ -74,38 +71,12 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
 
         private static string GetToken(string id, string secret)
         {
-            var secretKey = secret; // "een sleutel van minimaal 16 karakters";
-            var client_id = id;
-            var iss = id;
-            var user_id = string.Empty;
-            var user_representation = string.Empty;
-            var now = DateTimeOffset.UtcNow;
-            // one minute leeway to account for clock differences between machines
-            var issuedAt = now.AddMinutes(-1);
-            var iat = issuedAt.ToUnixTimeSeconds();
-
-            var claims = new Dictionary<string, object>
-                {
-                    { "client_id", client_id },
-                    { "iss", iss },
-                    { "iat", iat },
-                    { "user_id", user_id},
-                    { "user_representation", user_representation }
-                };
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(secretKey);
-            var tokenDescriptor = new SecurityTokenDescriptor
+            return ESuiteClientExtensions.GetToken(id, secret, new Dictionary<string, object>
             {
-                IssuedAt = issuedAt.DateTime,
-                NotBefore = issuedAt.DateTime,
-                Claims = claims,
-                Subject = new ClaimsIdentity(),
-                Expires = now.AddHours(1).DateTime,
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+                { "client_id", id },
+                { "user_id", string.Empty},
+                { "user_representation", string.Empty }
+            });
         }
 
         private class CustomForwarderHttpClientFactory(MockHttpMessageHandler handler) : IForwarderHttpClientFactory

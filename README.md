@@ -29,8 +29,10 @@ $INGRESS_SECRET_NAME='the-name-of-the-secret-in-kubernetes-to-use-for-tls'
 # For example, the Klanten API is presumed to exist at /klanten-api-provider/api/v1
 $ESUITE_BASE_URL='https://www.my-e-suite.nl'
 
-# You need to generate this in the E-Suite
-$ESUITE_TOKEN='abc$%^&*defg1234567'
+# You need to create an application in the E-Suite at /beheer/zgwapisproviderbeheer/applicaties
+$ESUITE_CLIENT_ID='my-client-id'
+# IMPORTANT The secret needs to be at least 32 characters
+$ESUITE_CLIENT_SECRET='abc$%^&*defg1234567abc$%^&*defg1'
 
 # Each client what will connect to the e-Suite (klanten, contactmomenten, zaken and catalogi) parts of the podiumd-adapter must do so using a Bearer token,
 # following the convention used in Open Zaak:
@@ -82,7 +84,8 @@ kubectl -n podiumd-adapter-namespace create configmap podiumd-adapter-config `
 ## 4. Create a `secret`
 ```powershell
 kubectl -n podiumd-adapter-namespace create secret generic podiumd-adapter-secrets `
---from-literal=ESUITE_TOKEN=$ESUITE_TOKEN `
+--from-literal=ESUITE_CLIENT_ID=$ESUITE_CLIENT_ID `
+--from-literal=ESUITE_CLIENT_SECRET=$ESUITE_CLIENT_SECRET `
 --from-literal=CLIENTS__0__ID=$CLIENTS__0__ID `
 --from-literal=CLIENTS__0__SECRET=$CLIENTS__0__SECRET `
 --from-literal=CLIENTS__1__ID=$CLIENTS__1__ID `
