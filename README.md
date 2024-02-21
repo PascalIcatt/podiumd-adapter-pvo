@@ -79,7 +79,8 @@ kubectl -n podiumd-adapter-namespace create configmap podiumd-adapter-config `
 --from-literal=AFDELINGEN_BASE_URL=$AFDELINGEN_BASE_URL `
 --from-literal=AFDELINGEN_OBJECT_TYPE_URL=$AFDELINGEN_OBJECT_TYPE_URL `
 --from-literal=GROEPEN_BASE_URL=$GROEPEN_BASE_URL `
---from-literal=GROEPEN_OBJECT_TYPE_URL=$GROEPEN_OBJECT_TYPE_URL
+--from-literal=GROEPEN_OBJECT_TYPE_URL=$GROEPEN_OBJECT_TYPE_URL `
+--from-literal=CONTACTVERZOEK_TYPES__0=$CONTACTVERZOEK_TYPES__0
 ```
 ## 4. Create a `secret`
 ```powershell
