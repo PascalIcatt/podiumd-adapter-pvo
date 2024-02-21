@@ -118,9 +118,10 @@ namespace PodiumdAdapter.Web.Endpoints
                         foreach (var item in page)
                         {
                             if (item?["record"]?["data"] is JsonObject data
-                                && data["volledigeNaam"] is JsonNode volledigeNaam)
+                                && data["volledigeNaam"]?.GetValue<string>() is string volledigeNaam
+                                && !string.IsNullOrWhiteSpace(volledigeNaam))
                             {
-                                data["achternaam"] = volledigeNaam.DeepClone();
+                                data["achternaam"] = volledigeNaam;
                             }
                         }
                     }
