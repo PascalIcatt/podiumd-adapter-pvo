@@ -84,6 +84,8 @@ kubectl -n podiumd-adapter-namespace create configmap podiumd-adapter-config `
 --from-literal=AFDELINGEN_OBJECT_TYPE_URL=$AFDELINGEN_OBJECT_TYPE_URL `
 --from-literal=GROEPEN_BASE_URL=$GROEPEN_BASE_URL `
 --from-literal=GROEPEN_OBJECT_TYPE_URL=$GROEPEN_OBJECT_TYPE_URL `
+--from-literal=SMOELENBOEK_BASE_URL=$SMOELENBOEK_BASE_URL `
+--from-literal=SMOELENBOEK_OBJECT_TYPE_URL=$SMOELENBOEK_OBJECT_TYPE_URL `
 --from-literal=CONTACTVERZOEK_TYPES__0=$CONTACTVERZOEK_TYPES__0
 ```
 ## 4. Create a `secret`
@@ -96,7 +98,8 @@ kubectl -n podiumd-adapter-namespace create secret generic podiumd-adapter-secre
 --from-literal=CLIENTS__1__ID=$CLIENTS__1__ID `
 --from-literal=CLIENTS__1__SECRET=$CLIENTS__1__SECRET `
 --from-literal=AFDELINGEN_TOKEN=$AFDELINGEN_TOKEN `
---from-literal=GROEPEN_TOKEN=$GROEPEN_TOKEN
+--from-literal=GROEPEN_TOKEN=$GROEPEN_TOKEN `
+--from-literal=SMOELENBOEK_TOKEN=$SMOELENBOEK_TOKEN
 ```
 ## 5. Use the `helm chart` to deploy the application
 ```powershell
