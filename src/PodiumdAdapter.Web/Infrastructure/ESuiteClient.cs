@@ -101,11 +101,15 @@ namespace PodiumdAdapter.Web.Infrastructure
 
         public static void AddEsuiteToken(this IReverseProxyBuilder builder) => builder.AddTransforms(context =>
         {
-            var config = context.Services.GetRequiredService<IConfiguration>();
-            var clientId = config.GetRequiredValue("ESUITE_CLIENT_ID");
-            var clientSecret = config.GetRequiredValue("ESUITE_CLIENT_SECRET");
-            var token = GetToken(clientId, clientSecret);
-            context.AddRequestHeader("Authorization", "Bearer " + token);
+            context.AddRequestTransform(x =>
+            {
+                var config = x.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
+                var clientId = config.GetRequiredValue("ESUITE_CLIENT_ID");
+                var clientSecret = config.GetRequiredValue("ESUITE_CLIENT_SECRET");
+                var token = GetToken(clientId, clientSecret);
+                x.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                return new ValueTask();
+            });
         });
 
         public static string GetToken(string id, string secret, Dictionary<string,object>? claims = null)
