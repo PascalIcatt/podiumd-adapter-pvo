@@ -108,6 +108,11 @@ namespace PodiumdAdapter.Web.Infrastructure
                 var clientSecret = config.GetRequiredValue("ESUITE_CLIENT_SECRET");
                 var token = GetToken(clientId, clientSecret);
                 x.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var username = x.HttpContext.User.FindFirstValue("user_id");
+                if (!string.IsNullOrWhiteSpace(username))
+                {
+                    x.ProxyRequest.Headers.Add("X-Request-User-Id", [username]);
+                }
                 return new ValueTask();
             });
         });
