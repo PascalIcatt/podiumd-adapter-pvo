@@ -1,0 +1,12 @@
+﻿{
+  results: [
+    {
+      record: {
+        data: {
+          volledigeNaam: Voor tussen Achter,
+          achternaam: Voor tussen Achter
+        }
+      }
+    }
+  ]
+}
