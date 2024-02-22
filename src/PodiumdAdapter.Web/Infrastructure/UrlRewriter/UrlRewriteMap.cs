@@ -7,28 +7,28 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
     {
         private readonly IReadOnlyCollection<UrlRewriteMap> _rewriters;
 
-        public UrlRewriteMapCollection(string localBaseUrlString, string remoteBaseUrlString, IReadOnlyCollection<UrlRewriteMap> rewriters)
+        public UrlRewriteMapCollection(string toBaseUrlString, string fromBaseUrlString, IReadOnlyCollection<UrlRewriteMap> rewriters)
         {
-            LocalBaseUrlString = localBaseUrlString;
-            RemoteBaseUrlString = remoteBaseUrlString;
-            LocalBaseUrlBytes = Encoding.UTF8.GetBytes(LocalBaseUrlString);
-            RemoteBaseUrlBytes = Encoding.UTF8.GetBytes(RemoteBaseUrlString);
+            ToBaseUrlString = toBaseUrlString;
+            FromBaseUrlString = fromBaseUrlString;
+            ToBaseUrlBytes = Encoding.UTF8.GetBytes(ToBaseUrlString);
+            FromBaseUrlBytes = Encoding.UTF8.GetBytes(FromBaseUrlString);
             _rewriters = rewriters;
         }
 
-        private UrlRewriteMapCollection(IReadOnlyCollection<UrlRewriteMap> rewriters, string localBaseUrlString, string remoteBaseUrlString, ReadOnlyMemory<byte> remoteBaseUrlBytes, ReadOnlyMemory<byte> localBaseUrlBytes)
+        private UrlRewriteMapCollection(IReadOnlyCollection<UrlRewriteMap> rewriters, string toBaseUrlString, string fromBaseUrlString, ReadOnlyMemory<byte> fromBaseUrlBytes, ReadOnlyMemory<byte> toBaseUrlBytes)
         {
             _rewriters = rewriters;
-            LocalBaseUrlString = localBaseUrlString;
-            RemoteBaseUrlString = remoteBaseUrlString;
-            RemoteBaseUrlBytes = remoteBaseUrlBytes;
-            LocalBaseUrlBytes = localBaseUrlBytes;
+            ToBaseUrlString = toBaseUrlString;
+            FromBaseUrlString = fromBaseUrlString;
+            FromBaseUrlBytes = fromBaseUrlBytes;
+            ToBaseUrlBytes = toBaseUrlBytes;
         }
 
-        public string LocalBaseUrlString { get; }
-        public string RemoteBaseUrlString { get; }
-        public ReadOnlyMemory<byte> RemoteBaseUrlBytes { get; }
-        public ReadOnlyMemory<byte> LocalBaseUrlBytes { get; }
+        public string ToBaseUrlString { get; }
+        public string FromBaseUrlString { get; }
+        public ReadOnlyMemory<byte> FromBaseUrlBytes { get; }
+        public ReadOnlyMemory<byte> ToBaseUrlBytes { get; }
 
         public int Count => _rewriters.Count;
 
@@ -45,34 +45,34 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
         public UrlRewriteMapCollection Reverse()
         {
             var list = _rewriters.Select(x => x.Reverse()).ToList();
-            return new UrlRewriteMapCollection(list, RemoteBaseUrlString, LocalBaseUrlString, LocalBaseUrlBytes, RemoteBaseUrlBytes);
+            return new UrlRewriteMapCollection(list, FromBaseUrlString, ToBaseUrlString, ToBaseUrlBytes, FromBaseUrlBytes);
         }
     }
 
     public record UrlRewriteMap
     {
-        public UrlRewriteMap(string localUrl, string remoteUrl)
+        public UrlRewriteMap(string toFullUrl, string fromFullUrl)
         {
-            RemoteFullString = remoteUrl;
-            LocalFullString = localUrl;
-            RemoteFullBytes = Encoding.UTF8.GetBytes(RemoteFullString);
-            LocalFullBytes = Encoding.UTF8.GetBytes(LocalFullString);
+            FromFullString = fromFullUrl;
+            ToFullString = toFullUrl;
+            FromFullBytes = Encoding.UTF8.GetBytes(FromFullString);
+            ToFullBytes = Encoding.UTF8.GetBytes(ToFullString);
         }
 
-        private UrlRewriteMap(string remoteFullString, string localFullString, ReadOnlyMemory<byte> remoteFullBytes, ReadOnlyMemory<byte> localFullBytes)
+        private UrlRewriteMap(string fromFullString, string toFullString, ReadOnlyMemory<byte> fromFullBytes, ReadOnlyMemory<byte> toFullBytes)
         {
-            RemoteFullString = remoteFullString;
-            LocalFullString = localFullString;
-            RemoteFullBytes = remoteFullBytes;
-            LocalFullBytes = localFullBytes;
+            FromFullString = fromFullString;
+            ToFullString = toFullString;
+            FromFullBytes = fromFullBytes;
+            ToFullBytes = toFullBytes;
         }
 
-        public string RemoteFullString { get; }
-        public string LocalFullString { get; }
+        public string FromFullString { get; }
+        public string ToFullString { get; }
 
-        public ReadOnlyMemory<byte> RemoteFullBytes { get; }
-        public ReadOnlyMemory<byte> LocalFullBytes { get; }
+        public ReadOnlyMemory<byte> FromFullBytes { get; }
+        public ReadOnlyMemory<byte> ToFullBytes { get; }
 
-        public UrlRewriteMap Reverse() => new UrlRewriteMap(LocalFullString, RemoteFullString, LocalFullBytes, RemoteFullBytes);
+        public UrlRewriteMap Reverse() => new UrlRewriteMap(ToFullString, FromFullString, ToFullBytes, FromFullBytes);
     }
 }

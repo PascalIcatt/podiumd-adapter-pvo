@@ -50,8 +50,8 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
                     sourceSpan[..index].CopyAndMoveForward(ref targetSpan);
                 }
                 // kopieer nu de vervangende bytes
-                rewriter.LocalFullBytes.Span.CopyAndMoveForward(ref targetSpan);
-                var nextIndex = index + rewriter.RemoteFullBytes.Length;
+                rewriter.ToFullBytes.Span.CopyAndMoveForward(ref targetSpan);
+                var nextIndex = index + rewriter.FromFullBytes.Length;
                 // kort de span in
                 sourceSpan = sourceSpan.Slice(nextIndex);
             }
@@ -74,7 +74,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
             // standaard gaan we er vanuit dat de hele buffer weggeschreven moet worden
             size += source.Length;
             var result = false;
-            var baseUrlSpan = _rewriterCollection.RemoteBaseUrlBytes.Span;
+            var baseUrlSpan = _rewriterCollection.FromBaseUrlBytes.Span;
 
             // optimalisatie:
             // als we al geen match hebben op de base url,
@@ -87,11 +87,11 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
 
                 foreach (var r in _rewriterCollection)
                 {
-                    var from = r.RemoteFullBytes.Span;
+                    var from = r.FromFullBytes.Span;
                     if (source.StartsWith(from))
                     {
                         // we hebben een match op de volledige url
-                        var to = r.LocalFullBytes.Span;
+                        var to = r.ToFullBytes.Span;
                         var diff = to.Length - from.Length;
                         // als de te vervangen bytes langer zijn dan de vervangende bytes,
                         // hebben we meer geheugen nodig om naar toe te schrijven.
@@ -124,7 +124,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
             // als we al geen match hebben op de base url,
             // gaan we zeker geen match vinden op de hele url.
             // dan hoeven we niet door de rewriters te loopen.
-            index = source.IndexOf(_rewriterCollection.RemoteBaseUrlBytes.Span);
+            index = source.IndexOf(_rewriterCollection.FromBaseUrlBytes.Span);
             rewriter = null;
 
             if (index < 0) return false;
@@ -133,7 +133,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
 
             foreach (var r in _rewriterCollection)
             {
-                if (source.StartsWith(r.RemoteFullBytes.Span))
+                if (source.StartsWith(r.FromFullBytes.Span))
                 {
                     // we hebben een match op de volledige url
                     rewriter = r;
@@ -157,7 +157,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
 
             foreach (var r in _rewriterCollection)
             {
-                var span = r.RemoteFullBytes.Span;
+                var span = r.FromFullBytes.Span;
                 if (source.MightMatchInNextBuffer(span, ref lengthOfPartialMatch))
                 {
                     rewriterToPutInInternalBuffer = r;
@@ -167,7 +167,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
             if (rewriterToPutInInternalBuffer != null)
             {
                 // de interne buffer wordt het deel van de te vervangen bytes dat aan het einde van de oorspronkelijke bytes staat
-                _internalBuffer = rewriterToPutInInternalBuffer.RemoteFullBytes.Slice(0, lengthOfPartialMatch);
+                _internalBuffer = rewriterToPutInInternalBuffer.FromFullBytes.Slice(0, lengthOfPartialMatch);
                 // we korten de oorspronkelijke bytes in: het laatste deel moet n og niet weggeschreven worden
                 originalBytes = originalBytes.Slice(0, originalBytes.Length - lengthOfPartialMatch);
                 // heet aantal bytes korten we op dezelfde manier in,
@@ -191,7 +191,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
 
             foreach (var rewriter in _rewriterCollection)
             {
-                var remoteSpan = rewriter.RemoteFullBytes.Span;
+                var remoteSpan = rewriter.FromFullBytes.Span;
                 if (remoteSpan.Length < bufferLength) continue;
 
                 // het stuk dat mogelijk in de interne buffer zit
@@ -209,7 +209,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
                     sourceSpan = sourceSpan.Slice(secondPart.Length);
                     // en de vervangende bytes als resultaat teruggeven
                     // zodat we die eerst kunnen wegschrijven voordat we de nieuwe bytes wegschrijven
-                    return rewriter.LocalFullBytes.Span;
+                    return rewriter.ToFullBytes.Span;
                 }
             }
 

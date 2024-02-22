@@ -22,11 +22,14 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal.HttpClient
                 return base.SendAsync(request, cancellationToken);
             }
 
-            if (request.RequestUri != null)
+            if (!string.IsNullOrWhiteSpace(request.RequestUri?.Query))
             {
                 var newQuery = ReplaceString(request.RequestUri.Query, maps);
-                var newUriBuilder = new UriBuilder(request.RequestUri) { Query = newQuery };
-                request.RequestUri = newUriBuilder.Uri;
+                if (newQuery != request.RequestUri.Query)
+                {
+                    var newUriBuilder = new UriBuilder(request.RequestUri) { Query = newQuery };
+                    request.RequestUri = newUriBuilder.Uri;
+                }
             }
             
             if (request.Content?.Headers.ContentType?.MediaType?.Contains("json") ?? false)
@@ -45,11 +48,11 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal.HttpClient
 
         private static string ReplaceString(string input, UrlRewriteMapCollection replacers)
         {
-            if (replacers.Count == 0) return input;
+            if (replacers.Count == 0 || string.IsNullOrWhiteSpace(input)) return input;
             var builder = new StringBuilder(input);
             foreach (var replacer in replacers)
             {
-                builder.Replace(replacer.LocalFullString, replacer.RemoteFullString);
+                builder.Replace(replacer.FromFullString, replacer.ToFullString);
             }
             return builder.ToString();
         }
