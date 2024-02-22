@@ -2,7 +2,7 @@
 {
     public sealed class UrlRewriteReadStream : DelegatingStream
     {
-        private readonly UrlRewriterMapCollection _rewriters;
+        private readonly UrlRewriteMapCollection _rewriters;
 
         // we hebben twee stukjes interne buffer nodig.
         // deze gebruiken we in twee scenario's:
@@ -19,7 +19,7 @@
         private ReadOnlyMemory<byte> _internalBufferPart1;
         private ReadOnlyMemory<byte> _internalBufferPart2;
 
-        public UrlRewriteReadStream(Stream inner, UrlRewriterMapCollection rewriters) : base(inner)
+        public UrlRewriteReadStream(Stream inner, UrlRewriteMapCollection rewriters) : base(inner)
         {
             _rewriters = rewriters;
         }
@@ -116,7 +116,7 @@
             return bytesWritten;
         }
 
-        private bool Replace(UrlRewriterMap replacer, ref Memory<byte> fullBuffer, ref Span<byte> bufferToSearchIn, ref int bytesWritten)
+        private bool Replace(UrlRewriteMap replacer, ref Memory<byte> fullBuffer, ref Span<byte> bufferToSearchIn, ref int bytesWritten)
         {
             // in het geval van een ReadStream replacen we inline:
             // we hebben een stuk schrijfbaar geheugen waar al in geschreven is
@@ -180,7 +180,7 @@
         private void HandlePartialMatches(ref int bytesWritten, Span<byte> usedPartOftheBuffer)
         {
             var lengthOfPartialMatch = 0;
-            UrlRewriterMap? rewriterToBuffer = null;
+            UrlRewriteMap? rewriterToBuffer = null;
 
             foreach (var rewriter in _rewriters)
             {

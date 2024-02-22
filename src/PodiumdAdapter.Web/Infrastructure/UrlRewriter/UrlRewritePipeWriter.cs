@@ -10,10 +10,10 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
     /// <param name="rewriterCollection"></param>
     public sealed class UrlRewritePipeWriter : DelegatingPipeWriter
     {
-        private readonly UrlRewriterMapCollection _rewriterCollection;
+        private readonly UrlRewriteMapCollection _rewriterCollection;
         private ReadOnlyMemory<byte> _internalBuffer;
 
-        public UrlRewritePipeWriter(PipeWriter inner, UrlRewriterMapCollection rewriterCollection) : base(inner)
+        public UrlRewritePipeWriter(PipeWriter inner, UrlRewriteMapCollection rewriterCollection) : base(inner)
         {
             _rewriterCollection = rewriterCollection;
         }
@@ -118,7 +118,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             return result;
         }
 
-        bool TryGetNextReplacement(ReadOnlySpan<byte> source, out int index, [NotNullWhen(true)] out UrlRewriterMap? rewriter)
+        bool TryGetNextReplacement(ReadOnlySpan<byte> source, out int index, [NotNullWhen(true)] out UrlRewriteMap? rewriter)
         {
             // optimalisatie:
             // als we al geen match hebben op de base url,
@@ -153,7 +153,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
         private void HandlePartialMatch(ref ReadOnlySpan<byte> originalBytes, ref int size, ReadOnlySpan<byte> source)
         {
             var lengthOfPartialMatch = 0;
-            UrlRewriterMap? rewriterToPutInInternalBuffer = null;
+            UrlRewriteMap? rewriterToPutInInternalBuffer = null;
 
             foreach (var r in _rewriterCollection)
             {

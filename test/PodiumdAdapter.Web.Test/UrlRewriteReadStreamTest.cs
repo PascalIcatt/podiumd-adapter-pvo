@@ -92,7 +92,7 @@ namespace PodiumdAdapter.Web.Test
         private static async Task<string> UsingPipe(string localRoot, string localPath, string remoteRoot, string remotePath, Func<Write, Task> test)
         {
             var pipe = new Pipe();
-            var replacer = new UrlRewriterMap(localRoot + localPath, remoteRoot + remotePath);
+            var replacer = new UrlRewriteMap(localRoot + localPath, remoteRoot + remotePath);
             var reader = new UrlRewriteReadStream(pipe.Reader.AsStream(), new(localRoot, remoteRoot, [replacer]));
 
             Write write = async (string s) =>

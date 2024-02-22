@@ -12,7 +12,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
         public UrlRewriteFeature(
             IHttpRequestFeature requestFeature,
             IHttpResponseBodyFeature responseBodyFeature,
-            UrlRewriterMapCollection replacers)
+            UrlRewriteMapCollection replacers)
         {
             _requestFeature = requestFeature;
             _responseBodyFeature = responseBodyFeature;
@@ -43,7 +43,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             return headers;
         }
 
-        private static string ReplaceString(string input, UrlRewriterMapCollection replacers)
+        private static string ReplaceString(string input, UrlRewriteMapCollection replacers)
         {
             if (replacers.Count == 0) return input;
             var builder = new StringBuilder(input);

@@ -3,11 +3,11 @@ using System.Text;
 
 namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 {
-    public class UrlRewriterMapCollection : IReadOnlyCollection<UrlRewriterMap>
+    public class UrlRewriteMapCollection : IReadOnlyCollection<UrlRewriteMap>
     {
-        private readonly IReadOnlyCollection<UrlRewriterMap> _rewriter;
+        private readonly IReadOnlyCollection<UrlRewriteMap> _rewriter;
 
-        public UrlRewriterMapCollection(string localBaseUrlString, string remoteBaseUrlString, IReadOnlyCollection<UrlRewriterMap> rewriters)
+        public UrlRewriteMapCollection(string localBaseUrlString, string remoteBaseUrlString, IReadOnlyCollection<UrlRewriteMap> rewriters)
         {
             LocalBaseUrlString = localBaseUrlString;
             RemoteBaseUrlString = remoteBaseUrlString;
@@ -23,7 +23,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 
         public int Count => _rewriter.Count;
 
-        public IEnumerator<UrlRewriterMap> GetEnumerator()
+        public IEnumerator<UrlRewriteMap> GetEnumerator()
         {
             return _rewriter.GetEnumerator();
         }
@@ -34,9 +34,9 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
         }
     }
 
-    public record UrlRewriterMap
+    public record UrlRewriteMap
     {
-        public UrlRewriterMap(string localUrl, string remoteUrl)
+        public UrlRewriteMap(string localUrl, string remoteUrl)
         {
             RemoteFullString = remoteUrl;
             LocalFullString = localUrl;
