@@ -31,6 +31,7 @@ try
     builder.Services.AddESuiteClient(new DocumentenDrcClientConfig());
     builder.Services.AddAfdelingenClient(builder.Configuration);
     builder.Services.AddGroepenClient(builder.Configuration);
+    builder.Services.AddSmoelenboekClient(builder.Configuration);
 
     if (!builder.Environment.IsDevelopment())
     {

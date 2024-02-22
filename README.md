@@ -55,16 +55,20 @@ $CONTACTVERZOEK_TYPES__0='Terugbelverzoek'
 
 # Configure the object types from the object types registration. 
 # These need to match the values you've configured for KISS. 
-# The adapter uses the same endpoint for interne taken, afdelingen and groepen and uses the object types to determine how to handle each request correctly
+# The adapter uses the same endpoint for interne taken, afdelingen and groepen and medewerkers,
+# and uses the object types to determine how to handle each request correctly
 $INTERNE_TAAK_OBJECT_TYPE_URL='https://www.my-obect-types-registration.nl/api/v2/objecttypes/1df73259-1a58-4180-bf98-598eefc184d4'
 $AFDELINGEN_OBJECT_TYPE_URL='https://www.my-obect-types-registration.nl/api/v2/objecttypes/ec65c0be-5e8d-4b72-b07f-7c4f78c84a18'
 $GROEPEN_OBJECT_TYPE_URL='https://www.my-obect-types-registration.nl/api/v2/objecttypes/8b9d6bf9-7b5a-4c38-ad10-f37cd1e81a8f'
+$SMOELENBOEK_OBJECT_TYPE_URL='https://www.my-obect-types-registration.nl/api/v2/objecttypes/748dd17b-2eb6-4084-95f0-a9040e27dced'
 
 # Configure the base url for your objects registration and the token you've configured in the objects registration 
 $AFDELINGEN_BASE_URL='https://www.my-objects-registration.nl'
 $AFDELINGEN_TOKEN='zxoiuoi234987#$%#$^^'
 $GROEPEN_BASE_URL='https://www.my-objects-registration.nl'
 $GROEPEN_TOKEN='0982309823498@#$@#$'
+$SMOELENBOEK_BASE_URL='https://www.my-objects-registration.nl'
+$SMOELENBOEK_TOKEN='0982309823498@#$@#$'
 
 ```
 ## 2. Create a `namespace`
@@ -80,6 +84,8 @@ kubectl -n podiumd-adapter-namespace create configmap podiumd-adapter-config `
 --from-literal=AFDELINGEN_OBJECT_TYPE_URL=$AFDELINGEN_OBJECT_TYPE_URL `
 --from-literal=GROEPEN_BASE_URL=$GROEPEN_BASE_URL `
 --from-literal=GROEPEN_OBJECT_TYPE_URL=$GROEPEN_OBJECT_TYPE_URL `
+--from-literal=SMOELENBOEK_BASE_URL=$SMOELENBOEK_BASE_URL `
+--from-literal=SMOELENBOEK_OBJECT_TYPE_URL=$SMOELENBOEK_OBJECT_TYPE_URL `
 --from-literal=CONTACTVERZOEK_TYPES__0=$CONTACTVERZOEK_TYPES__0
 ```
 ## 4. Create a `secret`
@@ -92,7 +98,8 @@ kubectl -n podiumd-adapter-namespace create secret generic podiumd-adapter-secre
 --from-literal=CLIENTS__1__ID=$CLIENTS__1__ID `
 --from-literal=CLIENTS__1__SECRET=$CLIENTS__1__SECRET `
 --from-literal=AFDELINGEN_TOKEN=$AFDELINGEN_TOKEN `
---from-literal=GROEPEN_TOKEN=$GROEPEN_TOKEN
+--from-literal=GROEPEN_TOKEN=$GROEPEN_TOKEN `
+--from-literal=SMOELENBOEK_TOKEN=$SMOELENBOEK_TOKEN
 ```
 ## 5. Use the `helm chart` to deploy the application
 ```powershell
