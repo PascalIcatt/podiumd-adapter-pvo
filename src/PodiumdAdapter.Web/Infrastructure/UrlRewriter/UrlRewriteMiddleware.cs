@@ -5,7 +5,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 {
     public static class UrlRewriteExtensions
     {
-        private static readonly ConcurrentDictionary<string, UrlRewriterCollection> s_cache = new();
+        private static readonly ConcurrentDictionary<string, UrlRewriterMapCollection> s_cache = new();
 
         public static void UseUrlRewriter(this IApplicationBuilder applicationBuilder) => applicationBuilder.Use((context, next) =>
         {
@@ -24,7 +24,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             return next(context);
         });
 
-        private static UrlRewriterCollection? GetRewriters(HttpContext context)
+        private static UrlRewriterMapCollection? GetRewriters(HttpContext context)
         {
             if (context?.Request == null) return null;
 
@@ -53,7 +53,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
                 var proxyBaseUrl = proxyUriBuilder.Uri.ToString()!;
                 var localBaseUrl = requestUriBuilder.Uri.ToString()!;
 
-                var replacers = new List<UrlRewriter>();
+                var replacers = new List<UrlRewriterMap>();
 
                 foreach (var item in clients)
                 {
