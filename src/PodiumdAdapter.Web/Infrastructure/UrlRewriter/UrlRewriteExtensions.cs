@@ -27,7 +27,7 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
             var maps = getMaps();
             if (responseBody != null && maps != null && maps.Count > 0)
             {
-                var feature = new UrlRewriteFeature(responseBody, maps);
+                var feature = new UrlRewriteFeature(context, responseBody, maps);
                 context.Features.Set<IHttpResponseBodyFeature>(feature);
             }
             return next(context);
