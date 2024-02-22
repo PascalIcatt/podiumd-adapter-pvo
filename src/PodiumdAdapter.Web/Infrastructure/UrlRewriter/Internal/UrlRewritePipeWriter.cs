@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 
-namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
+namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
 {
     /// <summary>
     /// UrlRewritePipeWriter class that extends DelegatingPipeWriter to modify URLs in a PipeWriter stream

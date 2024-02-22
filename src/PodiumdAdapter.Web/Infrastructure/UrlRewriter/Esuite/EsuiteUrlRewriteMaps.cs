@@ -1,30 +1,17 @@
 ﻿using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Http.Features;
 
-namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
+namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Esuite
 {
-    public static class UrlRewriteExtensions
+    public static class EsuiteUrlRewriteMaps
     {
         private static readonly ConcurrentDictionary<string, UrlRewriteMapCollection> s_cache = new();
 
-        public static void UseUrlRewriter(this IApplicationBuilder applicationBuilder) => applicationBuilder.Use((context, next) =>
+        public static void AddEsuiteUrlRewriteMaps(this IServiceCollection services)
         {
-            var rewriterCollection = GetRewriters(context);
-            var responseBody = context.Features.Get<IHttpResponseBodyFeature>();
-            var request = context.Features.Get<IHttpRequestFeature>();
+            services.AddSingleton<GetUrlRewriteMapCollection>(s => () => s.GetRequiredService<IHttpContextAccessor>().HttpContext.GetRewriters());
+        }
 
-            if (rewriterCollection != null && responseBody != null && request != null)
-            {
-                var feature = new UrlRewriteFeature(request, responseBody, rewriterCollection);
-                context.Features.Set<IHttpResponseBodyFeature>(feature);
-                context.Features.Set<IHttpRequestFeature>(feature);
-                context.Features.Set<IRequestBodyPipeFeature>(feature);
-            }
-
-            return next(context);
-        });
-
-        private static UrlRewriteMapCollection? GetRewriters(HttpContext context)
+        private static UrlRewriteMapCollection? GetRewriters(this HttpContext? context)
         {
             if (context?.Request == null) return null;
 

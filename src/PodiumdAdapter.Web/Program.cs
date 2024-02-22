@@ -2,6 +2,7 @@
 using PodiumdAdapter.Web.Endpoints;
 using PodiumdAdapter.Web.Infrastructure;
 using PodiumdAdapter.Web.Infrastructure.UrlRewriter;
+using PodiumdAdapter.Web.Infrastructure.UrlRewriter.Esuite;
 using Serilog;
 using Serilog.Events;
 
@@ -32,6 +33,8 @@ try
     builder.Services.AddAfdelingenClient(builder.Configuration);
     builder.Services.AddGroepenClient(builder.Configuration);
     builder.Services.AddSmoelenboekClient(builder.Configuration);
+    builder.Services.AddUrlRewriter();
+    builder.Services.AddEsuiteUrlRewriteMaps();
 
     if (!builder.Environment.IsDevelopment())
     {

@@ -1,6 +1,7 @@
 ﻿using System.IO.Pipelines;
 using System.Text;
 using PodiumdAdapter.Web.Infrastructure.UrlRewriter;
+using PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal;
 
 namespace PodiumdAdapter.Web.Test
 {

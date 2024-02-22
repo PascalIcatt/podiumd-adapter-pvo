@@ -1,6 +1,6 @@
 ﻿using System.IO.Pipelines;
 
-namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
+namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Internal
 {
     public abstract class DelegatingPipeWriter(PipeWriter inner) : PipeWriter
     {
