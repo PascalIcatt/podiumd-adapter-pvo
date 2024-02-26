@@ -32,6 +32,7 @@ try
     builder.Services.AddAfdelingenClient(builder.Configuration);
     builder.Services.AddGroepenClient(builder.Configuration);
     builder.Services.AddSmoelenboekClient(builder.Configuration);
+    builder.Services.AddUrlRewriter(EsuiteUrlRewriteMaps.GetRewriters);
 
     if (!builder.Environment.IsDevelopment())
     {
