@@ -11,9 +11,10 @@ namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter
 
     public static class UrlRewriteExtensions
     {
-        public static void AddUrlRewriter(this IServiceCollection services)
+        public static void AddUrlRewriter(this IServiceCollection services, Func<HttpContext?, UrlRewriteMapCollection?> getRewriterMaps)
         {
             services.TryAddSingleton<WrappingForwarderHttpClientFactory>();
+            services.AddSingleton<GetUrlRewriteMapCollection>(s => () => getRewriterMaps(s.GetRequiredService<IHttpContextAccessor>().HttpContext));
             services.AddTransient<UrlRewriteHttpMessageHandler>();
             services.AddSingleton<IForwarderHttpClientFactory>(s => s.GetRequiredService<WrappingForwarderHttpClientFactory>());
             services.AddSingleton<WrapHandler>((s) => (h) => new UrlRewriteHttpMessageHandler(s.GetRequiredService<GetUrlRewriteMapCollection>()) { InnerHandler = h });

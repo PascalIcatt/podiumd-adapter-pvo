@@ -1,17 +1,13 @@
 ﻿using System.Collections.Concurrent;
+using PodiumdAdapter.Web.Infrastructure.UrlRewriter;
 
-namespace PodiumdAdapter.Web.Infrastructure.UrlRewriter.Esuite
+namespace PodiumdAdapter.Web.Infrastructure
 {
     public static class EsuiteUrlRewriteMaps
     {
         private static readonly ConcurrentDictionary<string, UrlRewriteMapCollection> s_cache = new();
 
-        public static void AddEsuiteUrlRewriteMaps(this IServiceCollection services)
-        {
-            services.AddSingleton<GetUrlRewriteMapCollection>(s => () => s.GetRequiredService<IHttpContextAccessor>().HttpContext.GetRewriters());
-        }
-
-        private static UrlRewriteMapCollection? GetRewriters(this HttpContext? context)
+        public static UrlRewriteMapCollection? GetRewriters(this HttpContext? context)
         {
             if (context?.Request == null) return null;
 
