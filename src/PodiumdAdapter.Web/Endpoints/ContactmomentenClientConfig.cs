@@ -356,12 +356,6 @@ namespace PodiumdAdapter.Web.Endpoints
             var actor = json["actor"];
             var soortActor = actor?["soortActor"]?.GetValue<string>();
 
-            // TODO tijdelijk hardCoded, ingelogde gebruiker moet uiteindelijk gemapt worden op gebruiker in eSuite
-            if (json["medewerkerIdentificatie"] is JsonObject identificatie)
-            {
-                identificatie["identificatie"] = "Felix";
-            }
-
             // als het geen contactverzoek betreft,
             // dan wordt de afdeling/groep van het contactmoment doorgestuurd als afdeling/groep van het contact
             if (!isContactverzoek)
