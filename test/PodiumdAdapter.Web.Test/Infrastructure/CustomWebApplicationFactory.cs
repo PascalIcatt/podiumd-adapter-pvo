@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PodiumdAdapter.Web.Infrastructure;
+using PodiumdAdapter.Web.Infrastructure.UrlRewriter;
 using Yarp.ReverseProxy.Forwarder;
 
 namespace PodiumdAdapter.Web.Test.Infrastructure
@@ -31,7 +32,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             builder.UseEnvironment("Production");
             builder.ConfigureTestServices(services =>
             {
-                services.AddSingleton<IForwarderHttpClientFactory>(new CustomForwarderHttpClientFactory(MockHttpMessageHandler));
+                services.AddSingleton<IForwarderHttpClientFactory>(s => new CustomForwarderHttpClientFactory(MockHttpMessageHandler, s.GetServices<WrapHandler>()));
                 services.ConfigureHttpClientDefaults(x => x.ConfigurePrimaryHttpMessageHandler(_ => MockHttpMessageHandler));
             });
 
@@ -84,10 +85,13 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             });
         }
 
-        private class CustomForwarderHttpClientFactory(MockHttpMessageHandler handler) : IForwarderHttpClientFactory
+        private class CustomForwarderHttpClientFactory(HttpMessageHandler handler, IEnumerable<WrapHandler> wrappers) : IForwarderHttpClientFactory
         {
-            public HttpMessageInvoker CreateClient(ForwarderHttpClientContext context) => new(handler);
+            public HttpMessageInvoker CreateClient(ForwarderHttpClientContext context)
+            {
+                handler = wrappers.Aggregate(handler, (h, wrapper) => wrapper.Invoke(h));
+                return new HttpMessageInvoker(handler);
+            }
         }
-
     }
 }
