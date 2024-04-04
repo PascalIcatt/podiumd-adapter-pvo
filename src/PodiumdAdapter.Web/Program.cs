@@ -23,7 +23,7 @@ try
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddHealthChecks();
-    builder.Services.AddReverseProxy().AddEsuiteToken();
+    builder.Services.AddReverseProxy().AddEsuiteToken().AddEsuiteHeader();
     builder.Services.AddESuiteClient(new ContactmomentenClientConfig());
     builder.Services.AddESuiteClient(new KlantenClientConfig());
     builder.Services.AddESuiteClient(new ZaakZrcClientConfig());
@@ -34,10 +34,9 @@ try
     builder.Services.AddSmoelenboekClient(builder.Configuration);
     builder.Services.AddUrlRewriter(EsuiteUrlRewriteMaps.GetRewriters);
 
-    if (!builder.Environment.IsDevelopment())
-    {
-        builder.Services.AddAuth(builder.Configuration);
-    }
+    //comment this line if you want to use PodiumdAdapter.Web.http
+    builder.Services.AddAuth(builder.Configuration);
+
 
     var app = builder.Build();
     // Configure the HTTP request pipeline.

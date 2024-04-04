@@ -1,3 +1,11 @@
+#
+#
+# To use this file disable 
+# builder.Services.AddAuth(builder.Configuration); 
+# in program.cs
+#
+#
+
 @PodiumdAdapter.Web_HostAddress = http://localhost:56090
 @ContactmomentenRoot = {{PodiumdAdapter.Web_HostAddress}}/contactmomenten/api/v1
 @KlantenRoot = {{PodiumdAdapter.Web_HostAddress}}/klanten/api/v1
