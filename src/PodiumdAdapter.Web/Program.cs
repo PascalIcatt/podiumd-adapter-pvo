@@ -1,5 +1,6 @@
 ﻿using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Endpoints;
+using PodiumdAdapter.Web.Endpoints.ObjectenEndpoints;
 using PodiumdAdapter.Web.Infrastructure;
 using PodiumdAdapter.Web.Infrastructure.UrlRewriter;
 using Serilog;

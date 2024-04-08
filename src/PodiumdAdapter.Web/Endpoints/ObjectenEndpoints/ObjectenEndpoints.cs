@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Infrastructure;
 
-namespace PodiumdAdapter.Web.Endpoints
+namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
 {
     public static class ObjectenEndpoints
     {
@@ -454,16 +454,4 @@ namespace PodiumdAdapter.Web.Endpoints
             return !string.IsNullOrWhiteSpace(result);
         }
     }
-}
-
-
-
-
-
-public class EmptyGroupPageResult
-{
-    public int Count { get; set; }
-    public string? Next { get; set; }
-    public string? Previous { get; set; }
-    public required object[] Results { get; set; }
 }
