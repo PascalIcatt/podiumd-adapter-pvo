@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Infrastructure;
 
-namespace PodiumdAdapter.Web.Endpoints
+namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
 {
     public static class ObjectenEndpoints
     {
@@ -102,13 +102,27 @@ namespace PodiumdAdapter.Web.Endpoints
                 return GetSmoelenboek(factory, request);
             }
 
+            if (objectType == groepenType)
+            {
+                return GetGroepen();
+            }
+
             return Results.Problem("objecttype onbekend: " + objectType, statusCode: StatusCodes.Status400BadRequest);
         }
+
+        private static IResult GetGroepen()
+        {
+            //bij gebruiik van de e-Suite worden groepen en afdelingen gecombineert in de afdelingen requests.
+            //voor losse groepen request altijd een lege lijst retourneren
+            return Results.Json(new EmptyGroupPageResult() { Results = [] });
+        }
+
+
 
         private static IResult GetSmoelenboek(IHttpClientFactory factory, HttpRequest request)
         {
             var client = factory.CreateClient(SmoelenboekClientName);
-            return client.ProxyResult(new ProxyRequest 
+            return client.ProxyResult(new ProxyRequest
             {
                 Url = request.Path + request.QueryString,
                 ModifyResponseBody = (json, _) =>
@@ -186,7 +200,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 var prefix = type == afdelingenType
                     ? AfdelingPrefix
                     : GroepPrefix;
-                
+
                 data["naam"] = prefix + naam;
             }
 
