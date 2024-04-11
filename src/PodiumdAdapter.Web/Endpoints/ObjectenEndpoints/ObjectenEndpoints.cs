@@ -22,11 +22,6 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
         {
             var group = endpointRouteBuilder.MapGroup(ApiRoot);
 
-            if (!endpointRouteBuilder.ServiceProvider.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
-            {
-                group.RequireObjectenApiKey();
-            }
-
             group.MapPost("/", OpslaanInterneTaakStub);
 
             group.MapGet("/", GetObjecten);
