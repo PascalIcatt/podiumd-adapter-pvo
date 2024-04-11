@@ -70,11 +70,6 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
             httpClient.DefaultRequestHeaders.Authorization = new("Bearer", GetToken(_clientId, _clientSecret));
         }
 
-        public void SetObjectenToken(HttpClient httpClient)
-        {
-            httpClient.DefaultRequestHeaders.Authorization = new("Token", _clientSecret);
-        }
-
         private static string GetToken(string id, string secret)
         {
             return ESuiteClientExtensions.GetToken(id, secret, new Dictionary<string, object>

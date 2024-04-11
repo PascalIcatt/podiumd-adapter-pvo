@@ -16,7 +16,7 @@ namespace PodiumdAdapter.Web.Test
             """;
 
             using var client = factory.CreateClient();
-            factory.SetObjectenToken(client);
+            factory.SetZgwToken(client);
 
             using var response = await client.PostAsJsonAsync(BaseUrl, new
             {
@@ -52,7 +52,7 @@ namespace PodiumdAdapter.Web.Test
                 .Respond("application/json", ApiResponse);
 
             using var client = factory.CreateClient();
-            factory.SetObjectenToken(client);
+            factory.SetZgwToken(client);
 
             var str = await client.GetStringAsync(BaseUrl + "?type=" + factory.INTERNE_TAAK_OBJECT_TYPE_URL);
             Assert.Equal(ExpectedResult, str);
