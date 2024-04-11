@@ -22,10 +22,11 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
         {
             var group = endpointRouteBuilder.MapGroup(ApiRoot);
 
-            if (!endpointRouteBuilder.ServiceProvider.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
-            {
-                group.RequireObjectenApiKey();
-            }
+            // dit enabelen als je anoniem calls wil kunnen testen vanuit PodiumeDadapter.Web.http
+            // if (!endpointRouteBuilder.ServiceProvider.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
+            // {
+            //   group.RequireObjectenApiKey();
+            // }
 
             group.MapPost("/", OpslaanInterneTaakStub);
 
