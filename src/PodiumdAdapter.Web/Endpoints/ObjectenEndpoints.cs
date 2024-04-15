@@ -442,8 +442,7 @@ namespace PodiumdAdapter.Web.Endpoints
 
         private static string UpdateToelichtingWithRecentsteVoorlopigAntwoord(JsonObject obj, JsonNode? contact)
         {
-            var toelichtingNodeClone = obj["toelichting"]?.DeepClone();
-            var bestaandeToelichting = toelichtingNodeClone?.ToString() ?? "";
+            var bestaandeToelichting = obj["toelichting"]?.ToString() ?? "";
 
             var recentsteVoorlopigAntwoord = HaalLaatsteVoorlopigeAntwoordOp(contact);
             var updatedToelichting = string.IsNullOrWhiteSpace(bestaandeToelichting)
