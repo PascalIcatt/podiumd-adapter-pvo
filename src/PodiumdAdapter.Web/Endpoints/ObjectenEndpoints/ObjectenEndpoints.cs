@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Infrastructure;
 
-namespace PodiumdAdapter.Web.Endpoints
+namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
 {
     public static class ObjectenEndpoints
     {
@@ -21,11 +21,6 @@ namespace PodiumdAdapter.Web.Endpoints
         public static IEndpointConventionBuilder MapObjectenEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
         {
             var group = endpointRouteBuilder.MapGroup(ApiRoot);
-
-            if (!endpointRouteBuilder.ServiceProvider.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
-            {
-                group.RequireObjectenApiKey();
-            }
 
             group.MapPost("/", OpslaanInterneTaakStub);
 
@@ -102,8 +97,22 @@ namespace PodiumdAdapter.Web.Endpoints
                 return GetSmoelenboek(factory, request);
             }
 
+            if (objectType == groepenType)
+            {
+                return GetGroepen();
+            }
+
             return Results.Problem("objecttype onbekend: " + objectType, statusCode: StatusCodes.Status400BadRequest);
         }
+
+        private static IResult GetGroepen()
+        {
+            //bij gebruiik van de e-Suite worden groepen en afdelingen gecombineert in de afdelingen requests.
+            //voor losse groepen request altijd een lege lijst retourneren
+            return Results.Json(new EmptyGroupPageResult() { Results = [] });
+        }
+
+
 
         private static IResult GetSmoelenboek(IHttpClientFactory factory, HttpRequest request)
         {

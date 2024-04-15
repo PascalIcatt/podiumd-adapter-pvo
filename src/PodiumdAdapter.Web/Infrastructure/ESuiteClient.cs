@@ -12,6 +12,8 @@ namespace PodiumdAdapter.Web.Infrastructure
 {
     public static class ESuiteClientExtensions
     {
+        private const string EsuiteUsreIdHeader = "X-Esuite-Request-User-Id";
+
         public static void AddESuiteClient<T>(this IServiceCollection services, T clientConfig) where T : IESuiteClientConfig
         {
             var clientName = typeof(T).Name;
@@ -85,6 +87,13 @@ namespace PodiumdAdapter.Web.Infrastructure
                 var baseUrl = new UriBuilder(urlFromConfig) { Path = remotePath };
                 x.BaseAddress = baseUrl.Uri;
                 x.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var httpContextAccessor = s.GetRequiredService<IHttpContextAccessor>();
+                var username = httpContextAccessor?.HttpContext?.User.FindFirstValue("user_id");
+                if (!string.IsNullOrWhiteSpace(username))
+                {
+                    x.DefaultRequestHeaders.Add(EsuiteUsreIdHeader, username);
+                }
+
             });
         }
 
@@ -99,25 +108,49 @@ namespace PodiumdAdapter.Web.Infrastructure
             }
         }
 
-        public static void AddEsuiteToken(this IReverseProxyBuilder builder) => builder.AddTransforms(context =>
+        public static IReverseProxyBuilder AddEsuiteToken(this IReverseProxyBuilder builder)
         {
-            context.AddRequestTransform(x =>
-            {
-                var config = x.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
-                var clientId = config.GetRequiredValue("ESUITE_CLIENT_ID");
-                var clientSecret = config.GetRequiredValue("ESUITE_CLIENT_SECRET");
-                var token = GetToken(clientId, clientSecret);
-                x.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                var username = x.HttpContext.User.FindFirstValue("user_id");
-                if (!string.IsNullOrWhiteSpace(username))
-                {
-                    x.ProxyRequest.Headers.Add("X-Request-User-Id", [username]);
-                }
-                return new ValueTask();
-            });
-        });
 
-        public static string GetToken(string id, string secret, Dictionary<string,object>? claims = null)
+            builder.AddTransforms(context =>
+                {
+                    context.AddRequestTransform(x =>
+                    {
+                        var config = x.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
+                        var clientId = config.GetRequiredValue("ESUITE_CLIENT_ID");
+                        var clientSecret = config.GetRequiredValue("ESUITE_CLIENT_SECRET");
+                        var token = GetToken(clientId, clientSecret);
+                        x.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                        return new ValueTask();
+                    });
+                });
+
+            return builder;
+        }
+
+
+
+        public static IReverseProxyBuilder AddEsuiteHeader(this IReverseProxyBuilder builder)
+        {
+
+            builder.AddTransforms(context =>
+            {
+                context.AddRequestTransform(x =>
+                {
+                    var username = x.HttpContext.User.FindFirstValue("user_id");
+                    if (!string.IsNullOrWhiteSpace(username))
+                    {
+                        x.ProxyRequest.Headers.Add(EsuiteUsreIdHeader, [username]);
+                    }
+                    return new ValueTask();
+                });
+            });
+
+            return builder;
+        }
+
+
+        public static string GetToken(string id, string secret, Dictionary<string, object>? claims = null)
         {
             var now = DateTimeOffset.UtcNow;
             // one minute leeway to account for clock differences between machines

@@ -56,8 +56,6 @@ spec:
                 name: podiumd-adapter-config
             - secretRef:
                 name: podiumd-adapter-secrets
-      imagePullSecrets:
-      - name: regcred
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

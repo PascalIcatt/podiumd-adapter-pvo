@@ -29,7 +29,7 @@ namespace PodiumdAdapter.Web.Test
                 .Respond("application/json", ObjectenResponse);
 
             using var client = factory.CreateClient();
-            factory.SetObjectenToken(client);
+            factory.SetZgwToken(client);
             using var stream = await client.GetStreamAsync("/api/v2/objects?type=" + factory.SMOELENBOEK_OBJECT_TYPE_URL);
 
             await VerifyJson(stream);
