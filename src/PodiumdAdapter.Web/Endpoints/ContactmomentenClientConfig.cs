@@ -190,7 +190,7 @@ namespace PodiumdAdapter.Web.Endpoints
             var vraag = json["vraag"]?.GetValue<string>();
             if (!string.IsNullOrWhiteSpace(vraag)) yield return vraag;
             var specifiekeVraag = json["specifiekevraag"]?.GetValue<string>();
-            if(!string.IsNullOrWhiteSpace(specifiekeVraag)) yield return specifiekeVraag;
+            if (!string.IsNullOrWhiteSpace(specifiekeVraag)) yield return specifiekeVraag;
         }
 
         private static string GetToelichting(string? voornaam, string? voorvoegselAchternaam, string? achternaam, string? organisatie, string? toelichtingTelefoonnummer2, string? toelichting)
@@ -398,7 +398,7 @@ namespace PodiumdAdapter.Web.Endpoints
             value = "";
             propertyName = "";
             var soortActor = actor?["soortActor"]?.GetValue<string>();
-            if( soortActor != "organisatorische eenheid") return false;
+            if (soortActor != "organisatorische eenheid") return false;
             return TryGetAfdelingOrGroep(actor?["naam"]?.GetValue<string>(), out value, out propertyName);
         }
 

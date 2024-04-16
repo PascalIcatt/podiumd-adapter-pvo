@@ -316,7 +316,7 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
                 };
             }
 
-            var toelichting = obj["toelichting"]?.DeepClone();
+            var toelichting = UpdateToelichtingWithRecentsteVoorlopigAntwoord(obj, contact);
             var status = obj["status"]?.DeepClone();
             var registratieDatum = obj["registratiedatum"]?.DeepClone();
             var digitaleAdressen = GetDigitaleAdressen(obj);
@@ -447,6 +447,33 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
                 .LastOrDefault();
 
             return !string.IsNullOrWhiteSpace(result);
+        }
+
+        private static string UpdateToelichtingWithRecentsteVoorlopigAntwoord(JsonObject obj, JsonNode? contact)
+        {
+            var bestaandeToelichting = obj["toelichting"]?.GetValue<string>() ?? "";
+
+            var recentsteVoorlopigAntwoord = HaalLaatsteVoorlopigeAntwoordOp(contact);
+            var updatedToelichting = string.IsNullOrWhiteSpace(bestaandeToelichting)
+                                             ? recentsteVoorlopigAntwoord
+                                             : string.Concat(bestaandeToelichting, "\n\n", recentsteVoorlopigAntwoord).Trim();
+
+            return updatedToelichting;
+        }
+
+        private static string HaalLaatsteVoorlopigeAntwoordOp(JsonNode? contactmoment)
+        {
+            if (contactmoment?["recentsteVoorlopigAntwoord"] is JsonObject recentsteVoorlopigAntwoord
+                && recentsteVoorlopigAntwoord["antwoord"]?.GetValue<string>() is string antwoord
+                && recentsteVoorlopigAntwoord["volledigeNaam"]?.GetValue<string>() is string volledigeNaam
+                && recentsteVoorlopigAntwoord["registratiedatum"]?.GetValue<string>() is string registratieDatum)
+            {
+                var parsedDate = DateTime.Parse(registratieDatum);
+                var formattedDate = parsedDate.ToString("dd-MM-yyyy, HH:mm");
+                return $"Laatste voorlopige antwoord: {antwoord} ({formattedDate}, {volledigeNaam})";
+            }
+
+            return string.Empty;
         }
     }
 }
