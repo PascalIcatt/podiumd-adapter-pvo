@@ -451,7 +451,7 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
 
         private static string UpdateToelichtingWithRecentsteVoorlopigAntwoord(JsonObject obj, JsonNode? contact)
         {
-            var bestaandeToelichting = obj["toelichting"]?.ToString() ?? "";
+            var bestaandeToelichting = obj["toelichting"]?.GetValue<string>() ?? "";
 
             var recentsteVoorlopigAntwoord = HaalLaatsteVoorlopigeAntwoordOp(contact);
             var updatedToelichting = string.IsNullOrWhiteSpace(bestaandeToelichting)
