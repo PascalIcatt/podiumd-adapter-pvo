@@ -468,8 +468,9 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
                 && recentsteVoorlopigAntwoord["volledigeNaam"]?.GetValue<string>() is string volledigeNaam
                 && recentsteVoorlopigAntwoord["registratiedatum"]?.GetValue<string>() is string registratieDatum)
             {
-                var parsedDate = DateTime.Parse(registratieDatum);
-                var formattedDate = parsedDate.ToString("dd-MM-yyyy, HH:mm");
+                var dateTimeOffset = DateTimeOffset.Parse(registratieDatum);
+                var formattedDate = dateTimeOffset.ToString("dd-MM-yyyy, HH:mm");
+
                 return $"Laatste voorlopige antwoord: {antwoord} ({formattedDate}, {volledigeNaam})";
             }
 
