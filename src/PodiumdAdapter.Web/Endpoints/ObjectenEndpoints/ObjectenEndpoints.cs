@@ -468,9 +468,16 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
                 && recentsteVoorlopigAntwoord["volledigeNaam"]?.GetValue<string>() is string volledigeNaam
                 && recentsteVoorlopigAntwoord["registratiedatum"]?.GetValue<string>() is string registratieDatum)
             {
-                var parsedDate = DateTime.Parse(registratieDatum);
-                var formattedDate = parsedDate.ToString("dd-MM-yyyy, HH:mm");
+
+                var dateTimeOffset = DateTimeOffset.Parse(registratieDatum);
+
+                // Convert to the time zone "+02:00" explicitly
+                var targetTimeZoneOffset = TimeSpan.FromHours(2);  // As your original time has "+02:00"
+                var targetDateTimeOffset = new DateTimeOffset(dateTimeOffset.DateTime, targetTimeZoneOffset);
+                var formattedDate = targetDateTimeOffset.ToString("dd-MM-yyyy, HH:mm");
+
                 return $"Laatste voorlopige antwoord: {antwoord} ({formattedDate}, {volledigeNaam})";
+
             }
 
             return string.Empty;
