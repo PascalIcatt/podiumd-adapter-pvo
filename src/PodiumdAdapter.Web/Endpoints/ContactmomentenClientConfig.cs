@@ -176,15 +176,6 @@ namespace PodiumdAdapter.Web.Endpoints
             };
         }
 
-        private static bool TryGetAfdelingOrGroep([NotNullWhen(true)] string? afdelingOfGroep, [NotNullWhen(true)] out string? value, [NotNullWhen(true)] out string propName)
-        {
-            var split = afdelingOfGroep?.Split(":", StringSplitOptions.RemoveEmptyEntries) ?? [];
-            var prefix = split.FirstOrDefault();
-            value = split.Length > 1 ? string.Join(":", split.Skip(1)) : prefix;
-            propName = split.Length > 1 && prefix == "groep" ? "groep" : "afdeling";
-            return !string.IsNullOrWhiteSpace(value);
-        }
-
         private static IEnumerable<string> GetTekstParts(JsonNode json)
         {
             var vraag = json["vraag"]?.GetValue<string>();
@@ -354,61 +345,54 @@ namespace PodiumdAdapter.Web.Endpoints
         {
             if (json == null) return;
             var actor = json["actor"];
-            var soortActor = actor?["soortActor"]?.GetValue<string>();
 
             // als het geen contactverzoek betreft,
-            // dan wordt de afdeling/groep van het contactmoment doorgestuurd als afdeling/groep van het contact
+            // dan wordt de afdeling van het contactmoment doorgestuurd als afdeling van het contact 
             if (!isContactverzoek)
             {
-                AfdelingOfGroepOvernemenVanHetContactmoment(json);
+                AfdelingOvernemenVanHetContactmoment(json);
                 return;
             }
 
             // Als het een contactverzoek betreft en er is een afdeling/groep gekozen bij het contactverzoek,
             // .. dan wordt die afdeling/groep doorgestuurd als afdeling/groep van het contact
             // .. dan doen we niks met de afdeling/groep van het contactmoment
-            if (TryGetOrganisatorischeEenheid(actor, out var naamVanAfdelingOfGroep, out var propertyNaamVoorAfdelingOfGroep))
+            if (TryGetOrganisatorischeEenheid(actor, out var value, out var propertyName, out var isMedewerker))
             {
-                json[propertyNaamVoorAfdelingOfGroep] = naamVanAfdelingOfGroep;
-                return;
+                json[propertyName] = value;
             }
 
             // Als het een contactverzoek betreft en er is een medewerker gekozen bij het contactverzoek,
             // .. dan wordt die medewerker doorgestuurd als de behandelaar van het contact
             // .. dan doen we niks met de afdeling/groep van het contactmoment
-            if (TryGetActorUserName(actor, out var username))
+            if (isMedewerker)
             {
+                var username = actor?["identificatie"]?.GetValue<string>() ?? "";
                 var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject());
                 behandelaar["gebruikersnaam"] = username;
             }
         }
 
 
-        private static void AfdelingOfGroepOvernemenVanHetContactmoment(JsonNode? json)
+        private static void AfdelingOvernemenVanHetContactmoment(JsonNode? json)
         {
-            // verantwoordelijke afdeling wordt gevuld bij elk contactmoment
-            if (TryGetAfdelingOrGroep(json?["verantwoordelijkeAfdeling"]?.GetValue<string>(), out var value, out var propName))
+            if (json?["verantwoordelijkeAfdeling"]?.GetValue<string>() is { Length: > 0 } responsibleDepartment)
             {
-                json[propName] = value;
+                json["afdeling"] = responsibleDepartment;
             }
         }
 
-        private static bool TryGetOrganisatorischeEenheid(JsonNode? actor, out string? value, out string propertyName)
+        private static bool TryGetOrganisatorischeEenheid(JsonNode? actor, [NotNullWhen(true)] out string? value, [NotNullWhen(true)] out string? propertyName, out bool isMedewerker)
         {
-            value = "";
-            propertyName = "";
-            var soortActor = actor?["soortActor"]?.GetValue<string>();
-            if (soortActor != "organisatorische eenheid") return false;
-            return TryGetAfdelingOrGroep(actor?["naam"]?.GetValue<string>(), out value, out propertyName);
-        }
+            isMedewerker = actor?["soortActor"]?.GetValue<string>() == "medewerker";
 
-        private static bool TryGetActorUserName(JsonNode? actor, out string username)
-        {
-            username = "";
-            var soortActor = actor?["soortActor"]?.GetValue<string>();
-            if (soortActor != "medewerker") return false;
-            username = actor?["identificatie"]?.GetValue<string>() ?? "";
-            return !string.IsNullOrWhiteSpace(username);
+            var AfdelingOfGroepNaam = isMedewerker ? actor?["naamOrganisatorischeEenheid"]?.GetValue<string>() : actor?["naam"]?.GetValue<string>();
+            var AfdelingOfGroepType = actor?["typeOrganisatorischeEenheid"]?.GetValue<string>();
+
+            value = AfdelingOfGroepNaam;
+            propertyName = AfdelingOfGroepType;
+
+            return !string.IsNullOrWhiteSpace(propertyName) && !string.IsNullOrWhiteSpace(value);
         }
     }
 }
