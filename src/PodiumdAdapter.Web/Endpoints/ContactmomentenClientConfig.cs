@@ -346,30 +346,31 @@ namespace PodiumdAdapter.Web.Endpoints
             if (json == null) return;
             var actor = json["actor"];
 
-            // als het geen contactverzoek betreft,
+            // als het een contactmoment betreft,
             // dan wordt de afdeling van het contactmoment doorgestuurd als afdeling van het contact 
+            // als het een contactverzoek betreft dan doen we niks met de afdeling/groep van het contactmoment
             if (!isContactverzoek)
             {
                 AfdelingOvernemenVanHetContactmoment(json);
                 return;
             }
-
-            // Als het een contactverzoek betreft en er is een afdeling/groep gekozen bij het contactverzoek,
-            // .. dan wordt die afdeling/groep doorgestuurd als afdeling/groep van het contact
-            // .. dan doen we niks met de afdeling/groep van het contactmoment
-            if (TryGetOrganisatorischeEenheid(actor, out var value, out var propertyName, out var isMedewerker))
-            {
-                json[propertyName] = value;
-            }
+           
+            var isContactverzoekVoorMedewerker = IsContactverzoekVoorMedewerker(actor);
 
             // Als het een contactverzoek betreft en er is een medewerker gekozen bij het contactverzoek,
-            // .. dan wordt die medewerker doorgestuurd als de behandelaar van het contact
-            // .. dan doen we niks met de afdeling/groep van het contactmoment
-            if (isMedewerker)
+            // .. dan wordt die medewerker doorgestuurd als de behandelaar van het contact            
+            if (isContactverzoekVoorMedewerker)
             {
                 var username = actor?["identificatie"]?.GetValue<string>() ?? "";
                 var behandelaar = json.GetOrSetProperty("behandelaar", () => new JsonObject());
                 behandelaar["gebruikersnaam"] = username;
+            }
+
+            // Als het een contactverzoek betreft en er is een afdeling/groep gekozen bij het contactverzoek,
+            // .. dan wordt die afdeling/groep doorgestuurd als afdeling/groep van het contact
+            if (TryGetOrganisatorischeEenheid(actor, isContactverzoekVoorMedewerker, out var value, out var propertyName))
+            {
+                json[propertyName] = value;
             }
         }
 
@@ -382,23 +383,23 @@ namespace PodiumdAdapter.Web.Endpoints
             }
         }
 
-        private static bool TryGetOrganisatorischeEenheid(JsonNode? actor, [NotNullWhen(true)] out string? value, [NotNullWhen(true)] out string? propertyName, out bool isMedewerker)
+        private static bool TryGetOrganisatorischeEenheid(JsonNode? actor, bool isContactverzoekVoorMedewerker, [NotNullWhen(true)] out string? value, [NotNullWhen(true)] out string? propertyName)
         {
-            isMedewerker = IsMedewerker(actor);
-            value = GetOrganisatorischeEenheidNaam(actor, isMedewerker);
+           
+            value = GetOrganisatorischeEenheidNaam(actor, isContactverzoekVoorMedewerker);
             propertyName = GetOrganisatorischeEenheidType(actor);
 
             return !string.IsNullOrWhiteSpace(propertyName) && !string.IsNullOrWhiteSpace(value);
         }
 
-        private static bool IsMedewerker(JsonNode? actor)
+        private static bool IsContactverzoekVoorMedewerker(JsonNode? actor)
         {
             return actor?["soortActor"]?.GetValue<string>() == "medewerker";
         }
 
-        private static string? GetOrganisatorischeEenheidNaam(JsonNode? actor, bool isMedewerker)
+        private static string? GetOrganisatorischeEenheidNaam(JsonNode? actor, bool isContactverzoekVoorMedewerker)
         {
-            return isMedewerker ? actor?["naamOrganisatorischeEenheid"]?.GetValue<string>() : actor?["naam"]?.GetValue<string>();
+            return isContactverzoekVoorMedewerker ? actor?["naamOrganisatorischeEenheid"]?.GetValue<string>() : actor?["naam"]?.GetValue<string>();
         }
 
         private static string? GetOrganisatorischeEenheidType(JsonNode? actor)

@@ -91,6 +91,9 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
             return Results.Problem("objecttype onbekend: " + objectType, statusCode: StatusCodes.Status400BadRequest);
         }
 
+        //wordt gebruikt door de elastic sync om de gegevens,
+        //zoals ze door de esuite in overige objecten zijn gezet,
+        //aan te passen zodat ze in de elastic index terecht komen op de manier dat kiss verwacht
         private static IResult GetSmoelenboek(IHttpClientFactory factory, HttpRequest request)
         {
             var client = factory.CreateClient(SmoelenboekClientName);
