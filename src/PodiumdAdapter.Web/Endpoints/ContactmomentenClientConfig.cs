@@ -384,15 +384,26 @@ namespace PodiumdAdapter.Web.Endpoints
 
         private static bool TryGetOrganisatorischeEenheid(JsonNode? actor, [NotNullWhen(true)] out string? value, [NotNullWhen(true)] out string? propertyName, out bool isMedewerker)
         {
-            isMedewerker = actor?["soortActor"]?.GetValue<string>() == "medewerker";
-
-            var AfdelingOfGroepNaam = isMedewerker ? actor?["naamOrganisatorischeEenheid"]?.GetValue<string>() : actor?["naam"]?.GetValue<string>();
-            var AfdelingOfGroepType = actor?["typeOrganisatorischeEenheid"]?.GetValue<string>();
-
-            value = AfdelingOfGroepNaam;
-            propertyName = AfdelingOfGroepType;
+            isMedewerker = IsMedewerker(actor);
+            value = GetOrganisatorischeEenheidNaam(actor, isMedewerker);
+            propertyName = GetOrganisatorischeEenheidType(actor);
 
             return !string.IsNullOrWhiteSpace(propertyName) && !string.IsNullOrWhiteSpace(value);
+        }
+
+        private static bool IsMedewerker(JsonNode? actor)
+        {
+            return actor?["soortActor"]?.GetValue<string>() == "medewerker";
+        }
+
+        private static string? GetOrganisatorischeEenheidNaam(JsonNode? actor, bool isMedewerker)
+        {
+            return isMedewerker ? actor?["naamOrganisatorischeEenheid"]?.GetValue<string>() : actor?["naam"]?.GetValue<string>();
+        }
+
+        private static string? GetOrganisatorischeEenheidType(JsonNode? actor)
+        {
+            return actor?["typeOrganisatorischeEenheid"]?.GetValue<string>();
         }
     }
 }
