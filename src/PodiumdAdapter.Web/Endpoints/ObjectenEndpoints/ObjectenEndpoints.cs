@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Infrastructure;
 
-namespace PodiumdAdapter.Web.Endpoints
+namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
 {
     public static class ObjectenEndpoints
     {
@@ -21,11 +21,6 @@ namespace PodiumdAdapter.Web.Endpoints
         public static IEndpointConventionBuilder MapObjectenEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
         {
             var group = endpointRouteBuilder.MapGroup(ApiRoot);
-
-            if (!endpointRouteBuilder.ServiceProvider.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
-            {
-                group.RequireObjectenApiKey();
-            }
 
             group.MapPost("/", OpslaanInterneTaakStub);
 
@@ -80,21 +75,12 @@ namespace PodiumdAdapter.Web.Endpoints
             CancellationToken cancellationToken)
         {
             var interneTaakType = configuration.GetRequiredValue("INTERNE_TAAK_OBJECT_TYPE_URL");
-            var groepenType = configuration.GetRequiredValue("GROEPEN_OBJECT_TYPE_URL");
-            var afdelingenType = configuration.GetRequiredValue("AFDELINGEN_OBJECT_TYPE_URL");
             var smoelenboekType = configuration.GetRequiredValue("SMOELENBOEK_OBJECT_TYPE_URL");
 
             // voor interne taak gaan we naar de contactmomenten api van de esuite
             if (objectType == interneTaakType)
             {
                 return GetInterneTaken(configuration, factory, request, filterAttributes, objectType);
-            }
-
-            // afdelingen vullen we met zowel afdelingen als groepen, met ieder een eigen prefix
-            // dit is nodig omdat kiss er vanuit gaat dat groepen onder afdelingen vallen, maar dit is niet altijd het geval
-            if (objectType == afdelingenType)
-            {
-                return await GetAfdelingenEnGroepen(factory, request, filterAttributes, afdelingenType, groepenType, cancellationToken);
             }
 
             if (objectType == smoelenboekType)
@@ -105,10 +91,13 @@ namespace PodiumdAdapter.Web.Endpoints
             return Results.Problem("objecttype onbekend: " + objectType, statusCode: StatusCodes.Status400BadRequest);
         }
 
+        //wordt gebruikt door de elastic sync om de gegevens,
+        //zoals ze door de esuite in overige objecten zijn gezet,
+        //aan te passen zodat ze in de elastic index terecht komen op de manier dat kiss verwacht
         private static IResult GetSmoelenboek(IHttpClientFactory factory, HttpRequest request)
         {
             var client = factory.CreateClient(SmoelenboekClientName);
-            return client.ProxyResult(new ProxyRequest 
+            return client.ProxyResult(new ProxyRequest
             {
                 Url = request.Path + request.QueryString,
                 ModifyResponseBody = (json, _) =>
@@ -128,69 +117,6 @@ namespace PodiumdAdapter.Web.Endpoints
                     return new ValueTask();
                 }
             });
-        }
-
-        private static async Task<IResult> GetAfdelingenEnGroepen(IHttpClientFactory factory, HttpRequest request, string[] filterAttributes, string afdelingenType, string groepenType, CancellationToken cancellationToken)
-        {
-            var afdelingenClient = factory.CreateClient(AfdelingenClientName);
-            var groepenClient = factory.CreateClient(GroepenClientName);
-
-            var query = request.Query.ToDictionary();
-            var search = ExtractFilterAttribute(filterAttributes, "naam__icontains__");
-
-            if (search?.StartsWith(AfdelingPrefix) ?? false)
-            {
-                search = search.Substring(AfdelingPrefix.Length);
-            }
-            else if (search?.StartsWith(GroepPrefix) ?? false)
-            {
-                search = search.Substring(GroepPrefix.Length);
-            }
-
-            if (search != null)
-            {
-                query["data_attrs"] = $"naam__icontains__{search}";
-            }
-
-            var afdelingenUrl = QueryHelpers.AddQueryString(request.Path, query);
-
-            query["type"] = groepenType;
-            var groepenUrl = QueryHelpers.AddQueryString(request.Path, query);
-
-            var afdelingenTask = afdelingenClient.GetAllPages(afdelingenUrl, cancellationToken).ToListAsync(cancellationToken);
-            var groepenTask = groepenClient.GetAllPages(groepenUrl, cancellationToken).ToListAsync(cancellationToken);
-            var afdelingen = await afdelingenTask;
-            var groepen = await groepenTask;
-
-            var all = afdelingen
-                .Concat(groepen)
-                .Select(x => AddAfdelingGroepPrefix(afdelingenType, x))
-                .ToArray();
-
-            var result = all.ToPaginatedResult();
-
-            return Results.Json(result);
-        }
-
-        private static JsonNode? AddAfdelingGroepPrefix(string afdelingenType, JsonNode? x)
-        {
-            if (x == null) return null;
-            var json = x.DeepClone();
-            var type = json["type"]?.GetValue<string>();
-            json["type"] = afdelingenType;
-
-            if (json["record"]?["data"] is JsonObject data
-                && data["naam"]?.GetValue<string>() is string naam
-                && !string.IsNullOrWhiteSpace(naam))
-            {
-                var prefix = type == afdelingenType
-                    ? AfdelingPrefix
-                    : GroepPrefix;
-                
-                data["naam"] = prefix + naam;
-            }
-
-            return json;
         }
 
         private static IResult GetInterneTaken(IConfiguration configuration, IHttpClientFactory factory, HttpRequest request, string[] filterAttributes, string? objectType)
@@ -307,7 +233,7 @@ namespace PodiumdAdapter.Web.Endpoints
                 };
             }
 
-            var toelichting = obj["toelichting"]?.DeepClone();
+            var toelichting = UpdateToelichtingWithRecentsteVoorlopigAntwoord(obj, contact);
             var status = obj["status"]?.DeepClone();
             var registratieDatum = obj["registratiedatum"]?.DeepClone();
             var digitaleAdressen = GetDigitaleAdressen(obj);
@@ -438,6 +364,34 @@ namespace PodiumdAdapter.Web.Endpoints
                 .LastOrDefault();
 
             return !string.IsNullOrWhiteSpace(result);
+        }
+
+        private static string UpdateToelichtingWithRecentsteVoorlopigAntwoord(JsonObject obj, JsonNode? contact)
+        {
+            var bestaandeToelichting = obj["toelichting"]?.GetValue<string>() ?? "";
+
+            var recentsteVoorlopigAntwoord = HaalLaatsteVoorlopigeAntwoordOp(contact);
+            var updatedToelichting = string.IsNullOrWhiteSpace(bestaandeToelichting)
+                                             ? recentsteVoorlopigAntwoord
+                                             : string.Concat(bestaandeToelichting, "\n\n", recentsteVoorlopigAntwoord).Trim();
+
+            return updatedToelichting;
+        }
+
+        private static string HaalLaatsteVoorlopigeAntwoordOp(JsonNode? contactmoment)
+        {
+            if (contactmoment?["recentsteVoorlopigAntwoord"] is JsonObject recentsteVoorlopigAntwoord
+                && recentsteVoorlopigAntwoord["antwoord"]?.GetValue<string>() is string antwoord
+                && recentsteVoorlopigAntwoord["volledigeNaam"]?.GetValue<string>() is string volledigeNaam
+                && recentsteVoorlopigAntwoord["registratiedatum"]?.GetValue<string>() is string registratieDatum)
+            {
+                var dateTimeOffset = DateTimeOffset.Parse(registratieDatum);
+                var formattedDate = dateTimeOffset.ToString("dd-MM-yyyy, HH:mm");
+
+                return $"Laatste voorlopige antwoord: {antwoord} ({formattedDate}, {volledigeNaam})";
+            }
+
+            return string.Empty;
         }
     }
 }

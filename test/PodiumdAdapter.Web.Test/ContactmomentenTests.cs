@@ -83,8 +83,9 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
                 "toelichting": "interne toelichting",
                 "actor": {
                     "identificatie": "bo-handhaving",
-                    "naam": "afdeling:Handhaving",
-                    "soortActor": "organisatorische eenheid"
+                    "naam": "Handhaving",
+                    "soortActor": "organisatorische eenheid",
+                    "typeOrganisatorischeEenheid": "afdeling"
                 },
                 "betrokkene": {
                     "rol": "klant",
@@ -135,8 +136,9 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
               "toelichting": "Contact opnemen met: Voor tussen Achter (Org)\nOmschrijving tweede telefoonnummer: werk\ninterne toelichting",
               "actor": {
                 "identificatie": "bo-handhaving",
-                "naam": "afdeling:Handhaving",
-                "soortActor": "organisatorische eenheid"
+                "naam": "Handhaving",
+                "soortActor": "organisatorische eenheid",
+                "typeOrganisatorischeEenheid": "afdeling"
               },
               "betrokkene": {
                 "rol": "klant",

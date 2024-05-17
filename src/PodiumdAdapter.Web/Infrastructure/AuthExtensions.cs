@@ -32,11 +32,6 @@ namespace PodiumdAdapter.Web.Auth
             authorizationBuilder.AddFallbackPolicy("zgw", p => p.RequireClaim("client_id").RequireClaim("user_id").RequireClaim("user_representation"));
         }
 
-        public static void RequireObjectenApiKey<T>(this T builder) where T : IEndpointConventionBuilder => builder
-            // allow anonymous zorgt ervoor dat de bearer authenticatie uitgeschakeld wordt
-            .AllowAnonymous()
-            .AddEndpointFilter<T, HasObjectenApiKeyFilter>();
-
         private static IEnumerable<SecurityKey> GetKey(IConfiguration configuration, SecurityToken token)
         {
             var result = GetCredentials(configuration)
