@@ -1,6 +1,9 @@
 [![Build and Tests](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/docker-image.yaml/badge.svg)](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/docker-image.yaml)
 [![Code quality checks](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/linter.yml/badge.svg)](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/linter.yml)
 
+Adapter for any application using Common Ground standard API's that needs to communicate with the e-Suite API's. Offers translations for Zaken, Zaaktypen, Klanten, Contactmomenten. Developed by [ICATT. Menselijk digitaal](https://www.icatt.nl) for Dimpact.
+
+
 ## Run from Visual Studio  
 Be sure to set-up environment variables first
 1. Make sure you've installed Docker Desktop version 4.19.0 or newer (preferably with WSL2 if using windows) and visual studio version 17.5.5 or newer
