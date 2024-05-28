@@ -41,19 +41,23 @@ try
     //comment this line if you want to use PodiumdAdapter.Web.http
     builder.Services.AddAuth(builder.Configuration);
 
-
     var app = builder.Build();
     // Configure the HTTP request pipeline.
 
     app.UseSerilogRequestLogging();
-    app.UseUrlRewriter();
+    app.UseRouting(); // Ensure routing is set up before middleware that depends on route information
     app.UseMiddleware<StatusCodeLoggingMiddleware>(); // Middleware om HTTP-statuscodes toe te voegen aan Serilog JSON-logs, aangezien deze standaard niet zijn opgenomen
+    app.UseAuthentication(); // Ensure authentication middleware is before authorization
+    app.UseAuthorization();
+    app.UseUrlRewriter();
 
-    app.MapHealthChecks("/healthz").AllowAnonymous();
-    app.MapEsuiteEndpoints();
-    app.MapObjectenEndpoints();
-    app.MapReverseProxy();
-
+    app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapHealthChecks("/healthz").AllowAnonymous();
+        endpoints.MapEsuiteEndpoints();
+        endpoints.MapObjectenEndpoints();
+        endpoints.MapReverseProxy();
+    });
 
     app.Run();
 }
