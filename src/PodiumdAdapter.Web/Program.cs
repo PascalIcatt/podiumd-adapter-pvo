@@ -5,12 +5,14 @@ using PodiumdAdapter.Web.Infrastructure;
 using PodiumdAdapter.Web.Infrastructure.UrlRewriter;
 using Serilog;
 using Serilog.Events;
+using Serilog.Formatting.Json;
 
 using var logger = new LoggerConfiguration()
     .MinimumLevel.Information()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Information) //logeventlevel information voor Microsoft.AspNetCore.Authentication namespace omdat deze namespace de unauthorizations gooit, voorbeeld: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler: Information: AuthenticationScheme: Bearer was challenged.
     .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
-    .WriteTo.Console()
+    .WriteTo.Console(new JsonFormatter())
     .CreateLogger();
 
 try
