@@ -13,12 +13,17 @@ public class StatusCodeLoggingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        _logger.LogDebug("StatusCodeLoggingMiddleware invoked.");
+
         await _next(context);
+
+        _logger.LogDebug("StatusCodeLoggingMiddleware processing response. Status Code: {StatusCode}", context.Response.StatusCode);
 
         if (context.Response.StatusCode == 400 ||
             context.Response.StatusCode == 401 ||
             context.Response.StatusCode == 403 ||
             context.Response.StatusCode == 404 ||
+            context.Response.StatusCode == 502 ||
             context.Response.StatusCode == 500)
         {
             _logger.LogInformation("HTTP {StatusCode} response: {Path}, TraceIdentifier: {TraceIdentifier}",
@@ -26,4 +31,3 @@ public class StatusCodeLoggingMiddleware
         }
     }
 }
-
