@@ -22,7 +22,7 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    // Add services to the container.
+    // Services toevoegen aan de container.
     builder.Host.UseSerilog(logger);
 
     builder.Services.AddHttpContextAccessor();
@@ -38,26 +38,24 @@ try
     builder.Services.AddSmoelenboekClient(builder.Configuration);
     builder.Services.AddUrlRewriter(EsuiteUrlRewriteMaps.GetRewriters);
 
-    //comment this line if you want to use PodiumdAdapter.Web.http
+    // Deze regel uitcommentariëren als je PodiumdAdapter.Web.http wilt gebruiken
     builder.Services.AddAuth(builder.Configuration);
 
     var app = builder.Build();
-    // Configure the HTTP request pipeline.
 
+    // Configureer de HTTP request pipeline.
     app.UseSerilogRequestLogging();
-    app.UseRouting(); // Ensure routing is set up before middleware that depends on route information
+    app.UseRouting(); // Zorg ervoor dat routing is ingesteld voordat middleware wordt gebruikt die afhankelijk is van route-informatie
     app.UseMiddleware<StatusCodeLoggingMiddleware>(); // Middleware om HTTP-statuscodes toe te voegen aan Serilog JSON-logs, aangezien deze standaard niet zijn opgenomen
-    app.UseAuthentication(); // Ensure authentication middleware is before authorization
+    app.UseAuthentication(); // Zorg ervoor dat de authenticatiemiddleware voor de autorisatie wordt aangeroepen
     app.UseAuthorization();
     app.UseUrlRewriter();
 
-    app.UseEndpoints(endpoints =>
-    {
-        endpoints.MapHealthChecks("/healthz").AllowAnonymous();
-        endpoints.MapEsuiteEndpoints();
-        endpoints.MapObjectenEndpoints();
-        endpoints.MapReverseProxy();
-    });
+    // Top-level route registrations
+    app.MapHealthChecks("/healthz").AllowAnonymous();
+    app.MapEsuiteEndpoints();
+    app.MapObjectenEndpoints();
+    app.MapReverseProxy();
 
     app.Run();
 }
