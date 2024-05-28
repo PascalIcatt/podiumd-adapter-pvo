@@ -3,13 +3,14 @@ using PodiumdAdapter.Web.Endpoints;
 using PodiumdAdapter.Web.Endpoints.ObjectenEndpoints;
 using PodiumdAdapter.Web.Infrastructure;
 using PodiumdAdapter.Web.Infrastructure.UrlRewriter;
+using PodiumdAdapter.Web.Middleware;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 
 using var logger = new LoggerConfiguration()
     .MinimumLevel.Information()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Information) //logeventlevel information voor Microsoft.AspNetCore.Authentication namespace omdat deze namespace de unauthorizations gooit, voorbeeld: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler: Information: AuthenticationScheme: Bearer was challenged.
     .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
     .WriteTo.Console(new JsonFormatter())
@@ -43,8 +44,10 @@ try
 
     var app = builder.Build();
     // Configure the HTTP request pipeline.
+
     app.UseSerilogRequestLogging();
     app.UseUrlRewriter();
+    app.UseMiddleware<StatusCodeLoggingMiddleware>(); // Middleware om HTTP-statuscodes toe te voegen aan Serilog JSON-logs, aangezien deze standaard niet zijn opgenomen
 
     app.MapHealthChecks("/healthz").AllowAnonymous();
     app.MapEsuiteEndpoints();
