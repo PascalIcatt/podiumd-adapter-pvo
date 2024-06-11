@@ -33,8 +33,6 @@ try
     builder.Services.AddESuiteClient(new ZaakZrcClientConfig());
     builder.Services.AddESuiteClient(new CatalogusZtcClientConfig());
     builder.Services.AddESuiteClient(new DocumentenDrcClientConfig());
-    builder.Services.AddAfdelingenClient(builder.Configuration);
-    builder.Services.AddGroepenClient(builder.Configuration);
     builder.Services.AddSmoelenboekClient(builder.Configuration);
     builder.Services.AddUrlRewriter(EsuiteUrlRewriteMaps.GetRewriters);
 

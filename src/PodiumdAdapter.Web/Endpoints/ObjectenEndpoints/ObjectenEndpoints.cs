@@ -3,8 +3,6 @@ using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
-using PodiumdAdapter.Web.Auth;
 using PodiumdAdapter.Web.Infrastructure;
 
 namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
@@ -28,29 +26,7 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
 
             return group;
         }
-
-        public static void AddAfdelingenClient(this IServiceCollection services, IConfiguration config)
-        {
-            services.AddHttpClient(AfdelingenClientName, (client) =>
-            {
-                var baseUrl = config.GetRequiredValue("AFDELINGEN_BASE_URL");
-                var token = config.GetRequiredValue("AFDELINGEN_TOKEN");
-                client.BaseAddress = new Uri(baseUrl);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
-            });
-        }
-
-        public static void AddGroepenClient(this IServiceCollection services, IConfiguration config)
-        {
-            services.AddHttpClient(GroepenClientName, (client) =>
-            {
-                var baseUrl = config.GetRequiredValue("GROEPEN_BASE_URL");
-                var token = config.GetRequiredValue("GROEPEN_TOKEN");
-                client.BaseAddress = new Uri(baseUrl);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
-            });
-        }
-
+              
         public static void AddSmoelenboekClient(this IServiceCollection services, IConfiguration config)
         {
             services.AddHttpClient(SmoelenboekClientName, (client) =>
