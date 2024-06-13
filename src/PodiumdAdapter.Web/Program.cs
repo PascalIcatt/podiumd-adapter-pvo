@@ -8,7 +8,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 
-using var logger = new LoggerConfiguration()
+var logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Information) //logeventlevel information voor Microsoft.AspNetCore.Authentication namespace omdat deze namespace de unauthorizations gooit, voorbeeld: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler: Information: AuthenticationScheme: Bearer was challenged.
@@ -56,6 +56,9 @@ try
     app.MapEsuiteEndpoints();
     app.MapObjectenEndpoints();
     app.MapReverseProxy();
+
+    // Configure logger for ObjectenEndpoints
+    ObjectenEndpoints.InitializeLogger(app.Services.GetRequiredService<ILoggerFactory>());
 
     app.Run();
 }
