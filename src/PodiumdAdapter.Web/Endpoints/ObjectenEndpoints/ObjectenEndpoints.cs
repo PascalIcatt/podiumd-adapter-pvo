@@ -16,6 +16,13 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
         private const string AfdelingenClientName = "afdelingen";
         private const string SmoelenboekClientName = "smoelenboek";
 
+        private static ILogger? _logger;
+
+        public static void InitializeLogger(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger("ObjectenEndpoints");
+        }
+
         public static IEndpointConventionBuilder MapObjectenEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
         {
             var group = endpointRouteBuilder.MapGroup(ApiRoot);
@@ -72,6 +79,8 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
         //aan te passen zodat ze in de elastic index terecht komen op de manier dat kiss verwacht
         private static IResult GetSmoelenboek(IHttpClientFactory factory, HttpRequest request)
         {
+            _logger?.LogInformation("GetSmoelenboek is aangeroepen voor elastic sync aanpassingen."); 
+
             var client = factory.CreateClient(SmoelenboekClientName);
             return client.ProxyResult(new ProxyRequest
             {
