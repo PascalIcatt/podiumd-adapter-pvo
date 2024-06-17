@@ -17,8 +17,6 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
 
         public readonly string ESUITE_BASE_URL = "https://localhost:12345";
         public readonly string INTERNE_TAAK_OBJECT_TYPE_URL = "my-type";
-        public readonly string AFDELINGEN_BASE_URL = "https://localhost:6789";
-        public readonly string GROEPEN_BASE_URL = "https://localhost:5432";
         public readonly string AFDELINGEN_OBJECT_TYPE_URL = "my-afdelingen-type";
         public readonly string GROEPEN_OBJECT_TYPE_URL = "my-groepen-type";
         public readonly string SMOELENBOEK_OBJECT_TYPE_URL = "my-smoelenboek-type";
@@ -45,12 +43,8 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
                 ["ESUITE_CLIENT_SECRET"] = "FAKE_SECRET_OF_AT_LEAST_32_CHARS",
                 ["CONTACTVERZOEK_TYPES:0"] = "TYPE",
                 ["INTERNE_TAAK_OBJECT_TYPE_URL"] = INTERNE_TAAK_OBJECT_TYPE_URL,
-                ["AFDELINGEN_BASE_URL"] = AFDELINGEN_BASE_URL,
-                ["GROEPEN_BASE_URL"] = GROEPEN_BASE_URL,
                 ["AFDELINGEN_OBJECT_TYPE_URL"] = AFDELINGEN_OBJECT_TYPE_URL,
                 ["GROEPEN_OBJECT_TYPE_URL"] = GROEPEN_OBJECT_TYPE_URL,
-                ["AFDELINGEN_TOKEN"] = "FAKE_TOKEN",
-                ["GROEPEN_TOKEN"] = "FAKE_TOKEN",
                 ["SMOELENBOEK_OBJECT_TYPE_URL"] = SMOELENBOEK_OBJECT_TYPE_URL,
                 ["SMOELENBOEK_BASE_URL"] = SMOELENBOEK_BASE_URL,
                 ["SMOELENBOEK_TOKEN"] = "FAKE_TOKEN",
