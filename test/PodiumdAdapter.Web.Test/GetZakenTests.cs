@@ -94,8 +94,9 @@
                 .Respond("application/json", EsuiteResponse);
 
             using var response = await client.GetAsync("/zaken/api/v1/zaken" + inputQuery);
-            // if we get an ok, the mock http message handler has received the expected call
-            Assert.True(response.IsSuccessStatusCode);
+
+            // verify that the expected request with the expected query has been received by the mock
+            factory.MockHttpMessageHandler.VerifyNoOutstandingExpectation();
         }
     }
 }

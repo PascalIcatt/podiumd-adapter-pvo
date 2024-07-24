@@ -13,7 +13,7 @@ namespace PodiumdAdapter.Web.Endpoints
         {
             clientRoot.MapGet("/zaken", (HttpRequest request) => getClient().ProxyResult(new ProxyRequest
             {
-                Url = "zaken?" + MapQuery(request.Query),
+                Url = "zaken?" + MapQueryValueForOrdering(request.Query),
                 ModifyResponseBody = (json, _) =>
                 {
                     if (json.TryParsePagination(out var page))
@@ -49,7 +49,7 @@ namespace PodiumdAdapter.Web.Endpoints
             }
         }
 
-        private static string MapQuery(IQueryCollection query)
+        private static string MapQueryValueForOrdering(IQueryCollection query)
         {
             var items = query.SelectMany(x => x.Key.Equals("ordering", StringComparison.OrdinalIgnoreCase)
                 ? x.Value.OfType<string>().Select(v => v.StartsWith('-')
