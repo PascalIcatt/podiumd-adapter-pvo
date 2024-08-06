@@ -76,5 +76,28 @@
 
             Assert.Equal(ExpectedApiResponse, response);
         }
+
+        [Theory]
+        [InlineData("?ordering=-mycolumn", "?ordering=mycolumn_aflopend")]
+        [InlineData("?ordering=mycolumn", "?ordering=mycolumn_oplopend")]
+        [InlineData("?mykey=myvalue", "?mykey=myvalue")]
+        public async Task Query_parameter_is_mapped_correctly(string inputQuery, string expectedOutputQuery)
+        {
+            const string EsuiteResponse = """
+            {"results":[]}
+            """;
+
+            using var client = factory.CreateClient();
+            factory.SetZgwToken(client);
+            factory.MockHttpMessageHandler
+                .Expect(HttpMethod.Get, factory.ESUITE_BASE_URL + "/zgw-apis-provider/zrc/api/v1/zaken" + expectedOutputQuery)
+                .Respond("application/json", EsuiteResponse);
+
+            using var response = await client.GetAsync("/zaken/api/v1/zaken" + inputQuery);
+            Assert.True(response.IsSuccessStatusCode);
+
+            // verify that the expected request with the expected query has been received by the mock
+            factory.MockHttpMessageHandler.VerifyNoOutstandingExpectation();
+        }
     }
 }
