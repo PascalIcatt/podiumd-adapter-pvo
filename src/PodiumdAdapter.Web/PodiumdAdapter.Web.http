@@ -207,7 +207,7 @@ Content-Type: application/json
 ###       
 
 
-GET {{ObjectenRoot}}/objects?pageSize=2&type={{SmoelenboekType}}
+GET {{ObjectenRoot}}/objects?type={{SmoelenboekType}}
 Accept: application/json
 
   ###
