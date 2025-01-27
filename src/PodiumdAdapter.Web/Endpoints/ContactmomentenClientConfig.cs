@@ -140,7 +140,7 @@ namespace PodiumdAdapter.Web.Endpoints
             var achternaam = persoonsnaam?["achternaam"]?.GetValue<string>();
 
             var email = digitaleAdressen?
-                .Where(x => x?["soortDigitaalAdres"]?.GetValue<string>() == "e-mailadres")
+                .Where(x => x?["soortDigitaalAdres"]?.GetValue<string>() == "email")
                 .Select(x => x?["adres"]?.DeepClone())
                 .Where(x => x != null)
                 .FirstOrDefault();

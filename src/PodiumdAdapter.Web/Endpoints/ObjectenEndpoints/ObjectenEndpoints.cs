@@ -299,7 +299,7 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
                 {
                     ["adres"] = email,
                     ["omschrijving"] = "e-mailadres",
-                    ["soortDigitaalAdres"] = "e-mailadres"
+                    ["soortDigitaalAdres"] = "email"
                 });
             }
             if (telefoonnummer1 != null)

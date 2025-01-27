@@ -99,7 +99,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
                         {
                             "adres": "icatttest@gmail.com",
                             "omschrijving": "e-mailadres",
-                            "soortDigitaalAdres": "e-mailadres"
+                            "soortDigitaalAdres": "email"
                         },
                         {
                             "adres": "0201234567",
@@ -152,7 +152,7 @@ public class ContactmomentenTests(CustomWebApplicationFactory factory) : IClassF
                   {
                     "adres": "icatttest@gmail.com",
                     "omschrijving": "e-mailadres",
-                    "soortDigitaalAdres": "e-mailadres"
+                    "soortDigitaalAdres": "email"
                   },
                   {
                     "adres": "0201234567",

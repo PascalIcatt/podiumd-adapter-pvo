@@ -6,13 +6,13 @@
 #
 #
 
-@PodiumdAdapter.Web_HostAddress = http://localhost:56090
-@ContactmomentenRoot = {{PodiumdAdapter.Web_HostAddress}}/contactmomenten/api/v1
-@KlantenRoot = {{PodiumdAdapter.Web_HostAddress}}/klanten/api/v1
-@ZrcRoot = {{PodiumdAdapter.Web_HostAddress}}/zaken/api/v1
-@ZtcRoot = {{PodiumdAdapter.Web_HostAddress}}/catalogi/api/v1
-@DrcRoot = {{PodiumdAdapter.Web_HostAddress}}/documenten/api/v1
-@ObjectenRoot = {{PodiumdAdapter.Web_HostAddress}}/api/v2
+@PodiumdAdapter_Web_HostAddress = http://localhost:5115
+@ContactmomentenRoot = {{PodiumdAdapter_Web_HostAddress}}/contactmomenten/api/v1
+@KlantenRoot = {{PodiumdAdapter_Web_HostAddress}}/klanten/api/v1
+@ZrcRoot = {{PodiumdAdapter_Web_HostAddress}}/zaken/api/v1
+@ZtcRoot = {{PodiumdAdapter_Web_HostAddress}}/catalogi/api/v1
+@DrcRoot = {{PodiumdAdapter_Web_HostAddress}}/documenten/api/v1
+@ObjectenRoot = {{PodiumdAdapter_Web_HostAddress}}/api/v2
 @InterneTaakType = https://objecttypenpodiumd.dev.kiss-demo.nl/api/v2/objecttypes/1df73259-1a58-4180-bf98-598eefc184d4
 @AfdelingenType = https://objecttypenpodiumd.dev.kiss-demo.nl/api/v2/objecttypes/ec65c0be-5e8d-4b72-b07f-7c4f78c84a18
 @GroepenType = https://objecttypenpodiumd.dev.kiss-demo.nl/api/v2/objecttypes/8b9d6bf9-7b5a-4c38-ad10-f37cd1e81a8f
@@ -129,7 +129,7 @@ Content-Type: application/json
               {
                 "adres": "n.simon@rotterdam.nl",
                 "omschrijving": "e-mailadres",
-                "soortDigitaalAdres": "e-mailadres"
+                "soortDigitaalAdres": "email"
               }
             ]
           },
@@ -210,4 +210,4 @@ Content-Type: application/json
 GET {{ObjectenRoot}}/objects?type={{SmoelenboekType}}
 Accept: application/json
 
-###
+  ###
