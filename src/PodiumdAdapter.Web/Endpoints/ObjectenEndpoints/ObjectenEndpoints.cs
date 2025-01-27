@@ -33,7 +33,7 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
 
             return group;
         }
-              
+
         public static void AddSmoelenboekClient(this IServiceCollection services, IConfiguration config)
         {
             services.AddHttpClient(SmoelenboekClientName, (client) =>
@@ -49,11 +49,12 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
         // InterneTaak
         // Afdeling
         // Groep
-        private static async Task<IResult> GetObjecten(
+        private static IResult GetObjecten(
             IConfiguration configuration,
             IHttpClientFactory factory,
             HttpRequest request,
-            [FromQuery(Name = "data_attrs")] string[] filterAttributes,
+            [FromQuery(Name = "data_attrs")] string[] filterMultipleAttributes,
+            [FromQuery(Name = "data_attr")] string[] filterSingleAttribute,
             [FromQuery(Name = "type")] string objectType,
             CancellationToken cancellationToken)
         {
@@ -63,6 +64,7 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
             // voor interne taak gaan we naar de contactmomenten api van de esuite
             if (objectType == interneTaakType)
             {
+                var filterAttributes = filterMultipleAttributes.Concat(filterSingleAttribute).ToArray();
                 return GetInterneTaken(configuration, factory, request, filterAttributes, objectType);
             }
 
@@ -79,7 +81,7 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
         //aan te passen zodat ze in de elastic index terecht komen op de manier dat kiss verwacht
         private static IResult GetSmoelenboek(IHttpClientFactory factory, HttpRequest request)
         {
-            _logger?.LogInformation("GetSmoelenboek is aangeroepen voor elastic sync aanpassingen."); 
+            _logger?.LogInformation("GetSmoelenboek is aangeroepen voor elastic sync aanpassingen.");
 
             var client = factory.CreateClient(SmoelenboekClientName);
             return client.ProxyResult(new ProxyRequest

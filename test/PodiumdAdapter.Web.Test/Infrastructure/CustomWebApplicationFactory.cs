@@ -17,6 +17,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
 
         public readonly string ESUITE_BASE_URL = "https://localhost:12345";
         public readonly string INTERNE_TAAK_OBJECT_TYPE_URL = "my-type";
+        public readonly string CONTACTVERZOEK_OBJECT_TYPE_URL = "TYPE";
         public readonly string AFDELINGEN_OBJECT_TYPE_URL = "my-afdelingen-type";
         public readonly string GROEPEN_OBJECT_TYPE_URL = "my-groepen-type";
         public readonly string SMOELENBOEK_OBJECT_TYPE_URL = "my-smoelenboek-type";
@@ -41,7 +42,7 @@ namespace PodiumdAdapter.Web.Test.Infrastructure
                 ["ESUITE_BASE_URL"] = ESUITE_BASE_URL,
                 ["ESUITE_CLIENT_ID"] = "FAKE_ID",
                 ["ESUITE_CLIENT_SECRET"] = "FAKE_SECRET_OF_AT_LEAST_32_CHARS",
-                ["CONTACTVERZOEK_TYPES:0"] = "TYPE",
+                ["CONTACTVERZOEK_TYPES:0"] = CONTACTVERZOEK_OBJECT_TYPE_URL,
                 ["INTERNE_TAAK_OBJECT_TYPE_URL"] = INTERNE_TAAK_OBJECT_TYPE_URL,
                 ["AFDELINGEN_OBJECT_TYPE_URL"] = AFDELINGEN_OBJECT_TYPE_URL,
                 ["GROEPEN_OBJECT_TYPE_URL"] = GROEPEN_OBJECT_TYPE_URL,
