@@ -121,6 +121,11 @@ namespace PodiumdAdapter.Web.Endpoints.ObjectenEndpoints
                 { "type", types }
             };
 
+            if (request.Query.TryGetValue("page", out var page))
+            {
+                builder.Add("page", page.AsEnumerable().OfType<string>());
+            }
+
             if (!string.IsNullOrWhiteSpace(klant))
             {
                 builder.Add("klant", klant);
