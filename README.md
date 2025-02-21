@@ -1,6 +1,7 @@
 [![Build and Tests](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/docker-image.yaml/badge.svg)](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/docker-image.yaml)
 [![Code quality checks](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/linter.yml/badge.svg)](https://github.com/ICATT-Menselijk-Digitaal/podiumd-adapter/actions/workflows/linter.yml)
 
+
 Adapter for any application using Common Ground standard API's that needs to communicate with the e-Suite API's. Offers translations for Zaken, Zaaktypen, Klanten, Contactmomenten. Developed by [ICATT. Menselijk digitaal](https://www.icatt.nl) for Dimpact.
 
 
